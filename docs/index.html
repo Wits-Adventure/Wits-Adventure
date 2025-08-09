@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Fantasy Docs with Manual Dark Mode</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Docsify Core CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css" />
+
+  <!-- Fantasy Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&family=Uncial+Antiqua&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    :root {
+      --theme-color: #7b3f00;
+      --sidebar-background: #f9f1e1;
+      --sidebar-color: #3b2f2f;
+      --base-font: 'Cinzel Decorative', serif;
+      --heading-font: 'Cinzel Decorative', serif;
+      --link-color: #8b0000;
+      --code-background: #f3efe1;
+    }
+
+    body {
+      background: url('https://www.transparenttextures.com/patterns/parchment.png');
+      background-color: #fdf6e3;
+      font-family: var(--base-font);
+      color: #4b3b2b;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    body.dark-mode {
+      background-color: #1a1a1a;
+      color: #ddd;
+    }
+
+    /* Normal link colors in dark mode */
+    body.dark-mode .markdown-section a {
+      color: #ffdd99;
+      /* warm light gold */
+    }
+
+    /* Hover effect for links in dark mode */
+    body.dark-mode .markdown-section a:hover {
+      color: #ffe4b3;
+      /* lighter gold */
+      text-shadow: 0 0 6px #a67c00;
+      /* optional glow */
+    }
+
+    .app-name {
+      font-family: var(--heading-font);
+      font-size: 2em;
+      color: #5c2e00;
+    }
+
+    .markdown-section {
+      background: rgba(255, 255, 240, 0.95);
+      max-width: 800px;
+      margin: 120px auto 60px;
+      padding: 2rem 3rem;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+      border: 5px solid #a67c00;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .markdown-section h1,
+    .markdown-section h2 {
+      font-family: var(--heading-font);
+      color: #5c2e00;
+      font-weight: 600;
+    }
+
+    body.dark-mode .markdown-section h1,
+    body.dark-mode .markdown-section h2 {
+      color: #ffdd99;
+      /* Or any light/fantasy-themed color */
+    }
+
+    .sidebar {
+      border-right: 3px solid #7b3f00;
+      font-family: var(--base-font);
+    }
+
+    body.dark-mode .sidebar {
+      background-color: #18120a !important;
+      color: #ffdd99 !important;
+      border-right-color: #a67c00 !important;
+    }
+
+    body.dark-mode .sidebar a {
+      color: #ffdd99 !important;
+    }
+
+    body.dark-mode .sidebar a:hover {
+      color: #ffe4b3 !important;
+      text-shadow: 0 0 4px #a67c00;
+    }
+
+    /* Dark mode for markdown section */
+    body.dark-mode .markdown-section {
+      background-color: #222;
+      border-color: #555;
+      box-shadow: none;
+    }
+
+    /* Toggle button styles */
+    #dark-toggle {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      background: #7b3f00;
+      color: white;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 8px;
+      font-family: var(--base-font);
+      font-weight: bold;
+      user-select: none;
+      z-index: 9999;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      transition: background-color 0.3s ease;
+    }
+
+    #dark-toggle:hover {
+      background-color: #5a2e00;
+    }
+
+    /* Prevent underline on heading anchor links */
+    .markdown-section h1>a,
+    .markdown-section h2>a,
+    .markdown-section h3>a,
+    .markdown-section h4>a,
+    .markdown-section h5>a,
+    .markdown-section h6>a {
+      text-decoration: none !important;
+    }
+
+    .markdown-section h1>a:hover,
+    .markdown-section h2>a:hover,
+    .markdown-section h3>a:hover,
+    .markdown-section h4>a:hover,
+    .markdown-section h5>a:hover,
+    .markdown-section h6>a:hover {
+      text-decoration: none !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="dark-toggle">🌙 Dark Mode</button>
+  <div id="app"></div>
+
+  <script>
+    window.$docsify = {
+      name: '📜 Navigation',
+      loadSidebar: true,
+      subMaxLevel: 2,
+      search: 'auto',
+    };
+
+    // Manual dark mode toggle script
+    const toggleButton = document.getElementById('dark-toggle');
+
+    // Load saved theme preference from localStorage
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark-mode');
+      toggleButton.textContent = '☀️ Light Mode';
+    }
+
+    toggleButton.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+
+      if (document.body.classList.contains('dark-mode')) {
+        toggleButton.textContent = '☀️ Light Mode';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        toggleButton.textContent = '🌙 Dark Mode';
+        localStorage.setItem('theme', 'light');
+      }
+    });
+  </script>
+
+  <!-- Docsify Core JS -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
+
+  <!-- Docsify Plugins (optional) -->
+  <script src="https://unpkg.com/docsify-copy-code"></script>
+  <script src="https://unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script>
+</body>
+
+</html>
