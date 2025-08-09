@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginNormUser } from '../firebase/firebase';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
@@ -13,26 +16,31 @@ function Login() {
     setPassword(event.target.value);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    
-    // Here you would typically handle the login logic.
-    // For a basic example, we'll just log the credentials.
-    console.log('Login attempted with:', { email, password });
-    
-    // In a real application, you would send this data to a backend server.
-    // e.g., using axios.post('/api/login', { email, password })
-    // The server would then validate the credentials and send back a token or user data.
-    
-    // Reset form after submission (optional)
-    setEmail('');
-    setPassword('');
+    setError('');
+
+    try {
+      await loginNormUser({ email, password });
+      console.log('Login attempted with:', { email, password });
+      
+      // Navigate to the dashboard or home page after successful login
+      navigate('/success'); 
+
+      setEmail('');
+      setPassword('');
+
+    } catch (error) {
+      console.error("Login failed:", error.message);
+      setError(error.message); // Set the error state to display to the user
+    }
   };
 
   return (
     <div style={styles.container}>
       <form onSubmit={handleSubmit} style={styles.form}>
         <h2 style={styles.title}>Login</h2>
+        {error && <p style={styles.error}>{error}</p>}
         <div style={styles.inputGroup}>
           <label htmlFor="email" style={styles.label}>Email Address</label>
           <input
@@ -84,6 +92,10 @@ const styles = {
   title: {
     marginBottom: '20px',
     color: '#333',
+  },
+  error: {
+    color: 'red',
+    marginBottom: '15px',
   },
   inputGroup: {
     marginBottom: '15px',

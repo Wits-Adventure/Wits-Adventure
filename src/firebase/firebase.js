@@ -19,7 +19,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-async function addUserToFirestore(userId, email, name, role,autheProvider) {
+async function addUserToFirestore(userId, email, name, role, autheProvider, leaderboardPoints) {
   try {
     const userDocRef = doc(db, "Users", userId);
     const userData = {
@@ -27,6 +27,8 @@ async function addUserToFirestore(userId, email, name, role,autheProvider) {
       Name: name,
       joinedAt: serverTimestamp(),
       Role: role,
+      LeaderBoardPoints: leaderboardPoints,
+      autheProvider: autheProvider // Corrected typo here
     };
     await setDoc(userDocRef, userData);
     console.log("User added to Firestore!");
@@ -47,9 +49,8 @@ async function getUserData() {
   if (!userDoc.exists()) {
     throw new Error("User document does not exist in Firestore");
   }
-  console.log("Here")
+
   console.log(userDoc.data().Role)
-  console.log("Current user:", auth.currentUser);
 
   return userDoc.data(); // Returns the user data from Firestore
 }
@@ -77,54 +78,34 @@ const logout=()=>{
   auth.signOut();
 
 }
-const signupNormUser = ({ name, email, password, confirmPassword, role }) => {
-  if (password !== confirmPassword) {
+const signupNormUser = ({ Name, Email, Password, ConfirmPassword, Role, LeaderBoardPoints }) => {
+  if (Password !== ConfirmPassword) {
     alert("Passwords do not match");
-    return;
+    return Promise.reject(new Error("Passwords do not match"));
   }
 
-  createUserWithEmailAndPassword(auth, email, password)
+  return createUserWithEmailAndPassword(auth, Email, Password)
     .then((userCredential) => {
       const user = userCredential.user;
       console.log(user.emailVerified);
-      // Send email verification
-      sendEmailVerification(user)
+      return sendEmailVerification(user)
         .then(() => {
-          // Add the user to Firestore after verification email is sent
-          addUserToFirestore(user.uid, email, name, role, 'Firebase Auth');
+          // Pass the correct fields to addUserToFirestore
+          addUserToFirestore(user.uid, Email, Name, Role, 'Firebase Auth', LeaderBoardPoints);
           alert("Account created! Please check your email for verification.");
         })
         .catch((error) => {
           console.error("Error sending verification email:", error);
           alert("Error sending verification email.");
+          throw error;
         });
     })
     .catch((error) => {
       alert(`Signup failed: ${error.message}`);
+      throw error;
     });
 };
-const GoogleSignup = async (role) => {
-  const provider = new GoogleAuthProvider();
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
 
-    if (result._tokenResponse.isNewUser) {
-      await addUserToFirestore(
-        user.uid,
-        user.email,
-        user.displayName || "Google User",
-        role,
-        "Google"
-      );
-    }
-
-    alert("Signed in with Google!");
-  } catch (error) {
-    console.error("Google Sign-in Error:", error);
-    alert(`Google Sign-in failed: ${error.message}`);
-  }
-};
 const loginNormUser = async ({ email, password }) => {
   try {
 
@@ -152,41 +133,16 @@ const loginNormUser = async ({ email, password }) => {
 };
 
 
-const GoogleLogin = async () => {
-  const auth = getAuth();
-  const provider = new GoogleAuthProvider();
-
-  try {
-
-    // Perform Google login
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    const userDocRef = doc(db, "Users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (!userDoc.exists()) {
-      alert("User does not exist");
-      return;
-    }
-   
-    alert("Logged in with Google!");
-  } catch (error) {
-    console.error("Google Login Error:", error);
-    alert(`Google Login failed: ${error.message}`);
-  }
-};
 
 export {
   auth,
   db,
-  storage,
   doc,
   setDoc,
   signupNormUser,
   addUserToFirestore,
   loginNormUser,
-  GoogleSignup,
-  GoogleLogin,
   getUserName,
-  getUserRole
+  getUserRole,
+  getUserData
 };

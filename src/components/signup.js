@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { signupNormUser } from '../firebase/firebase';
 
 function check_email(email) {
     // Regular expression to check for a valid email format
@@ -40,29 +41,35 @@ function Signup() {
         setError('Not wits email')
         return
     }
-    // Basic form validation
+
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
    
+    signupNormUser({
+      Name: username,
+      Email: email,
+      Password: password,
+      ConfirmPassword: confirmPassword,
+      Role: 'student', 
+      LeaderBoardPoints: 0,
 
-    // In a real application, you would send this data to a backend server.
-    console.log('Signup attempted with:', { username, email, password });
 
-    // Assuming a successful signup, you might redirect the user
-    // navigate('/login'); 
-    // or
-    // navigate('/dashboard');
-
-    // Reset form fields
-    setUsername('');
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    
-    alert('Signup successful! Please log in.');
-    navigate('/login');
+    })
+    .then(() => {
+      // The signupNormUser function handles alerts and redirects, so we don't need them here.
+      // We can clear the form fields if needed.
+      setUsername('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      navigate('/login');
+    })
+    .catch((error) => {
+      // The signupNormUser function already shows an alert for errors, but we can set a local error state too.
+      setError(error.message);
+    });
   };
 
   return (
