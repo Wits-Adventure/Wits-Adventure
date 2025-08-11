@@ -1,4 +1,6 @@
-/* Home.css */
+/* Home.css - Fantasy D&D Style */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cinzel+Decorative:wght@700&display=swap');
 
 * {
   margin: 0;
@@ -8,12 +10,29 @@
 
 .home-container {
   width: 100%;
-  height: 100vh;
+  height: 100dvh; /* was 100vh */
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background-color: #a89079;
+  font-family: 'Cinzel', serif;
+  background: #6f573c;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(139, 115, 85, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(160, 149, 107, 0.3) 0%, transparent 50%);
   position: relative;
+  overflow: hidden;
+}
+
+.home-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23654321' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Header Styles */
@@ -27,45 +46,77 @@
   align-items: center;
   padding: 20px 30px;
   z-index: 100;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.8));
-  backdrop-filter: blur(10px);
 }
 
 /* Website Name with Logo */
 .website-name {
-  background: #ffefdf;
-  border: 3px solid #333;
-  border-radius: 50px;
-  padding: 5px 20px; /* Reduced padding */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: #ffe8d1;
+  border: 3px solid #654321;
+  border-radius: 25px;
+  padding: 8px 25px;
+  box-shadow: 
+    0 8px 25px rgba(101, 67, 33, 0.4),
+    0 4px 15px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
   display: flex;
   align-items: center;
-  gap: 10px; /* Reduced gap */
+  gap: 12px;
+  position: relative;
+}
+
+.website-name::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: #654321;
+  border-radius: 27px;
+  z-index: -1;
 }
 
 .logo {
-  width: 60px;  /* Smaller logo */
+  width: 60px;
   height: 60px;
   object-fit: contain;
   flex-shrink: 0;
 }
 
 .website-name h1 {
-  font-size: 20px; /* Smaller text */
-  font-weight: 500;
-  color: #333;
-  letter-spacing: 1px; /* Reduced letter spacing */
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #654321;
+  letter-spacing: 2px;
   margin: 0;
+  text-shadow: 1px 1px 2px rgba(101, 67, 33, 0.3);
 }
 
 /* User Area */
 .user-area {
-  background: #ffefdf;
-  border: 3px solid #333;
-  border-radius: 50px;
-  padding: 10px 20px;
-  min-width: 200px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: #ffe8d1;
+  border: 3px solid #654321;
+  border-radius: 25px;
+  padding: 12px 25px;
+  min-width: 220px;
+  box-shadow: 
+    0 8px 25px rgba(101, 67, 33, 0.4),
+    0 4px 15px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  position: relative;
+}
+
+.user-area::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: #654321;
+  border-radius: 27px;
+  z-index: -1;
 }
 
 /* Authentication Buttons */
@@ -78,164 +129,324 @@
 
 .signup-btn,
 .login-btn {
-  padding: 8px 20px;
-  border: none;
-  border-radius: 25px;
+  padding: 10px 20px;
+  border: 2px solid #654321;
+  border-radius: 20px;
+  font-family: 'Cinzel', serif;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .signup-btn {
-  background: white;
-  color: #333;
-  border: 2px solid #333;
+  background: #ffeadc;
+  color: #654321;
 }
 
 .signup-btn:hover {
-  background: #333;
-  color: white;
+  background: linear-gradient(145deg, #654321, #8B4513);
+  color: #F4E4BC;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(101, 67, 33, 0.3);
 }
 
 .login-btn {
-  background: #333;
-  color: white;
+  background: linear-gradient(145deg, #654321, #8B4513);
+  color: #F4E4BC;
 }
 
 .login-btn:hover {
-  background: #555;
+  background: linear-gradient(145deg, #8B4513, #A0522D);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(101, 67, 33, 0.3);
 }
 
 /* User Profile */
 .user-profile {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
   justify-content: center;
 }
 
 .profile-icon {
-  width: 35px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: #333;
-  color: white;
+  background: linear-gradient(145deg, #654321, #8B4513);
+  color: #F4E4BC;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 16px;
-  border: 2px solid #333;
+  font-size: 18px;
+  border: 3px solid #B8860B;
+  box-shadow: 0 2px 8px rgba(101, 67, 33, 0.3);
 }
 
 .username {
+  font-family: 'Cinzel', serif;
   font-size: 16px;
   font-weight: 500;
-  color: #333;
+  color: #654321;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 .logout-btn {
-  padding: 6px 15px;
-  background: #ff4444;
-  color: white;
-  border: none;
-  border-radius: 20px;
+  padding: 8px 16px;
+  background: linear-gradient(145deg, #8B4513, #A0522D);
+  color: #F4E4BC;
+  border: 2px solid #654321;
+  border-radius: 15px;
+  font-family: 'Cinzel', serif;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
 }
 
 .logout-btn:hover {
-  background: #cc0000;
+  background: linear-gradient(145deg, #A0522D, #CD853F);
+  transform: translateY(-1px);
 }
 
 /* Map Section */
 .map-section {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: stretch; /* fill vertical space */
   justify-content: center;
-  padding: 100px 20px 80px;
+  padding: var(--header-offset, 120px) 30px 20px;
   width: 100%;
+  position: relative;
+  min-height: calc(100dvh - var(--header-offset, 120px));
+  /* remove fixed height dependency */
 }
 
 .map-container {
   width: 100%;
   max-width: 1400px;
+  flex: 1;
   height: 100%;
   position: relative;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  min-height: 0; /* allow flex shrink */
 }
 
-.map-content {
+.map-frame {
   width: 100%;
   height: 100%;
-  background-image: url('./media/map.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* Fallback gradient if image doesn't load */
-  background-color: #e8f5e9;
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)),
-    url('./media/map.png');
+  background: linear-gradient(145deg, #D2B48C, #DEB887);
+  border: 8px solid #654321;
+  border-radius: 20px;
+  padding: 15px;
+  box-shadow: 
+    0 0 0 3px #b48e65,
+    0 20px 40px rgba(101, 67, 33, 0.5),
+    0 30px 25px rgba(0, 0, 0, 0.5),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2);
+  overflow: hidden;
 }
 
-.map-title {
+.map-corners {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.corner {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle, #ab855f 30%, transparent 30%);
+}
+
+.corner.top-left { top: 10px; left: 10px; }
+.corner.top-right { top: 10px; right: 10px; }
+.corner.bottom-left { bottom: 10px; left: 10px; }
+.corner.bottom-right { bottom: 10px; right: 10px; }
+
+#map {
+  width: 100%;
+  height: 100%;
+  min-height: 320px; /* was 400px */
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  /* Updated filter for light brown buildings */
+  filter: sepia(0.55) saturate(1) contrast(1) brightness(1) ;
+  /* Ensure minimum height */
+  min-height: 400px;
+}
+
+/* Fix Leaflet container issues */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 10px;
+  background-color: #F4E4BC !important; /* Fantasy parchment background */
+}
+
+/* Ensure map tiles load properly */
+.leaflet-tile-pane {
+  filter: inherit;
+}
+
+/* Custom Leaflet Controls */
+.leaflet-control-zoom {
+  border: none !important;
+  box-shadow: none !important;
+   margin-top: 25px !important;
+}
+
+.leaflet-control-zoom a {
+  background: linear-gradient(145deg, #F4E4BC, #E6D5A8) !important;
+  border: 2px solid #654321 !important;
+  color: #654321 !important;
+  font-family: 'Cinzel', serif !important;
+  font-weight: bold !important;
+  border-radius: 12px !important;
+  margin-top: 5px;
+  box-shadow: 0 2px 8px rgba(101, 67, 33, 0.3) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: linear-gradient(145deg, #E6D5A8, #D2B48C) !important;
+  transform: translateY(-1px);
+}
+
+/* Custom Fantasy Marker */
+.fantasy-marker {
+  background: none !important;
+  border: none !important;
+}
+
+.fantasy-marker-content {
+  position: relative;
+  width: 30px;
+  height: 40px;
+}
+
+.marker-pin {
+  width: 20px;
+  height: 30px;
+  background: linear-gradient(145deg, #705434, #6c5949);
+  border: 2px solid #654321;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  position: absolute;
+  top: 0;
+  left: 5px;
+  box-shadow: 0 3px 10px rgba(101, 67, 33, 0.4);
+}
+
+.marker-pin::after {
+  content: '🏰';
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 48px;
-  font-weight: 300;
-  color: #333;
-  letter-spacing: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 20px 40px;
-  border-radius: 10px;
-  backdrop-filter: blur(5px);
+  transform: translate(-50%, -50%) rotate(45deg);
+  font-size: 12px;
 }
 
-/* Bottom Navigation */
-.bottom-nav {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: white;
+.marker-pulse {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #654321;
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: fantasy-pulse 2s infinite;
+  opacity: 0.7;
+}
+
+@keyframes fantasy-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+}
+
+/* Fantasy Popup */
+.leaflet-popup-content-wrapper {
+  background: linear-gradient(145deg, #F4E4BC, #E6D5A8) !important;
+  border: 3px solid #654321 !important;
+  border-radius: 15px !important;
+  box-shadow: 0 8px 25px rgba(101, 67, 33, 0.4) !important;
+}
+
+.fantasy-popup h3 {
+  font-family: 'Cinzel Decorative', serif;
+  color: #654321;
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.fantasy-popup p {
+  font-family: 'Cinzel', serif;
+  color: #8B4513;
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+}
+
+.leaflet-popup-tip {
+  background: #E6D5A8 !important;
+  border: 3px solid #654321 !important;
+}
+
+/* Questbook Icon */
+.questbook-icon {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  background: transparent; /* Remove background */
+  border: none; /* Remove border */
+  width: 100px; /* Increased from 80px */
+  height: 100px; /* Increased from 80px */
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  z-index: 100;
-}
-
-.nav-icon {
-  background: none;
-  border: none;
   cursor: pointer;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #333;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
+  padding: 0;
+  z-index: 1000;
+  /* Remove box-shadow */
 }
 
-.nav-icon:hover {
-  transform: scale(1.1);
+.questbook-icon::before {
+  display: none; /* Remove the circle background */
+}
+
+.questbook-icon:hover {
+  transform: scale(1.1) translateY(-3px);
+  /* Remove box-shadow on hover */
+}
+
+.questbook-icon img {
+  width: 70px; /* Increased from 45px */
+  height: 70px; /* Increased from 45px */
+  object-fit: contain;
+  /* Remove filter for cleaner PNG appearance */
+  filter: none;
 }
 
 /* Responsive Design */
@@ -248,15 +459,16 @@
 
   .website-name {
     gap: 10px;
+    padding: 6px 20px;
   }
 
   .logo {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
   }
 
   .website-name h1 {
-    font-size: 20px;
+    font-size: 18px;
     letter-spacing: 1px;
   }
 
@@ -267,33 +479,28 @@
   }
 
   .map-section {
-    padding: 120px 15px 80px;
+    padding: var(--header-offset, 150px) 15px 15px;
+    min-height: calc(100dvh - var(--header-offset, 150px));
   }
-
-  .map-title {
-    font-size: 32px;
-    letter-spacing: 4px;
-    padding: 15px 30px;
-  }
-
   .map-container {
-    border-radius: 15px;
+    height: 100%;
+    max-height: none;
   }
 }
 
 @media (max-width: 480px) {
   .website-name {
     gap: 8px;
-    padding: 8px 20px;
+    padding: 5px 15px;
   }
 
   .logo {
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
   }
 
   .website-name h1 {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .auth-buttons {
@@ -302,22 +509,41 @@
 
   .signup-btn,
   .login-btn {
-    padding: 6px 15px;
+    padding: 8px 15px;
     font-size: 12px;
   }
 
-  .map-title {
-    font-size: 24px;
-    padding: 10px 20px;
+  .map-frame {
+    border-width: 4px;
+    padding: 8px;
   }
 
-  .username {
-    font-size: 14px;
+  .questbook-icon {
+    width: 70px;
+    height: 70px;
+    bottom: 15px;
+    right: 8px;
+  }
+  
+  .questbook-icon img {
+    width: 50px;
+    height: 50px;
   }
 
-  .profile-icon {
-    width: 30px;
-    height: 30px;
-    font-size: 14px;
+  /* Move zoom controls even lower on smaller mobile */
+  .leaflet-control-zoom {
+    margin-top: 35px !important;
+  }
+
+  .map-section {
+    padding: var(--header-offset, 160px) 12px 15px;
+    min-height: calc(100dvh - var(--header-offset, 160px));
+  }
+  .map-container {
+    height: 100%;
+    max-height: none;
+  }
+  #map {
+    min-height: 280px;
   }
 }
