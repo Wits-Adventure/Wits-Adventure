@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import '../Home.css';
+import '../css/Home.css';
 import logoImage from '../media/LOGO_Alpha.png';
 import questbookImage from '../media/questbook_outline.png';
 
