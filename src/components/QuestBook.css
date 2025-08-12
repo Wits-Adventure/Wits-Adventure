@@ -26,7 +26,21 @@
   margin-bottom: 0.5rem;
   color: #4e342e;
   font-family: 'Georgia', serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;  /* space between logo and text */
 }
+
+.logo-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #162f83; /* subtle brown border to fit fantasy theme */
+  box-shadow: 0 0 5px rgba(139, 69, 19, 0.5);
+}
+
 
 /* Container holding filter and pagination side by side */
 .filter-pagination-container {
@@ -88,7 +102,7 @@
 .quest-card {
   background-color: rgba(255, 250, 205, 0.9);
   padding: 1rem;
-  border-left: 5px solid #8b0000;
+  border-left: 5px solid #162f83;
   margin-bottom: 1.2rem;
   border-radius: 8px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
@@ -116,7 +130,7 @@
   border-radius: 4px;
   font-size: 12px;
   font-family: 'Georgia', serif;
-  border: 1px solid #8b0000;
+  border: 1px solid #162f83;
 }
 
 /* Pagination Section now inside the flex container */

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './QuestBook.css';
 import { FaFilter, FaArrowLeft, FaArrowRight, FaStar, FaAward, FaGem, FaBoxOpen } from 'react-icons/fa';
+import logo from '../assets/logo.jpg';  
 
 const allQuests = [
   { id: 1, title: 'Library Hunt', description: 'Find and scan the QR code at the library.', reward: 'Points' },
@@ -80,7 +81,11 @@ const QuestBook = () => {
         {/* PAGE CONTENT BASED ON TAB */}
         {activeTab === 'Quests' && (
           <>
-            <h1 className="title">📜 Campus Quests</h1>
+            <h1 className="title">
+            <img src={logo} alt="Logo" className="logo-circle" />
+              Wits Adventure Quests
+            </h1>
+
             <div className="filter-pagination-container">
               <div style={{ position: 'relative' }}>
                 <button className="filter-icon-btn" onClick={toggleDropdown}>
