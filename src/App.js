@@ -8,7 +8,7 @@ import { AuthProvider } from './context/AuthContext';
 import Home from './components/Home.js'; // Import the Home component
 import ProtectedRoute from './components/protectedRoute'; // Import ProtectedRoute
 import Unauthorized from './components/unauthorized'; // You'll need to create this component
-import StudentHomepage from './components/studentHomepage';
+import StudentProfile from './components/studentProfile';
 import AdminDashboard from './components/adminDashboard';
 
 const App = () => {
@@ -39,7 +39,7 @@ const App = () => {
             path="/student-homepage" 
             element={
               <ProtectedRoute requiredRole="student">
-                <StudentHomepage /> {/* Create this component */}
+                <StudentProfile /> 
               </ProtectedRoute>
             } 
           />
@@ -49,7 +49,7 @@ const App = () => {
             path="/admin-panel" 
             element={
               <ProtectedRoute requiredRole="admin">
-                <AdminDashboard /> {/* Create this component */}
+                <AdminDashboard /> 
               </ProtectedRoute>
             } 
           />

@@ -144,5 +144,6 @@ export {
   loginNormUser,
   getUserName,
   getUserRole,
-  getUserData
+  getUserData,
+  logout
 };
