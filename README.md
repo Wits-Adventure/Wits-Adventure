@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="media/Banner_compressed.gif" alt="BlooBase demo" height="300" />
+  <img src="public/LOGO_Final.ico" alt="Wits Adventure" height="300" />
 </p>
 
 ---
