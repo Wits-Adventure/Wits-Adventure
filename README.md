@@ -21,6 +21,7 @@
   - 2677730 - Sam Snyman<br>
   - 2683459 - Tafara Chibanda<br>
   - 2663025 - Tetelo Chuene<br>
+  - 2538889 - Sayuri Singh<br>
   - 2465030 - Nkosinathi Tshabalala
   <br>
 </p>
@@ -37,7 +38,7 @@ npm start
 ```
 
 - This will install all dependencies and start the development server.
-- The app will be available at [h- 2538889 - Sayuri Singhttp://localhost:3000](http://localhost:3000) by default.
+- The app will be available at [http://localhost:3000](http://localhost:3000) by default.
 
 If you want to build the app for production, run:
 
