@@ -138,7 +138,7 @@ const Home = () => {
   };
   
   const handleQuestbookClick = () => {
-    navigate('/questbook');
+    console.log('Questbook clicked!');
   };
 
   return (
