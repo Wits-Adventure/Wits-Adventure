@@ -81,7 +81,7 @@ export default function ProfilePage() {
                 {user.username}
                 <img
                   src={beginnerIcon}
-                  alt="beginner icon"
+                  alt="Beginner icon"
                   className="BeginnerIcon"
                 />
                 <section className="EditProfile" onClick={handleEditClick}>
