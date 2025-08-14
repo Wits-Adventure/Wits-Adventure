@@ -1,8 +1,8 @@
 
 import { initializeApp } from "firebase/app";
-import { onAuthStateChanged, getAuth, createUserWithEmailAndPassword, sendEmailVerification ,signInWithEmailAndPassword,GoogleAuthProvider,signInWithPopup} from "firebase/auth";
+import {  getAuth, createUserWithEmailAndPassword, sendEmailVerification ,signInWithEmailAndPassword,} from "firebase/auth";
 import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyBjatUHRXn-vb8yZS_G2I9qRjr49G0Uqjg",
@@ -131,8 +131,6 @@ const loginNormUser = async ({ email, password }) => {
     throw error;
   }
 };
-
-
 
 export {
   app,

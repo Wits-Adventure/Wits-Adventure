@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
-import { app } from "../firebase/firebase"; // your Firebase config file
+import { app} from "../firebase/firebase"; // your Firebase config file
 import "../css/LeaderboardAchievements.css";
 
 export default function LeaderboardAchievements() {
@@ -12,6 +12,7 @@ export default function LeaderboardAchievements() {
 
   useEffect(() => {
     // Fetch players from Firestore
+  
     const fetchPlayers = async () => {
       const snapshot = await getDocs(collection(db, "players"));
       const playerData = snapshot.docs.map((doc) => doc.data());
@@ -27,7 +28,7 @@ export default function LeaderboardAchievements() {
 
     fetchPlayers();
     fetchAchievements();
-  }, []);
+  }, [db]);
 
   const top3 = players.slice(0, 3);
   const others = players.slice(3);

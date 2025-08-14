@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, getUserName, getUserRole, getUserData } from '../firebase/firebase';
+import { auth, getUserData } from '../firebase/firebase';
 
 function Success() {
   const [userName, setUserName] = useState('');
