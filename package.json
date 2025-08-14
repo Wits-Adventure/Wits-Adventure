@@ -17,7 +17,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test -- --coverage --watchAll=false",
+    "test": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject"
   },
   "jest": {
@@ -26,6 +26,10 @@
       "!src/index.js",
       "!src/serviceWorker.js"
     ],
+    "moduleNameMapper": {
+      "^.+\\.(css|sass|scss)$": "identity-obj-proxy",
+      "^firebase/firestore$": "<rootDir>/src/__mocks__/firebase/firestore.js"
+    },
     "coverageReporters": [
       "lcov",
       "text"
@@ -56,5 +60,4 @@
     "jest": "^27.5.1",
     "jest-dom": "^4.0.0"
   }
-  
 }
