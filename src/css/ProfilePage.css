@@ -18,7 +18,7 @@
 
 .profile-card {
   background: #ffeadc;
-  border-radius: 12px;
+  border-radius: 27px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   width: 100%;
   max-width: 500px;
@@ -56,7 +56,7 @@
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #6f573c;
+  border: 5px solid #6f573c;
   box-shadow: 0 8px 20px rgba(0,0,0,0.3);
   animation: float 3s ease-in-out infinite;
   transform-style: preserve-3d;
@@ -67,7 +67,7 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  background: white;
+  background: #6f573c;
   border: none;
   border-radius: 50%;
   padding: 0.5rem;
@@ -82,19 +82,22 @@
 }
 
 .username-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  justify-content: center;
+  width: 100%;
 }
 
 .profile-username {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.1rem;
   margin: 0;
   color: #996515;
   font-family: 'Cinzel', serif;
   font-size: 1.5rem;
+  margin-left: 120px;
 }
 
 .edit-username-btn {
@@ -114,6 +117,30 @@
   height: 2rem;
 }
 
+.EditProfile {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  margin-left: 1.9rem; 
+  border-radius: 50%;
+  border: 1px solid #6f573c;
+  background-color: #ffeadc;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.editIcon {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+}
+
+.EditProfile:hover {
+  background-color: #f0f0f0;
+}
+
 .bio {
   margin: 0.4rem 0 0.8rem 0;
   color: #555;
@@ -124,7 +151,7 @@
 .profile-details {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center details horizontally */
+  align-items: center; 
   gap: 0.7rem;
   padding: 1.5rem;
   width: 100%;
@@ -135,8 +162,86 @@
 .detail {
   margin: 0;
   color: #333;
+  font-size: 0.95rem;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #ffeadc;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-family: 'Cinzel', serif;
+}
+
+.modal-content h2 {
+  color: #996515;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.modal-content label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: #333;
+  font-size: 1rem;
+}
+
+.modal-content input,
+.modal-content textarea {
+  padding: 0.5rem;
+  border: 1px solid #6f573c;
+  border-radius: 5px;
+  font-family: 'Cinzel', serif;
   font-size: 0.9rem;
-  text-align: center; /* Center detail text */
+}
+
+.modal-content textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.modal-buttons button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  background: #6f573c;
+  color: #ffeadc;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.modal-buttons button:hover {
+  background: #996515;
 }
 
 @keyframes float {
@@ -145,7 +250,7 @@
     box-shadow: 0 8px 20px rgba(0,0,0,0.3);
   }
   50% {
-    transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
+    transform: translateY(-20px) rotateX(5deg) rotateY(5deg);
     box-shadow: 0 12px 30px rgba(0,0,0,0.4);
   }
   100% {
@@ -170,7 +275,7 @@
   }
 
   .profile-info {
-    align-items: center; /* Ensure centering on smaller screens */
+    align-items: center; 
     gap: 1rem;
     padding: 1rem;
   }
@@ -209,6 +314,25 @@
   .detail {
     font-size: 0.8rem;
   }
+
+  .modal-content {
+    padding: 1.5rem;
+    max-width: 90%;
+  }
+
+  .modal-content h2 {
+    font-size: 1.2rem;
+  }
+
+  .modal-content input,
+  .modal-content textarea {
+    font-size: 0.8rem;
+  }
+
+  .modal-buttons button {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+  }
 }
 
 @media (max-width: 400px) {
@@ -233,5 +357,23 @@
 
   .detail {
     font-size: 0.7rem;
+  }
+
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .modal-content h2 {
+    font-size: 1rem;
+  }
+
+  .modal-content input,
+  .modal-content textarea {
+    font-size: 0.7rem;
+  }
+
+  .modal-buttons button {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
   }
 }

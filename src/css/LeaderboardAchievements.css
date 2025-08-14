@@ -1,0 +1,123 @@
+.game-container {
+  width: 360px;
+  background: #3d5a2a;
+  color: #fff;
+  border-radius: 15px;
+  overflow: hidden;
+  font-family: 'Comic Sans MS', cursive;
+}
+
+.tabs {
+  display: flex;
+  background: #5c8c42;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 10px;
+  font-weight: bold;
+  background: #5c8c42;
+  border: none;
+  cursor: pointer;
+  color: white;
+}
+
+.tabs button.active {
+  background: #7fbf4d;
+  border-bottom: 3px solid gold;
+}
+
+.podium {
+  display: flex;
+  justify-content: space-around;
+  padding: 15px;
+}
+
+.podium-place {
+  text-align: center;
+}
+
+.podium-place img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+.place-1 {
+  transform: translateY(-10px);
+}
+
+.place-2 {
+  transform: translateY(10px);
+}
+
+.place-3 {
+  transform: translateY(10px);
+}
+
+.player-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.player-row {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 5px 10px;
+  border-radius: 8px;
+}
+
+.rank {
+  width: 25px;
+  text-align: center;
+}
+
+.avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  margin: 0 8px;
+}
+
+.coin-icon {
+  width: 20px;
+  margin-left: 5px;
+}
+
+.achievements-tab {
+  padding: 10px;
+}
+
+.achievement-card {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+.progress-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar {
+  flex: 1;
+  background: #222;
+  border-radius: 5px;
+  overflow: hidden;
+  height: 8px;
+}
+
+.progress-fill {
+  background: gold;
+  height: 100%;
+}
+
+.reward {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}

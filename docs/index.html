@@ -81,6 +81,30 @@
       /* Or any light/fantasy-themed color */
     }
 
+    /* Base table background: dark */
+    body.dark-mode .markdown-section table {
+      background-color: #222;
+      border-collapse: collapse;
+    }
+
+    /* Odd rows get brown, but exclude header rows */
+    body.dark-mode .markdown-section table tbody tr:nth-child(odd) {
+      background-color: #18120a;
+      /* sidebar brown */
+    }
+
+    /* Even rows transparent, showing base background */
+    body.dark-mode .markdown-section table tbody tr:nth-child(even) {
+      background-color: transparent;
+    }
+
+    /* Table cells transparent so row background shows clearly */
+    body.dark-mode .markdown-section table th,
+    body.dark-mode .markdown-section table td {
+      background-color: transparent;
+    }
+
+
     .sidebar {
       border-right: 3px solid #7b3f00;
       font-family: var(--base-font);
@@ -147,6 +171,14 @@
     .markdown-section h5>a:hover,
     .markdown-section h6>a:hover {
       text-decoration: none !important;
+    }
+
+    body.dark-mode .markdown-section table th,
+    body.dark-mode .markdown-section table th:first-child,
+    body.dark-mode .markdown-section table td:first-child,
+    body.dark-mode .markdown-section table th:first-child *,
+    body.dark-mode .markdown-section table td:first-child * {
+      color: #ffdd99 !important;
     }
   </style>
 </head>

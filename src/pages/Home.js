@@ -2,39 +2,61 @@ import React, { useState, useEffect, useRef } from 'react';
 import '../css/Home.css';
 import logoImage from '../media/LOGO_Alpha.png';
 import questbookImage from '../media/questbook_outline.png';
+import { useNavigate } from 'react-router-dom';
+import { logout, getUserData } from '../firebase/firebase'; // Import getUserData
+import { useAuth } from '../context/AuthContext'; // Import useAuth hook
 
 const Home = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { currentUser } = useAuth(); // Use the auth context to get the current user
   const [username, setUsername] = useState('');
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
-  const headerRef = useRef(null); // NEW
+  const headerRef = useRef(null);
+  const navigate = useNavigate();
 
-  // Initialize map when component mounts
+  // Use useEffect to fetch user data when the authentication state changes
   useEffect(() => {
-    // Add a small delay to ensure DOM is ready
+    const fetchUsername = async () => {
+      if (currentUser) {
+        try {
+          const userData = await getUserData(); // Assuming this fetches the Name
+          if (userData && userData.Name) {
+            setUsername(userData.Name);
+          } else {
+            setUsername('User'); // Fallback name
+          }
+        } catch (error) {
+          console.error("Failed to fetch username:", error);
+          setUsername('User'); // Fallback on error
+        }
+      } else {
+        setUsername(''); // Clear username if no user is logged in
+      }
+    };
+
+    fetchUsername();
+  }, [currentUser]); // Dependency array: run this effect when currentUser changes
+
+  // Map and header effects remain the same
+  useEffect(() => {
     const initializeMap = () => {
       if (mapRef.current && !mapInstanceRef.current && window.L) {
         try {
-          // Initialize the map with higher zoom level
           mapInstanceRef.current = window.L.map(mapRef.current, {
             zoomControl: false,
             attributionControl: false
           }).setView([-26.1929, 28.0305], 17);
 
-          // Use OpenStreetMap for better building visibility
           window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: ''
           }).addTo(mapInstanceRef.current);
 
-          // Add custom zoom control
           const customZoomControl = window.L.control.zoom({
             position: 'topleft'
           });
           customZoomControl.addTo(mapInstanceRef.current);
 
-          // Create custom marker
           const customIcon = window.L.divIcon({
             className: 'fantasy-marker',
             html: `<div class="fantasy-marker-content">
@@ -45,7 +67,6 @@ const Home = () => {
             iconAnchor: [15, 40]
           });
 
-          // Add marker
           window.L.marker([-26.1929, 28.0305], { icon: customIcon })
             .addTo(mapInstanceRef.current)
             .bindPopup(`<div class="fantasy-popup">
@@ -54,20 +75,17 @@ const Home = () => {
                         </div>`)
             .openPopup();
 
-          // Force map to resize after initialization
           setTimeout(() => {
             if (mapInstanceRef.current) {
               mapInstanceRef.current.invalidateSize();
             }
           }, 100);
-
         } catch (error) {
           console.error('Error initializing map:', error);
         }
       }
     };
 
-    // Check if Leaflet is loaded, if not wait a bit
     if (window.L) {
       initializeMap();
     } else {
@@ -77,12 +95,9 @@ const Home = () => {
           initializeMap();
         }
       }, 100);
-
-      // Clear interval after 5 seconds to avoid infinite checking
       setTimeout(() => clearInterval(checkLeaflet), 5000);
     }
 
-    // Cleanup function
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
@@ -95,11 +110,9 @@ const Home = () => {
     const updateHeaderOffset = () => {
       if (headerRef.current) {
         const h = headerRef.current.getBoundingClientRect().height;
-        // Add some breathing room below header (adjust 20 if needed)
         document.documentElement.style.setProperty('--header-offset', `${h + 20}px`);
         if (mapInstanceRef.current) {
-          // Delay to allow layout to settle
-            setTimeout(() => mapInstanceRef.current.invalidateSize(), 60);
+          setTimeout(() => mapInstanceRef.current.invalidateSize(), 60);
         }
       }
     };
@@ -112,37 +125,32 @@ const Home = () => {
     };
   }, []);
 
-  // Mock login function - replace with actual authentication
   const handleLogin = () => {
-    setIsLoggedIn(true);
-    setUsername('JohnDoe'); // Replace with actual username from auth
+    navigate('/login');
   };
 
-  // Mock logout function
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUsername('');
+    logout();
   };
 
-  // Handle questbook click
+  const handleSignup = () => {
+    navigate('/signup');
+  };
+  
   const handleQuestbookClick = () => {
     console.log('Questbook clicked!');
-    // Add your questbook functionality here
   };
 
   return (
     <section className="home-container">
-      {/* Header */}
       <header ref={headerRef} className="header">
-        {/* Website Name with Logo */}
         <section className="website-name">
           <img src={logoImage} alt="Logo" className="logo" />
           <h1>WITS ADVENTURE</h1>
         </section>
 
-        {/* User Profile Area */}
         <section className="user-area">
-          {isLoggedIn ? (
+          {currentUser ? ( // Conditional rendering based on currentUser
             <section className="user-profile">
               <section className="profile-icon">
                 {username.charAt(0).toUpperCase()}
@@ -154,7 +162,7 @@ const Home = () => {
             </section>
           ) : (
             <section className="auth-buttons">
-              <button className="signup-btn">Sign Up</button>
+              <button className="signup-btn" onClick={handleSignup}>Sign Up </button>
               <button className="login-btn" onClick={handleLogin}>
                 Login
               </button>
@@ -162,7 +170,7 @@ const Home = () => {
           )}
         </section>
       </header>
-      {/* Map Container */}
+
       <main className="map-section">
         <section className="map-container">
           <div className="map-frame">
@@ -173,7 +181,6 @@ const Home = () => {
               <section className="corner bottom-right"></section>
             </div>
             <div ref={mapRef} id="map" style={{ width: '100%', height: '100%' }}>
-              {/* Questbook icon positioned at bottom right of map */}
               <button className="questbook-icon" onClick={handleQuestbookClick}>
                 <img src={questbookImage} alt="Questbook" />
               </button>
