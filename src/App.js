@@ -10,6 +10,7 @@ import ProtectedRoute from './components/protectedRoute'; // Import ProtectedRou
 import Unauthorized from './components/unauthorized'; // You'll need to create this component
 import StudentProfile from './components/studentProfile';
 import AdminDashboard from './components/adminDashboard';
+import QuestBook from './pages/QuestBook'; // adjust path as needed
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
           <Route path="/Login" element={<Login />} />
           <Route path="/Signup" element={<Signup />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/questbook" element={<QuestBook />} /> 
         
           {/* Protected Routes (Authenticated users only) */}
           <Route 
