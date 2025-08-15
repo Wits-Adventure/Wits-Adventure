@@ -96,7 +96,7 @@
   margin: 0;
   color: #996515;
   font-family: 'Cinzel', serif;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   margin-left: 120px;
 }
 
@@ -138,7 +138,14 @@
 }
 
 .EditProfile:hover {
-  background-color: #f0f0f0;
+  background: linear-gradient(145deg, #654321, #8B4513);
+  color: #F4E4BC;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(101, 67, 33, 0.3);
+}
+
+.EditProfile:hover .editIcon {
+  filter: brightness(0) invert(1);
 }
 
 .bio {
@@ -231,7 +238,7 @@
 .modal-buttons button {
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 5px;
+  border-radius: 19px;
   background: #6f573c;
   color: #ffeadc;
   font-family: 'Cinzel', serif;
@@ -241,7 +248,10 @@
 }
 
 .modal-buttons button:hover {
-  background: #996515;
+  background: linear-gradient(145deg, #654321, #8B4513);
+  color: #F4E4BC;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(101, 67, 33, 0.3);
 }
 
 @keyframes float {
@@ -277,7 +287,7 @@
   .profile-info {
     align-items: center; 
     gap: 1rem;
-    padding: 1rem;
+    padding: 6rem;
   }
 
   .profile-pic-wrapper {
