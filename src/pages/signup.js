@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signupNormUser } from '../firebase/firebase';
+import '../css/Signup.css';
+import logoImage from '../media/LOGO_Alpha.png';
 
 function check_email(email) {
     // Regular expression to check for a valid email format
@@ -19,6 +21,7 @@ function check_email(email) {
     
     return false;
 }
+
 function Signup() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -54,12 +57,8 @@ function Signup() {
       ConfirmPassword: confirmPassword,
       Role: 'student', 
       LeaderBoardPoints: 0,
-
-
     })
     .then(() => {
-      // The signupNormUser function handles alerts and redirects, so we don't need them here.
-      // We can clear the form fields if needed.
       setUsername('');
       setEmail('');
       setPassword('');
@@ -67,136 +66,81 @@ function Signup() {
       navigate('/login');
     })
     .catch((error) => {
-      // The signupNormUser function already shows an alert for errors, but we can set a local error state too.
       setError(error.message);
     });
   };
 
   return (
-    <main style={styles.container}>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <h2 style={styles.title}>Create an Account</h2>
-        {error && <p style={styles.error}>{error}</p>}
+    <main className="signup-container">
+      <section className="signup-logo">
+        <img src={logoImage} alt="Wits Adventure Logo" />
+        <h1>WITS ADVENTURE</h1>
+      </section>
+
+      <form onSubmit={handleSubmit} className="signup-form">
+        <h2 className="signup-title">Create an Account</h2>
+        {error && <p className="signup-error">{error}</p>}
         
-        <section style={styles.inputGroup}>
-          <label htmlFor="username" style={styles.label}>Username</label>
+        <section className="signup-input-group">
+          <label htmlFor="username" className="signup-label">Username</label>
           <input
             type="text"
             id="username"
             value={username}
             onChange={handleUsernameChange}
             required
-            style={styles.input}
+            className="signup-input"
+            placeholder="Enter your username"
           />
         </section>
 
-        <section style={styles.inputGroup}>
-          <label htmlFor="email" style={styles.label}>Email Address</label>
+        <section className="signup-input-group">
+          <label htmlFor="email" className="signup-label">Email Address</label>
           <input
             type="email"
             id="email"
             value={email}
             onChange={handleEmailChange}
             required
-            style={styles.input}
+            className="signup-input"
+            placeholder="your.email@students.wits.ac.za"
           />
         </section>
 
-        <section style={styles.inputGroup}>
-          <label htmlFor="password" style={styles.label}>Password</label>
+        <section className="signup-input-group">
+          <label htmlFor="password" className="signup-label">Password</label>
           <input
             type="password"
             id="password"
             value={password}
             onChange={handlePasswordChange}
             required
-            style={styles.input}
+            className="signup-input"
+            placeholder="Enter your password"
           />
         </section>
 
-        <section style={styles.inputGroup}>
-          <label htmlFor="confirm-password" style={styles.label}>Confirm Password</label>
+        <section className="signup-input-group">
+          <label htmlFor="confirm-password" className="signup-label">Confirm Password</label>
           <input
             type="password"
             id="confirm-password"
             value={confirmPassword}
             onChange={handleConfirmPasswordChange}
             required
-            style={styles.input}
+            className="signup-input"
+            placeholder="Confirm your password"
           />
         </section>
 
-        <button type="submit" style={styles.button}>Sign Up</button>
+        <button type="submit" className="signup-button">Sign Up</button>
         
-        <p style={styles.loginText}>
-          Already have an account? <Link to="/login" style={styles.link}>Log in here</Link>
+        <p className="signup-login-text">
+          Already have an account? <Link to="/login" className="signup-link">Log in here</Link>
         </p>
       </form>
     </main>
   );
 }
-
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    backgroundColor: '#f0f2f5',
-  },
-  form: {
-    backgroundColor: 'white',
-    padding: '40px',
-    borderRadius: '8px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    width: '100%',
-    maxWidth: '400px',
-    textAlign: 'center',
-  },
-  title: {
-    marginBottom: '20px',
-    color: '#333',
-  },
-  error: {
-    color: 'red',
-    marginBottom: '15px',
-  },
-  inputGroup: {
-    marginBottom: '15px',
-    textAlign: 'left',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '5px',
-    fontWeight: 'bold',
-    color: '#555',
-  },
-  input: {
-    width: 'calc(100% - 20px)',
-    padding: '10px',
-    borderRadius: '4px',
-    border: '1px solid #ccc',
-    boxSizing: 'border-box',
-  },
-  button: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#28a745',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    marginTop: '10px',
-  },
-  loginText: {
-    marginTop: '20px',
-    color: '#777',
-  },
-  link: {
-    color: '#007bff',
-    textDecoration: 'none',
-  },
-};
 
 export default Signup;
