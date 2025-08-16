@@ -33,6 +33,7 @@
     "transform": {
       "^.+\\.[jt]sx?$": "babel-jest"
     },
+    "testEnvironment": "jsdom",
     "coverageReporters": [
       "text",
       "lcov",
