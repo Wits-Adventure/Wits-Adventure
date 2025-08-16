@@ -13,9 +13,9 @@ jobs:
           node-version: '18'
           cache: 'npm'
       - name: Install dependencies
-        run: npx jest --coverage
+        run: npm install
       - name: Run Jest tests and generate coverage
-        run: npm test
+        run: npx jest --coverage
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
