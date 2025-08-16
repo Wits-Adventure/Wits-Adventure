@@ -21,24 +21,6 @@
     "coverage": "react-scripts test --coverage --passWithNoTests --watchAll=false",
     "eject": "react-scripts eject"
   },
-  "babel": {
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "targets": {
-            "node": "current"
-          }
-        }
-      ],
-      [
-        "@babel/preset-react",
-        {
-          "runtime": "automatic"
-        }
-      ]
-    ]
-  },
   "jest": {
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
@@ -50,8 +32,7 @@
       "text",
       "lcov",
       "html"
-    ],
-    "testEnvironment": "jsdom"
+    ]
   },
   "eslintConfig": {
     "extends": [
@@ -79,7 +60,6 @@
     "@testing-library/jest-dom": "^6.7.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
-    "babel-jest": "^30.0.5",
     "codecov": "^3.8.3",
     "jest": "^27.5.1",
     "jest-dom": "^4.0.0",
