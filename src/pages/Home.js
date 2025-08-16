@@ -86,7 +86,7 @@ const Home = () => {
       }
     };
 
-    if (window.L) {
+    if (window.L) { 
       initializeMap();
     } else {
       const checkLeaflet = setInterval(() => {
