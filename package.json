@@ -17,11 +17,9 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --passWithNoTests --coverage --watchAll=false",
-    "coverage": "react-scripts test --coverage --watchAll=false",
-    "eject": "react-scripts eject",
-    "codecov": "codecov",
-    "coverage:upload": "curl -s https://codecov.io/bash | bash"
+    "test": "react-scripts test --passWithNoTests --watchAll=false",
+    "coverage": "react-scripts test --coverage --passWithNoTests --watchAll=false",
+    "eject": "react-scripts eject"
   },
   "jest": {
     "collectCoverageFrom": [
@@ -34,7 +32,8 @@
       "text",
       "lcov",
       "html"
-    ]
+    ],
+    "coverageDirectory": "coverage"
   },
   "eslintConfig": {
     "extends": [
