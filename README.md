@@ -47,7 +47,7 @@ npm run build
 ```
 ## Testing source code:
 
-npm run coverage
+npm run coverage 
 
 ## Code Coverage:
 
