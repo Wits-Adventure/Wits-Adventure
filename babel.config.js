@@ -3,15 +3,11 @@ module.exports = {
     [
       '@babel/preset-env',
       {
-        targets: {
-          node: 'current', // Support current Node.js version for Jest
-        },
-        modules: false, // Preserve ES modules for Jest
+        targets: { node: 'current' },
+        modules: false,
       },
     ],
-    '@babel/preset-react', // Support React JSX
+    '@babel/preset-react',
   ],
-  plugins: [
-    '@babel/plugin-transform-runtime', // Optional: for async/await support
-  ],
+  plugins: ['@babel/plugin-transform-runtime'],
 };
