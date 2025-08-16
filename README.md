@@ -45,5 +45,11 @@ If you want to build the app for production, run:
 ```sh
 npm run build
 ```
+## Testing source code:
 
+npm run coverage
 ---
+
+## Code Coverage:
+
+https://codecov.io/gh/Wits-Adventure/Wits-Adventure/graphs/sunburst.svg?token=1TAB3XT3GU
