@@ -1,5 +1,5 @@
 {
-  "name": "bloobasemain",
+  "name": "wits-adventure",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -21,6 +21,24 @@
     "coverage": "react-scripts test --coverage --passWithNoTests --watchAll=false",
     "eject": "react-scripts eject"
   },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ],
+      [
+        "@babel/preset-react",
+        {
+          "runtime": "automatic"
+        }
+      ]
+    ]
+  },
   "jest": {
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
@@ -32,7 +50,8 @@
       "text",
       "lcov",
       "html"
-    ]
+    ],
+    "testEnvironment": "jsdom"
   },
   "eslintConfig": {
     "extends": [
@@ -53,11 +72,15 @@
     ]
   },
   "devDependencies": {
+    "@babel/core": "^7.28.3",
+    "@babel/plugin-transform-modules-commonjs": "^7.27.1",
+    "@babel/preset-env": "^7.28.3",
     "@babel/preset-react": "^7.27.1",
     "@testing-library/jest-dom": "^6.7.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
-    "codecov": "^3.8.2",
+    "babel-jest": "^30.0.5",
+    "codecov": "^3.8.3",
     "jest": "^27.5.1",
     "jest-dom": "^4.0.0",
     "jest-environment-jsdom": "^30.0.5"
