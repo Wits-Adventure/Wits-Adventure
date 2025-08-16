@@ -1,3 +1,4 @@
 - [🏰 Home](/)
 - [⚒ Techstack](techStack.md)
 - [🖼 Website Planning](WebsitePlanning.md)
+- [⚖️ Methodologies](methodologies.md)

@@ -1,4 +1,4 @@
-### Technical Stack
+### Tech Stack
 
 | Technology | Reason for Choice |
 | :--- | :--- |
