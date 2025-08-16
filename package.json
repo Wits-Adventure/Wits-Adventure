@@ -17,8 +17,10 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --passWithNoTests --watchAll=false",
-    "coverage": "react-scripts test --coverage --passWithNoTests --watchAll=false",
+    "test": "jest",
+    "test:calculator": "jest __tests__/Calculator.test.js --coverage --collectCoverageFrom='src/pages/Calculator.js'",
+    "test:coverage": "jest --coverage",
+    "coverage": "npm run test:calculator",
     "eject": "react-scripts eject"
   },
   "jest": {
