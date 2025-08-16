@@ -19,21 +19,20 @@
     "build": "react-scripts build",
     "test": "react-scripts test --passWithNoTests --coverage --watchAll=false",
     "coverage": "react-scripts test --coverage --watchAll=false",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "codecov": "codecov"
   },
   "jest": {
     "collectCoverageFrom": [
-      "src/**/*.{js,jsx,ts,tsx}",
+      "src/**/*.{js,jsx}",
       "!src/index.js",
-      "!src/serviceWorker.js"
+      "!src/reportWebVitals.js",
+      "!src/**/*.test.js"
     ],
-    "moduleNameMapper": {
-      "^.+\\.(css|sass|scss)$": "identity-obj-proxy",
-      "^firebase/firestore$": "<rootDir>/src/__mocks__/firebase/firestore.js"
-    },
     "coverageReporters": [
+      "text",
       "lcov",
-      "text"
+      "html"
     ]
   },
   "eslintConfig": {
@@ -59,6 +58,7 @@
     "@testing-library/jest-dom": "^6.7.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
+    "codecov": "^3.8.2",
     "jest": "^27.5.1",
     "jest-dom": "^4.0.0",
     "jest-environment-jsdom": "^30.0.5"
