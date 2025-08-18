@@ -1,0 +1,203 @@
+.full-page-background {
+  background-image: url('../media/questbook6.png'); /* Update path if needed */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  overflow-x: hidden;
+}
+
+.quest-list {
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+}
+
+.title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #4e342e;
+  font-family: 'Georgia', serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;  /* space between logo and text */
+}
+
+.logo-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #162f83; /* subtle brown border to fit fantasy theme */
+  box-shadow: 0 0 5px rgba(139, 69, 19, 0.5);
+}
+
+
+/* Container holding filter and pagination side by side */
+.filter-pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+/* Filter icon in a small square fantasy-themed block */
+.filter-icon-btn {
+  background-color: rgba(139, 69, 19, 0.8); /* brown fantasy tone */
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 20px;
+  color: #fff8dc;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.filter-icon-btn:hover {
+  background-color: rgba(139, 69, 19, 1);
+}
+
+/* Dropdown for filter */
+.dropdown-menu {
+  position: absolute;
+  top: 50px;
+  background-color: #f8f0e3;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  z-index: 2;
+  width: 120px;
+  text-align: center;
+}
+
+.dropdown-menu li {
+  padding: 8px;
+  cursor: pointer;
+  color: #5b3c1d;
+  font-family: 'Georgia', serif;
+}
+
+.dropdown-menu li:hover {
+  background-color: #e0d3c0;
+}
+
+/* Quest Card */
+.quest-card {
+  background-color: rgba(255, 250, 205, 0.9);
+  padding: 1rem;
+  border-left: 5px solid #162f83;
+  margin-bottom: 1.2rem;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  font-family: 'Georgia', serif;
+}
+
+.quest-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+  color: #3e2723;
+}
+
+.quest-card p {
+  margin: 0;
+  color: #5d4037;
+}
+
+/* Reward Tag Styling */
+.reward-tag {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 8px;
+  background-color: rgba(139, 69, 19, 0.1);
+  color: #4e342e;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: 'Georgia', serif;
+  border: 1px solid #162f83;
+}
+
+/* Pagination Section now inside the flex container */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination button {
+  background-color: rgba(139, 69, 19, 1);
+  color: #fff8dc;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.pagination button:disabled {
+  background-color: rgba(139, 69, 19, 1);
+  cursor: not-allowed;
+}
+
+.pagination span {
+  color: #4e342e;
+  font-size: 16px;
+  font-weight: bold;
+  min-width: 75px;
+  text-align: center;
+}
+
+/* Tab Navigation Styles */
+.tab-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  gap: 10px;
+   margin-top: -1.5cm;
+}
+
+.tab {
+  background-color: #d2b48c;
+  padding: 10px 20px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border: 2px solid #8b5a2b;
+  border-bottom: none;
+  font-family: 'Georgia', serif;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  position: relative;
+  top: 2px; /* overlap nicely with content box */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.tab:hover {
+  background-color: #deb887;
+  transform: translateY(-2px);
+}
+
+.tab.active {
+  background-color: #fff8dc;
+  color: #3e2723;
+  border-bottom: 2px solid #fff8dc; /* makes active tab look connected to content */
+}
+

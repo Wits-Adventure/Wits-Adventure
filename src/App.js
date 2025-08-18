@@ -12,6 +12,8 @@ import StudentProfile from './pages/studentProfile.js';
 import ProfilePage from './pages/ProfilePage.js';
 import LeaderBoardAchievements from './pages/LeaderboardAchievements.js'
 import AdminDashboard from './pages/adminDashboard.js';
+import QuestBook from './pages/QuestBook';
+
 
 const App = () => {
   return (
@@ -27,6 +29,7 @@ const App = () => {
           <Route path="/ProfilePage" element={<ProfilePage />} />
           <Route path="/AdminDashboard" element={<AdminDashboard />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/questbook" element={<QuestBook />} />
         
           {/* Protected Routes (Authenticated users only) */}
           <Route 
