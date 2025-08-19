@@ -1,3 +1,4 @@
+
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/homepage.js';
@@ -10,7 +11,7 @@ import ProtectedRoute from './components/protectedRoute'; // Import ProtectedRou
 import Unauthorized from './pages/unauthorized.js'; // You'll need to create this component
 import StudentProfile from './pages/studentProfile.js';
 import ProfilePage from './pages/ProfilePage.js';
-import LeaderBoardAchievements from './pages/LeaderboardAchievements.js'
+import LeaderBoard from './pages/Leaderboard.js'
 import AdminDashboard from './pages/adminDashboard.js';
 import QuestBook from './pages/QuestBook';
 
@@ -25,8 +26,8 @@ const App = () => {
           <Route path="/Homepage" element={<HomePage />} />
           <Route path="/Login" element={<Login />} />
           <Route path="/Signup" element={<Signup />} />
-          <Route path="/LeaderBoardAchievements" element={<LeaderBoardAchievements />} />
-          <Route path="/ProfilePage" element={<ProfilePage />} />
+          <Route path="/LeaderBoard" element={<LeaderBoard />} />
+<Route path="/profile/:id" element={<ProfilePage />} />
           <Route path="/AdminDashboard" element={<AdminDashboard />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/questbook" element={<QuestBook />} />
