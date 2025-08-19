@@ -1,25 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signupNormUser } from '../firebase/firebase';
+import { validatePasswordStrength } from '../components/PasswordValidator'; 
 import '../css/Signup.css';
 import logoImage from '../media/LOGO_Alpha.png';
 
 function check_email(email) {
-    // Regular expression to check for a valid email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    // First, check if the email format is valid
     if (!emailRegex.test(email)) {
         return false;
     }
-
-    // Then, check for the specific domain name
     const domain_name = email.split("@")[1];
-    if (domain_name === "students.wits.ac.za") {
-        return true;
-    }
-    
-    return false;
+    return domain_name === "students.wits.ac.za";
 }
 
 function Signup() {
@@ -28,34 +20,53 @@ function Signup() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [passwordFeedback, setPasswordFeedback] = useState([]); // for live password strength tips
 
   const navigate = useNavigate();
 
   const handleUsernameChange = (e) => setUsername(e.target.value);
   const handleEmailChange = (e) => setEmail(e.target.value);
-  const handlePasswordChange = (e) => setPassword(e.target.value);
+  
+  const handlePasswordChange = (e) => {
+    const newPass = e.target.value;
+    setPassword(newPass);
+
+    // Run strength check live
+    const strengthCheck = validatePasswordStrength(newPass);
+    setPasswordFeedback(strengthCheck.feedback);
+  };
+
   const handleConfirmPasswordChange = (e) => setConfirmPassword(e.target.value);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError(''); // Clear any previous errors
+    setError('');
+    setPasswordFeedback([]);
 
-     if(!check_email(email)){
-        setError('Not wits email')
-        return
+    if (!check_email(email)) {
+      setError('Please use your Wits student email.');
+      return;
+    }
+
+    // Validate password strength before signup
+    const strengthCheck = validatePasswordStrength(password);
+    if (strengthCheck.strength === "Weak") {
+      setError("Password is too weak. Try adding uppercase, numbers, and special characters.");
+      setPasswordFeedback(strengthCheck.feedback);
+      return;
     }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
-   
+
     signupNormUser({
       Name: username,
       Email: email,
       Password: password,
       ConfirmPassword: confirmPassword,
-      Role: 'student', 
+      Role: 'student',
       LeaderBoardPoints: 0,
     })
     .then(() => {
@@ -80,7 +91,7 @@ function Signup() {
       <form onSubmit={handleSubmit} className="signup-form">
         <h2 className="signup-title">Create an Account</h2>
         {error && <p className="signup-error">{error}</p>}
-        
+
         <section className="signup-input-group">
           <label htmlFor="username" className="signup-label">Username</label>
           <input
@@ -118,6 +129,14 @@ function Signup() {
             className="signup-input"
             placeholder="Enter your password"
           />
+          {/* Show password strength feedback */}
+          {passwordFeedback.length > 0 && (
+            <ul className="password-feedback">
+              {passwordFeedback.map((msg, idx) => (
+                <li key={idx}>{msg}</li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <section className="signup-input-group">

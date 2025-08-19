@@ -136,6 +136,9 @@ const Home = () => {
   const handleSignup = () => {
     navigate('/signup');
   };
+  const handleProfileClick = () => {
+  navigate('/ProfilePage'); 
+};
   
   const handleQuestbookClick = () => {
     console.log('Questbook clicked!');
@@ -151,7 +154,7 @@ const Home = () => {
 
         <section className="user-area">
           {currentUser ? ( // Conditional rendering based on currentUser
-            <section className="user-profile">
+            <section className="user-profile" onClick={handleProfileClick} style={{ cursor: 'pointer' }}>
               <section className="profile-icon">
                 {username.charAt(0).toUpperCase()}
               </section>

@@ -220,6 +220,14 @@
   border-bottom-color: #FFD700;
   text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
 }
+.password-feedback {
+  margin-top: 6px;
+  padding-left: 18px;
+  list-style-type: disc;
+  font-size: 0.9rem;
+  color: #FFD700; 
+}
+
 
 /* Responsive Design */
 @media (max-width: 768px) {
