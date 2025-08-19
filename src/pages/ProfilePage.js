@@ -1,39 +1,54 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 import "../css/ProfilePage.css";
 import profilePic from "../assets/profile.jpeg";
 import editIcon from "../assets/edit_icon.png";
 import beginnerIcon from "../assets/Beginner.png";
 
 export default function ProfilePage() {
-  const [user, setUser] = useState({
-    level: 20,
-    xp: 310,
-    maxXp: 670,
-    username: "PkmnMasterTR",
-    bio: "I like quests, lol!",
-    profilePicture: profilePic,
-    Level: 'Beginner',
-    points: 210,
-    rank: 12,
-    questsCompleted: 1,
-    questsInProgress: 2,
-  });
-
+  const { id } = useParams();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedUsername, setEditedUsername] = useState(user.username);
-  const [editedBio, setEditedBio] = useState(user.bio);
-  const [editedProfilePic, setEditedProfilePic] = useState(user.profilePicture);
+  const [editedUsername, setEditedUsername] = useState("");
+  const [editedBio, setEditedBio] = useState("");
+  const [editedProfilePic, setEditedProfilePic] = useState("");
 
-  const handleEditClick = () => {
-    setIsEditing(true);
-  };
+  // fetch player data
+  useEffect(() => {
+    const fetchPlayer = async () => {
+      try {
+        const docRef = doc(db, "Users", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setUser(data);
+          setEditedUsername(data.username);
+          setEditedBio(data.bio);
+          setEditedProfilePic(data.profilePicture);
+        } else {
+          console.log("No such player!");
+        }
+      } catch (error) {
+        console.error("Error fetching player:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPlayer();
+  }, [id]);
+
+  const handleEditClick = () => setIsEditing(true);
 
   const handleSave = () => {
     setUser({
       ...user,
       username: editedUsername,
       bio: editedBio,
-      profilePicture: editedProfilePic,
+      profilePicture: editedProfilePic
     });
     setIsEditing(false);
   };
@@ -45,63 +60,43 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
-  const handleProfilePicChange = (e) => {
+  const handleProfilePicChange = e => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
-        setEditedProfilePic(reader.result);
-      };
+      reader.onload = () => setEditedProfilePic(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
+  if (loading) return <div>Loading player...</div>;
+  if (!user) return <div>Player not found.</div>;
+
   return (
     <main className="profile-container">
       <section className="profile-card">
-        <header
-          className="profile-header"
-          style={{
-            backgroundImage: `url(${user.backgroundImage})`
-          }}
-        ></header>
-
+        <header className="profile-header" style={{ backgroundImage: `url(${user.backgroundImage})` }}></header>
         <section className="profile-info">
-          <section className="profile-pic-wrapper">
-            <img
-              src={user.profilePicture}
-              alt={`${user.username}'s avatar`}
-              className="profile-pic"
-            />
-          </section>
-
-          <section className="profile-name-section">
-            <section className="username-wrapper">
-              <h2 className="profile-username">
-                {user.username}
-                <img
-                  src={beginnerIcon}
-                  alt="Beginner icon"
-                  className="BeginnerIcon"
-                />
-                <section className="EditProfile" onClick={handleEditClick}>
-                  <img
-                    src={editIcon}
-                    alt="edit Icon"
-                    className="editIcon"
-                  />
-                </section>
-              </h2>
-            </section>
+          <div className="profile-pic-wrapper">
+            <img src={user.profilePicture || profilePic} alt={user.username} className="profile-pic"/>
+          </div>
+          <div className="profile-name-section">
+            <h2 className="profile-username">
+              {user.username}
+              <img src={beginnerIcon} alt="Beginner icon" className="BeginnerIcon"/>
+              <span onClick={handleEditClick}>
+                <img src={editIcon} alt="edit" className="editIcon"/>
+              </span>
+            </h2>
             <p className="bio">{user.bio}</p>
             <section className="profile-details">
-              <p className="detail">Level: {user.Level}</p>
-              <p className="detail">Points: {user.points}</p>
-              <p className="detail">Rank: {user.rank}</p>
-              <p className="detail">Quests completed: {user.questsCompleted}</p>
-              <p className="detail">Quests in progress: {user.questsInProgress}</p>
+              <p>Level: {user.Level}</p>
+              <p>Points: {user.points}</p>
+              <p>Rank: {user.rank}</p>
+              <p>Quests completed: {user.questsCompleted}</p>
+              <p>Quests in progress: {user.questsInProgress}</p>
             </section>
-          </section>
+          </div>
         </section>
       </section>
 
@@ -109,28 +104,14 @@ export default function ProfilePage() {
         <main className="modal">
           <section className="modal-content">
             <h2>Edit Profile</h2>
-            <label>
-              Username:
-              <input
-                type="text"
-                value={editedUsername}
-                onChange={(e) => setEditedUsername(e.target.value)}
-              />
+            <label>Username:
+              <input type="text" value={editedUsername} onChange={e => setEditedUsername(e.target.value)} />
             </label>
-            <label>
-              Bio:
-              <textarea
-                value={editedBio}
-                onChange={(e) => setEditedBio(e.target.value)}
-              />
+            <label>Bio:
+              <textarea value={editedBio} onChange={e => setEditedBio(e.target.value)} />
             </label>
-            <label>
-              Profile Picture:
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleProfilePicChange}
-              />
+            <label>Profile Picture:
+              <input type="file" accept="image/*" onChange={handleProfilePicChange}/>
             </label>
             <section className="modal-buttons">
               <button onClick={handleSave}>Save</button>
@@ -142,3 +123,5 @@ export default function ProfilePage() {
     </main>
   );
 }
+
+
