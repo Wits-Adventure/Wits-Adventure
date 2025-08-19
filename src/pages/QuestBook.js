@@ -1,7 +1,13 @@
+
+
 import React, { useState } from 'react';
 import '../css/QuestBook.css';
 import { FaFilter, FaArrowLeft, FaArrowRight, FaStar, FaAward, FaGem, FaBoxOpen } from 'react-icons/fa';
 import logo from '../media/logo.jpg';  
+
+// Import Leaderboard component
+import Leaderboard from './Leaderboard';  
+
 
 const allQuests = [
   { id: 1, title: 'Library Hunt', description: 'Find and scan the QR code at the library.', reward: 'Points' },
@@ -75,14 +81,13 @@ const QuestBook = () => {
           >
             Leaderboard
           </div>
-          
         </div>
 
         {/* PAGE CONTENT BASED ON TAB */}
         {activeTab === 'Quests' && (
           <>
             <h1 className="title">
-            <img src={logo} alt="Logo" className="logo-circle" />
+              <img src={logo} alt="Logo" className="logo-circle" />
               Wits Adventure Quests
             </h1>
 
@@ -128,12 +133,10 @@ const QuestBook = () => {
 
         {activeTab === 'Leaderboard' && (
           <div>
-            <h1 className="title">🏆 Leaderboard</h1>
-            <p style={{ textAlign: 'center' }}>Leaderboard content will go here.</p>
+            <Leaderboard/> {/* 👈 Render your leaderboard here */}
           </div>
         )}
 
-        
       </div>
     </div>
   );
