@@ -2,3 +2,4 @@
 - [⚒ Techstack](techStack.md)
 - [🖼 Website Planning](WebsitePlanning.md)
 - [⚖️ Methodologies](methodologies.md)
+- [⚖️ Sprint Taks](SprintTasks.md)
