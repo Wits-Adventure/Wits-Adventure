@@ -50,5 +50,5 @@ npm run build
 npm run coverage 
 
 ## Code Coverage:
+[![codecov](https://codecov.io/gh/Wits-Adventure/Wits-Adventure/branch/main/graph/badge.svg?token=1TAB3XT3GU)](https://codecov.io/gh/Wits-Adventure/Wits-Adventure)
 
-[![codecov](https://codecov.io/gh/Wits-Adventure/Wits-Adventure/graphs/sunburst.svg?token=1TAB3XT3GU)](https://codecov.io/gh/Wits-Adventure/Wits-Adventure)
