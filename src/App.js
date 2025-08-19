@@ -1,17 +1,17 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/homepage.js';
-import Login from './pages/login';
-import Signup from './pages/signup.js';
-import Success from './pages/success.js';
+import HomePage from './react_components/homepage.js';
+import Login from './react_components/login.js';
+import Signup from './react_components/signup.js';
+import Success from './react_components/success.js';
 import { AuthProvider } from './context/AuthContext';
-import Home from './pages/Home.js'; // Import the Home component
-import ProtectedRoute from './components/protectedRoute'; // Import ProtectedRoute
-import Unauthorized from './pages/unauthorized.js'; // You'll need to create this component
-import StudentProfile from './pages/studentProfile.js';
-import ProfilePage from './pages/ProfilePage.js';
-import LeaderBoardAchievements from './pages/LeaderboardAchievements.js'
-import AdminDashboard from './pages/adminDashboard.js';
+import Home from './react_components/Home.js'; // Import the Home component
+import ProtectedRoute from './react_components/protectedRoute.js'; // Import ProtectedRoute
+import Unauthorized from './react_components/unauthorized.js'; // You'll need to create this component
+import StudentProfile from './react_components/studentProfile.js';
+import ProfilePage from './react_components/ProfilePage.js';
+import LeaderBoardAchievements from './react_components/LeaderboardAchievements.js'
+import AdminDashboard from './react_components/adminDashboard.js';
 
 const App = () => {
   return (
