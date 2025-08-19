@@ -27,6 +27,7 @@ const App = () => {
           <Route path="/ProfilePage" element={<ProfilePage />} />
           <Route path="/AdminDashboard" element={<AdminDashboard />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/questbook" element={<QuestBook />} />
         
           {/* Protected Routes (Authenticated users only) */}
           <Route 

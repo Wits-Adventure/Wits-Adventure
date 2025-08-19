@@ -141,8 +141,8 @@ const Home = () => {
 };
   
   const handleQuestbookClick = () => {
-    console.log('Questbook clicked!');
-  };
+  navigate('/questbook');
+};
 
   return (
     <section className="home-container">
