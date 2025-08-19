@@ -47,3 +47,4 @@ npm run build
 ```
 
 ---
+[![codecov](https://codecov.io/gh/Wits-Adventure/Wits-Adventure/branch/main/graph/badge.svg)](https://codecov.io/gh/Wits-Adventure/Wits-Adventure)
