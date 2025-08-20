@@ -12,6 +12,8 @@
 
   <img src="public/techstack/firebase.png" height="40" alt="firebase logo" />
   &nbsp;
+  <img src="public/logo192.png" height="40" alt="react logo" />
+  &nbsp;
 </p>
 
 ---
