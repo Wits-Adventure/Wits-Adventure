@@ -1,5 +1,5 @@
 import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route,Navigate } from 'react-router-dom';
 import HomePage from './react_components/homepage.js';
 import Login from './react_components/login.js';
 import Signup from './react_components/signup.js';
@@ -8,11 +8,10 @@ import { AuthProvider } from './context/AuthContext';
 import Home from './react_components/Home.js'; // Import the Home component
 import ProtectedRoute from './react_components/protectedRoute.js'; // Import ProtectedRoute
 import Unauthorized from './react_components/unauthorized.js'; // You'll need to create this component
-import StudentProfile from './react_components/studentProfile.js';
 import ProfilePage from './react_components/ProfilePage.js';
 import LeaderBoardAchievements from './react_components/LeaderboardAchievements.js'
 import AdminDashboard from './react_components/adminDashboard.js';
-
+import QuestBook from './react_components/QuestBook.js';
 const App = () => {
   return (
     <Router>
@@ -24,11 +23,10 @@ const App = () => {
           <Route path="/Login" element={<Login />} />
           <Route path="/Signup" element={<Signup />} />
           <Route path="/LeaderBoardAchievements" element={<LeaderBoardAchievements />} />
-          <Route path="/ProfilePage" element={<ProfilePage />} />
-          <Route path="/AdminDashboard" element={<AdminDashboard />} />
+         
           <Route path="/unauthorized" element={<Unauthorized />} />
-          <Route path="/questbook" element={<QuestBook />} />
-        
+          
+          
           {/* Protected Routes (Authenticated users only) */}
           <Route 
             path="/Success" 
@@ -40,25 +38,33 @@ const App = () => {
           />
 
           {/* Role-Based Protected Routes */}
-          {/* Example: A route only for 'student' role */}
           <Route 
-            path="/student-homepage" 
+            path="/ProfilePage" 
             element={
               <ProtectedRoute requiredRole="student">
-                <StudentProfile /> 
+                <ProfilePage /> 
               </ProtectedRoute>
             } 
           />
-
-          {/* Example: A route only for 'admin' role */}
           <Route 
-            path="/admin-panel" 
+          path="/questbook" element={
+              <ProtectedRoute requiredRole="student">
+                <QuestBook /> 
+              </ProtectedRoute>
+            } 
+            />
+
+
+          <Route 
+            path="/Admin_Dashboard" 
             element={
               <ProtectedRoute requiredRole="admin">
                 <AdminDashboard /> 
               </ProtectedRoute>
             } 
           />
+          {/*Catch all route, for invalid paths */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </Router>

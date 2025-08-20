@@ -28,7 +28,13 @@ async function addUserToFirestore(userId, email, name, role, autheProvider, lead
       joinedAt: serverTimestamp(),
       Role: role,
       LeaderBoardPoints: leaderboardPoints,
-      autheProvider: autheProvider // Corrected typo here
+      autheProvider: autheProvider,
+      Level: 0,
+        CompletedQuests: [],
+        Bio: "",
+        SpendablePoints: 0,
+        Experience: 0,
+        Quests:[],
     };
     await setDoc(userDocRef, userData);
     console.log("User added to Firestore!");
