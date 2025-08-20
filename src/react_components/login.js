@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginNormUser } from '../firebase/firebase';
-import { addProfileFields } from '../firebase/profile_functions';
+//import { addProfileFields } from '../firebase/profile_functions';
 import '../css/Login.css';
 
 function Login() {
@@ -22,11 +22,7 @@ function Login() {
     event.preventDefault();
     setError('');
 
-    try {
-      await addProfileFields();
-    } catch (error) {
-      
-    }
+   
     try {
       
       await loginNormUser({ email, password });
