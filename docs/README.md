@@ -1,13 +1,5 @@
 <p align="center">
-  <img src="public/LOGO_Final.ico" alt="Wits Adventure" height="300" />
-</p>
-
----
-
-<p align="center">
-
-...
-
+  <img src="assets/LOGO_Final_Circular.png" alt="Wits Adventure" height="300" />
 </p>
 
 ---
