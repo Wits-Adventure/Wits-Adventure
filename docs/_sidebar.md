@@ -2,3 +2,4 @@
 - [⚒ Techstack](techStack.md)
 - [🖼 Visual Design](WebsitePlanning.md)
 - [⚖️ Methodologies](methodologies.md)
+- [⚡Using the website](usage.md)

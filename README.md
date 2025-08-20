@@ -1,13 +1,17 @@
 <p align="center">
-  <img src="public/LOGO_Final.ico" alt="Wits Adventure" height="300" />
+  <img src="public/githubLogo.ico" alt="Wits Adventure" height="300" />
 </p>
 
 ---
 
 <p align="center">
 
-...
-
+  <img src="public/techstack/firebase.svg" height="40" alt="firebase logo" />
+  &nbsp;
+  <img src="public/logo192.png" height="40" alt="react logo" />
+  &nbsp;
+    <img src="public/techstack/vercel.png" height="40" alt="vercel logo" />
+  &nbsp;
 </p>
 
 ---
@@ -45,15 +49,5 @@ If you want to build the app for production, run:
 ```sh
 npm run build
 ```
-## Testing source code:
 
-npm run coverage 
 
-## Code Coverage:
-[![codecov](https://codecov.io/gh/Wits-Adventure/Wits-Adventure/branch/main/graph/badge.svg?token=1TAB3XT3GU)](https://codecov.io/gh/Wits-Adventure/Wits-Adventure)
-
-<<<<<<< HEAD
-=======
----
-[![codecov](https://codecov.io/gh/Wits-Adventure/Wits-Adventure/branch/main/graph/badge.svg)](https://codecov.io/gh/Wits-Adventure/Wits-Adventure)
->>>>>>> origin/profilepage
