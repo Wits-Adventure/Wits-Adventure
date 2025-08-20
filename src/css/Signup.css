@@ -16,10 +16,13 @@
   justify-content: flex-start;
   align-items: center;
   font-family: 'Cinzel', serif;
-  background: #a2896c;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(139, 115, 85, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(160, 149, 107, 0.3) 0%, transparent 50%);
+  /* Light beige background with a white top via a linear gradient (matches Login) */
+  background:
+    linear-gradient(to bottom, #ffeccb 0%,  #f8e1bb 60%),
+    radial-gradient(circle at 25% 25%, rgba(139, 115, 85, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(160, 149, 107, 0.06) 0%, transparent 50%);
+  background-repeat: no-repeat;
+  background-size: cover;
   position: relative;
   overflow-x: hidden;
 }
@@ -59,7 +62,16 @@
   font-weight: 700;
   color: #efe0ba;
   letter-spacing: 2px;
-  text-shadow: 2px 2px 4px rgba(101, 67, 33, 0.8);
+  /* WebKit stroke where supported */
+  -webkit-text-stroke: 0.5px #4b2e1a;
+  -webkit-text-fill-color: #efe0ba;
+  /* cross-browser stroke fallback using layered text-shadow */
+  text-shadow:
+    -1px -1px 0 #4b2e1a,
+     1px -1px 0 #4b2e1a,
+    -1px  1px 0 #4b2e1a,
+     1px  1px 0 #4b2e1a,
+     2px  2px 6px rgba(101, 67, 33, 0.6);
 }
 
 /* Form Styles */
@@ -166,36 +178,48 @@
 .signup-button {
   width: 100%;
   padding: 16px 20px;
-  background: linear-gradient(145deg, #654321, #8B4513);
-  color: #F4E4BC;
-  border: 3px solid #654321;
-  border-radius: 20px;
+  background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+  border: 2px solid #90774c;
+  color: #2F1B14;
   font-family: 'Cinzel', serif;
-  font-size: 16px;
   font-weight: 600;
+  font-size: 16px;
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 10px;
-  box-shadow: 
-    0 6px 20px rgba(101, 67, 33, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.signup-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.signup-button:hover::before {
+  left: 100%;
 }
 
 .signup-button:hover {
-  background: linear-gradient(145deg, #8B4513, #A0522D);
+  background: linear-gradient(135deg, #ffe8c4, #dbbc89);
+  border-color: #90774c;
   transform: translateY(-2px);
-  box-shadow: 
-    0 8px 25px rgba(101, 67, 33, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 9px 20px rgba(49, 39, 31, 0.9);
 }
 
 .signup-button:active {
   transform: translateY(0);
-  box-shadow: 
-    0 4px 15px rgba(101, 67, 33, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Login Link */
@@ -208,7 +232,7 @@
 }
 
 .signup-link {
-  color: #B8860B;
+  color: #f9dfab;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
@@ -216,10 +240,27 @@
 }
 
 .signup-link:hover {
-  color: #FFD700;
+  color: #fff5de;
   border-bottom-color: #FFD700;
   text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
 }
+
+/* Remove underline from link and selection */
+.signup-link,
+.signup-link:focus,
+.signup-link:active {
+  text-decoration: none !important;
+  border-bottom: none !important;
+}
+
+/* Selection styling for the link text (remove underline and keep readable highlight) */
+.signup-link::selection,
+.signup-link::-moz-selection {
+  background: rgba(255, 215, 0, 0.12);
+  color: inherit;
+  text-decoration: none;
+}
+
 .password-feedback {
   margin-top: 6px;
   padding-left: 18px;

@@ -394,10 +394,11 @@
 }
 
 .fantasy-popup h3 {
-  font-family: 'Cinzel Decorative', serif;
+  font-family: 'Cinzel Decorative', serif !important;
   color: #654321;
   margin: 0 0 8px 0;
   text-align: center;
+  letter-spacing: 1px;
 }
 
 .fantasy-popup p {
@@ -406,6 +407,129 @@
   margin: 0;
   text-align: center;
   font-style: italic;
+}
+
+/* Add this to ensure popup text uses same emoji font */
+.quest-popup h3 {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI Symbol", sans-serif;
+}
+
+.leaflet-popup-tip {
+  background: #E6D5A8 !important;
+  border: 3px solid #654321 !important;
+}
+
+.quest-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(145deg, #fff2c9, #ffd27a);
+  color: #4b2e1a;
+  border: 2px solid #4b2e1a;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  margin-bottom: 8px;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(75,46,26,0.18);
+}
+
+.quest-badge .badge-text {
+  margin-left: 2px;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.5px;
+}
+
+
+/* Questbook Icon */
+.questbook-icon {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  background: transparent; /* Remove background */
+  border: none; /* Remove border */
+  width: 100px; /* Increased from 80px */
+  height: 100px; /* Increased from 80px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  z-index: 1000;
+  /* Remove box-shadow */
+}
+
+.questbook-icon::before {
+  display: none; /* Remove the circle background */
+}
+
+.questbook-icon:hover {
+  transform: scale(1.1) translateY(-3px);
+  /* Remove box-shadow on hover */
+}
+
+.questbook-icon img {
+  width: 70px; /* Increased from 45px */
+  height: 70px; /* Increased from 45px */
+  object-fit: contain;
+  /* Remove filter for cleaner PNG appearance */
+  filter: none;
+}
+
+/* Quest Circle Animations - Updated to remove movement */
+.quest-circle {
+  animation: quest-pulse-static 3s ease-in-out infinite;
+}
+
+@keyframes quest-pulse-static {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Quest Popup Styling */
+.quest-popup {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  max-width: 200px;
+}
+
+.quest-popup h3 {
+  color: #654321;
+  margin: 8px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  /* Update font to match the decorative header style */
+  font-family: 'Cinzel Decorative', serif !important;
+  letter-spacing: 1px;
+}
+
+/* Fantasy Popup (for Wits University marker) */
+.fantasy-popup h3 {
+  font-family: 'Cinzel Decorative', serif !important;
+  color: #654321;
+  margin: 0 0 8px 0;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.fantasy-popup p {
+  font-family: 'Cinzel', serif;
+  color: #8B4513;
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Add this to ensure popup text uses same emoji font */
+.quest-popup h3 {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI Symbol", sans-serif;
 }
 
 .leaflet-popup-tip {
@@ -449,101 +573,277 @@
   filter: none;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* Create Quest Button */
+.create-quest-btn {
+  background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+  border: 2px solid #90774c;
+  color: #2F1B14;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.create-quest-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.create-quest-btn:hover::before {
+  left: 100%;
+}
+
+.create-quest-btn:hover {
+  background: linear-gradient(135deg,#ffe8c4, #dbbc89);
+  border-color: #90774c;
+  transform: translateY(-2px);
+  box-shadow: 0 9px 20px rgba(49, 39, 31, 0.9);
+}
+
+.create-quest-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Accept Quest Button */
+.quest-accept-btn {
+  background: linear-gradient(135deg, #473925, #846d4c);
+  border: 2px solid #46392a;
+  color: white;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin-top: 8px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.quest-accept-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.4s;
+}
+
+.quest-accept-btn:hover::before {
+  left: 100%;
+}
+
+.quest-accept-btn:hover {
+  background: linear-gradient(135deg, #594733, #a58d73);
+  border-color: #443626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.quest-accept-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Quest Popup Styling */
+.quest-popup {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  max-width: 200px;
+}
+
+.quest-popup h3 {
+  color: #654321;
+  margin: 8px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'Cinzel Decorative', serif !important;
+  letter-spacing: 1px;
+}
+
+.quest-popup p {
+  font-size: 0.8rem;
+  margin: 6px 0;
+}
+
+.quest-image-container {
+  margin: 8px 0;
+  max-height: 100px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.quest-popup-image {
+  width: 100%;
+  height: auto;
+  max-height: 100px;
+  object-fit: cover;
+  display: block;
+  border: 3px solid #4b2e1a; /* dark oak brown */
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(75,46,26,0.35);
+}
+
+
+/* Fantasy Popup (for Wits University marker) */
+.fantasy-popup h3 {
+  font-family: 'Cinzel Decorative', serif !important;
+  color: #654321;
+  margin: 0 0 8px 0;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.fantasy-popup p {
+  font-family: 'Cinzel', serif;
+  color: #8B4513;
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Quest Emoji Icon Styles */
+.quest-emoji-icon {
+  background: transparent;
+  width: 30px;
+  height: 30px;
+}
+
+.quest-emoji-icon .quest-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 21px;
+  line-height: 1;
+  transform: translateY(1px);
+  user-select: none;
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.55));
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI Symbol", sans-serif;
+}
+
+.quest-placing .quest-emoji-icon {
+  pointer-events: none !important;
+}
+
+/* Mobile: site title on top, create + user side-by-side, trimmed to content & map pulled up */
+@media (max-width: 800px) {
   .header {
-    padding: 15px 20px;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .website-name {
+    /* use grid so we can put site title full-width and controls on one row below */
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-auto-rows: auto;
     gap: 10px;
-    padding: 6px 20px;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 16px;
+    left: 0;
+    right: 0;
+    top: 0;
   }
 
-  .logo {
-    width: 40px;
-    height: 40px;
+  /* site title spans full width and remains centered */
+  .website-name {
+    grid-column: 1 / -1;
+    justify-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    width: auto;
+    max-width: calc(100% - 40px);
   }
 
-  .website-name h1 {
-    font-size: 18px;
-    letter-spacing: 1px;
+  .website-name h1 { font-size: 18px; }
+
+  /* put Create and User in the two columns under the title, trimmed to content and centered as a group */
+  .create-quest-btn {
+    grid-column: 1 / 2;
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    width: auto;
+    box-sizing: border-box;
+    margin: 0;
   }
 
   .user-area {
-    min-width: auto;
-    width: 100%;
-    max-width: 300px;
+    grid-column: 2 / 3;
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    width: auto;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
-  .map-section {
-    padding: var(--header-offset, 150px) 15px 15px;
-    min-height: calc(100dvh - var(--header-offset, 150px));
-  }
-  .map-container {
-    height: 100%;
-    max-height: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .website-name {
+  /* tighten gaps for small screens */
+  .auth-buttons, .user-profile {
     gap: 8px;
-    padding: 5px 15px;
-  }
-
-  .logo {
-    width: 35px;
-    height: 35px;
-  }
-
-  .website-name h1 {
-    font-size: 16px;
-  }
-
-  .auth-buttons {
-    gap: 10px;
   }
 
   .signup-btn,
-  .login-btn {
-    padding: 8px 15px;
-    font-size: 12px;
+  .login-btn,
+  .logout-btn {
+    padding: 7px 10px;
+    font-size: 13px;
   }
 
-  .map-frame {
-    border-width: 4px;
-    padding: 8px;
+  .profile-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
   }
 
-  .questbook-icon {
-    width: 70px;
-    height: 70px;
-    bottom: 15px;
-    right: 8px;
-  }
-  
-  .questbook-icon img {
-    width: 50px;
-    height: 50px;
+  .username {
+    font-size: 14px;
+    margin-left: 8px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 120px;
   }
 
-  /* Move zoom controls even lower on smaller mobile */
-  .leaflet-control-zoom {
-    margin-top: 35px !important;
-  }
-
+  /* pull map up by reducing the padding-top used by the map section on mobile */
   .map-section {
-    padding: var(--header-offset, 160px) 12px 15px;
-    min-height: calc(100dvh - var(--header-offset, 160px));
+    /* nudge the map slightly lower on mobile (was -40px) */
+    padding-top: calc(var(--header-offset, 120px) - 20px);
   }
-  .map-container {
-    height: 100%;
-    max-height: none;
-  }
-  #map {
-    min-height: 280px;
-  }
+
+  /* reduce map min-height slightly for mobile space */
+  #map { min-height: 340px; }
+}
+
+/* Extra small screens */
+@media (max-width: 420px) {
+  .website-name h1 { font-size: 16px; }
+  .logo { width: 44px; height: 44px; }
+  .create-quest-btn { font-size: 0.85rem; padding: 7px 10px; }
+  .username { display: none; } /* hide username if space is too small */
 }

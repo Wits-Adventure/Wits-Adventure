@@ -5,14 +5,17 @@ import questbookImage from '../media/questbook_outline.png';
 import { useNavigate } from 'react-router-dom';
 import { logout, getUserData } from '../firebase/firebase'; // Import getUserData
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
+import CreateQuestForm from './CreateQuestForm';
 
 const Home = () => {
-  const { currentUser } = useAuth(); // Use the auth context to get the current user
+  const { currentUser } = useAuth();
   const [username, setUsername] = useState('');
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const headerRef = useRef(null);
+  const questCirclesRef = useRef([]); // Add this to track quest circles
   const navigate = useNavigate();
+  const [showCreateForm, setShowCreateForm] = useState(false); // NEW
 
   // Use useEffect to fetch user data when the authentication state changes
   useEffect(() => {
@@ -75,6 +78,9 @@ const Home = () => {
                         </div>`)
             .openPopup();
 
+          // Add quest area highlights
+          addQuestAreas();
+
           setTimeout(() => {
             if (mapInstanceRef.current) {
               mapInstanceRef.current.invalidateSize();
@@ -84,6 +90,117 @@ const Home = () => {
           console.error('Error initializing map:', error);
         }
       }
+    };
+
+    // Function to add quest area highlights
+    const addQuestAreas = () => {
+      if (!mapInstanceRef.current) return;
+
+      // Example quest locations (you can modify these coordinates)
+      const questLocations = [
+        {
+          lat: -26.1935,
+          lng: 28.0298,
+          radius: 50,
+          title: '🗡️ Combat Training',
+          description: 'Test your combat skills in this training area.',
+          image: '/combat.jpg',
+          special: true
+        },
+        {
+          lat: -26.1920,
+          lng: 28.0315,
+          radius: 75,
+          title: '📜 Ancient Scroll',
+          description: 'Discover the secrets hidden in ancient texts.',
+          image: '/scroll.jpg',
+          special: true
+        },
+        {
+          lat: -26.1945,
+          lng: 28.0290,
+          radius: 60,
+          title: '🪄 Magic Studies',
+          description: 'Learn the mystical arts of magic and spellcasting.',
+          image: '/magic.jpg',
+          special: true
+        }
+      ];
+
+      questLocations.forEach(quest => {
+        const questCircle = window.L.circle([quest.lat, quest.lng], {
+          color: '#8B4513',
+          fillColor: '#D2691E',
+          fillOpacity: 0.3,
+          radius: quest.radius,
+          weight: 2
+        }).addTo(mapInstanceRef.current);
+
+        // badge markup for special treasure hunts
+        const badgeHTML = quest.special
+          ? `<div class="quest-badge">⭐ <span class="badge-text">Treasure Hunt</span></div>`
+          : '';
+
+        // Add popup to quest area (include badge if special)
+        questCircle.bindPopup(`
+          <div class="quest-popup">
+            ${badgeHTML}
+            <h3>${quest.title}</h3>
+            <div class="quest-image-container">
+              <img src="${quest.image}" alt="Quest Image" class="quest-popup-image" />
+            </div>
+            <p>${quest.description}</p>
+            <p><strong>Reward:</strong> ${quest.radius} points</p>
+            <button class="quest-accept-btn" onclick="window.handleAcceptQuest()">Accept Quest</button>
+          </div>
+        `);
+
+        // Extract emoji for center marker
+        const titleEmojiMatch = quest.title.match(/^\p{Extended_Pictographic}/u);
+        const titleEmoji = titleEmojiMatch ? titleEmojiMatch[0] : '🌟';
+
+        questCircle._emoji = titleEmoji;
+
+        const emojiIcon = window.L.divIcon({
+          className: 'quest-emoji-icon',
+          html: `<div class="quest-emoji">${titleEmoji}</div>`,
+          iconSize: [30,30],
+          iconAnchor: [15,15]
+        });
+        const emojiMarker = window.L.marker([quest.lat, quest.lng], { icon: emojiIcon }).addTo(mapInstanceRef.current);
+        emojiMarker.bindPopup(questCircle.getPopup());
+        questCircle._emojiMarker = emojiMarker;
+
+        // Overlap click handling for emoji marker
+        emojiMarker.on('click', (e) => {
+          if (window.__questPlacing) return;
+          questCircle.openPopup();
+          if (e.originalEvent) {
+            e.originalEvent.stopPropagation();
+            e.originalEvent.preventDefault();
+          }
+        });
+
+        // Overlap handling for quest circle
+        questCircle.on('click', (e) => {
+          const clickLatLng = e.latlng;
+          if (!questCirclesRef?.current) return;
+          const overlapping = questCirclesRef.current.filter(c =>
+            c.getLatLng().distanceTo(clickLatLng) <= c.getRadius()
+          );
+          if (overlapping.length) {
+            const smallest = overlapping.reduce((a, b) => a.getRadius() < b.getRadius() ? a : b);
+            smallest.openPopup();
+            if (e.originalEvent) {
+              e.originalEvent.stopPropagation();
+              e.originalEvent.preventDefault();
+            }
+          }
+        });
+
+        // Store reference for cleanup
+        questCirclesRef.current.push(questCircle);
+      });
     };
 
     if (window.L) { 
@@ -100,6 +217,14 @@ const Home = () => {
 
     return () => {
       if (mapInstanceRef.current) {
+        // Clean up quest circles
+        questCirclesRef.current.forEach(circle => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.removeLayer(circle);
+          }
+        });
+        questCirclesRef.current = [];
+        
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
@@ -137,13 +262,38 @@ const Home = () => {
     navigate('/signup');
   };
   const handleProfileClick = () => {
-  navigate('/ProfilePage'); 
-};
-  
-  const handleQuestbookClick = () => {
-  navigate('/questbook');
-};
+    navigate('/ProfilePage'); 
+  };
 
+  const handleQuestbookClick = () => {
+    navigate('/questbook');
+  };
+
+  // NEW: open create form only for logged-in users; otherwise go to login
+  const handleCreateQuestClick = () => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+    setShowCreateForm(true);
+  };
+
+  // Add global function for Accept Quest button
+  useEffect(() => {
+    window.handleAcceptQuest = () => {
+      if (!currentUser) {
+        navigate('/login');
+        return;
+      }
+      // Add quest acceptance logic here for logged-in users
+      console.log('Quest accepted!');
+    };
+
+    return () => {
+      delete window.handleAcceptQuest;
+    };
+  }, [currentUser, navigate]);
+  
   return (
     <section className="home-container">
       <header ref={headerRef} className="header">
@@ -151,6 +301,15 @@ const Home = () => {
           <img src={logoImage} alt="Logo" className="logo" />
           <h1>WITS ADVENTURE</h1>
         </section>
+
+        {/* Create Quest button inserted between site name and user-area */}
+        <button
+          className="create-quest-btn"
+          onClick={handleCreateQuestClick} // changed
+          aria-label="Create Quest"
+        >
+          Create Quest
+        </button>
 
         <section className="user-area">
           {currentUser ? ( // Conditional rendering based on currentUser
@@ -173,6 +332,14 @@ const Home = () => {
           )}
         </section>
       </header>
+
+      {/* Render floating form component (controlled by state) */}
+      <CreateQuestForm
+        isOpen={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        mapInstanceRef={mapInstanceRef}
+        questCirclesRef={questCirclesRef}
+      />
 
       <main className="map-section">
         <section className="map-container">

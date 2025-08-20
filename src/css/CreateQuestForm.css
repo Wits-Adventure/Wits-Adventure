@@ -1,0 +1,239 @@
+/* Floating Create Quest form - fantasy style */
+
+.create-quest-portal {
+  position: absolute;
+  top: 80px; /* floats near header */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1200;
+  pointer-events: auto;
+  transition: opacity 160ms ease, transform 160ms ease;
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+.create-quest-portal.open { opacity: 1; }
+
+/* Form card */
+.create-quest-form {
+  width: 320px;
+  background: linear-gradient(145deg, #F4E4BC, #E6D5A8);
+  border: 3px solid #654321;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 12px 30px rgba(101, 67, 33, 0.45);
+  font-family: 'Cinzel', serif;
+  color: #654321;
+}
+
+/* Input */
+.cq-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.cq-input {
+  padding: 8px 10px;
+  border: 2px solid #654321;
+  border-radius: 10px;
+  background: #fff8ee;
+  color: #654321;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+}
+
+/* Actions */
+.cq-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.cq-btn {
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 2px solid #654321;
+  background: linear-gradient(145deg, #654321, #8B4513);
+  color: #F4E4BC;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.cq-btn.cq-select {
+  background: linear-gradient(145deg, #A67C00, #FFD966);
+  color: #432f16;
+  border: 2px solid #8B6A00;
+}
+.cq-btn.cq-cancel { background: #ffeadc; color: #654321; }
+
+/* hint */
+.cq-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #8B4513;
+  font-style: italic;
+  text-align: center;
+}
+
+/* Following UI */
+.create-quest-follow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: linear-gradient(145deg, #F4E4BC, #E6D5A8);
+  border: 3px solid #654321;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 12px 30px rgba(101, 67, 33, 0.45);
+  font-family: 'Cinzel', serif;
+  color: #654321;
+}
+.follow-instructions { font-size: 14px; }
+
+/* Follow marker styles used by divIcon HTML */
+.quest-follow-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #fff9d9, #ffd966 10%, #ffcc00 40%, #b8860b 100%);
+  border: 2px solid #654321;
+  box-shadow: 0 2px 8px rgba(101,67,33,0.4);
+}
+
+/* small utility for placed markers if we need tweaks */
+.quest-placed-marker .marker-pin { transform: rotate(-45deg) scale(0.9); }
+
+/* ensure portal doesn't block map controls when not open */
+.create-quest-portal { pointer-events: auto; }
+/* disable quest circle interaction while placing a new one */
+.quest-placing .quest-circle {
+  pointer-events: none !important;
+}
+.quest-emoji-icon {
+  background: transparent;
+  width: 30px;
+  height: 30px;
+}
+.quest-emoji-icon .quest-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 21px;
+  line-height: 1;
+  transform: translateY(1px);
+  user-select: none;
+  filter: drop-shadow(0 0 3px rgba(0,0,0,0.55));
+  /* Force same font as popup text to ensure identical emoji rendering */
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI Symbol", sans-serif;
+}
+.quest-placing .quest-emoji-icon { 
+  pointer-events: none !important; 
+}
+
+/* Image Upload Section */
+.cq-image-section {
+  margin: 15px 0;
+}
+
+.cq-image-dropzone {
+  border: 2px dashed #8B4513;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(139, 69, 19, 0.05);
+  position: relative;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cq-image-dropzone:hover,
+.cq-image-dropzone.drag-active {
+  border-color: #D2691E;
+  background: rgba(210, 105, 30, 0.1);
+}
+
+.cq-image-placeholder {
+  text-align: center;
+}
+
+.cq-upload-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.cq-image-placeholder p {
+  margin: 8px 0;
+  color: #8B4513;
+  font-weight: 500;
+}
+
+.cq-image-hint {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.cq-image-preview {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cq-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cq-image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.cq-image-preview:hover .cq-image-overlay {
+  opacity: 1;
+}
+
+.cq-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #ccc;
+}
+
+/* Quest Popup Image Styles */
+.quest-image-container {
+  margin: 10px 0;
+  border-radius: 6px;
+  overflow: hidden;
+  max-height: 150px;
+}
+
+.quest-popup-image {
+  width: 100%;
+  height: auto;
+  max-height: 150px;
+  object-fit: cover;
+  display: block;
+}
