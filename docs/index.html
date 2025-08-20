@@ -154,6 +154,27 @@
       background-color: #5a2e00;
     }
 
+    /* Code block styles for dark mode */
+    body.dark-mode .markdown-section pre,
+    body.dark-mode .markdown-section code {
+      background-color: #2a2a2a !important;
+      color: #e6e1cf !important;
+    }
+
+    body.dark-mode .markdown-section pre {
+      border: 1px solid #444;
+    }
+
+    body.dark-mode .markdown-section pre>code {
+      color: #e6e1cf !important;
+    }
+
+    /* For inline code */
+    body.dark-mode .markdown-section code:not([class*="lang-"]):not([class*="language-"]) {
+      background-color: #333 !important;
+      color: #ffdd99 !important;
+    }
+
     /* Prevent underline on heading anchor links */
     .markdown-section h1>a,
     .markdown-section h2>a,
