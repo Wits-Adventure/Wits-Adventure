@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
+    "docsify": "^4.13.1",
     "firebase": "^12.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
