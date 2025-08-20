@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/LOGO_Final.ico" alt="Wits Adventure" height="300" />
+  <img src="public/githubLogo.ico" alt="Wits Adventure" height="300" />
 </p>
 
 ---
