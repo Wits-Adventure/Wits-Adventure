@@ -6,13 +6,11 @@
 
 <p align="center">
 
-...
-
-<p align="center">
-
-  <img src="public/techstack/firebase.png" height="40" alt="firebase logo" />
+  <img src="public/techstack/firebase.svg" height="40" alt="firebase logo" />
   &nbsp;
   <img src="public/logo192.png" height="40" alt="react logo" />
+  &nbsp;
+    <img src="public/techstack/vercel.png" height="40" alt="vercel logo" />
   &nbsp;
 </p>
 
