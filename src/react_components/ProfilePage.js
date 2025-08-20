@@ -1,34 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../css/ProfilePage.css";
 import profilePic from "../assets/profile.jpeg";
 import editIcon from "../assets/edit_icon.png";
 import beginnerIcon from "../assets/Beginner.png";
+import { getProfileData } from "../firebase/profile_functions"; // Assuming this is the correct path
 
 export default function ProfilePage() {
-  const [user, setUser] = useState({
-    level: 20,
-    xp: 310,
-    maxXp: 670,
-    username: "PkmnMasterTR",
-    bio: "I like quests, lol!",
-    profilePicture: profilePic,
-    Level: 'Beginner',
-    points: 210,
-    rank: 12,
-    questsCompleted: 1,
-    questsInProgress: 2,
-  });
+  const [user, setUser] = useState(null); // Initialize with null to indicate loading
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editedUsername, setEditedUsername] = useState(user.username);
-  const [editedBio, setEditedBio] = useState(user.bio);
-  const [editedProfilePic, setEditedProfilePic] = useState(user.profilePicture);
+  const [editedUsername, setEditedUsername] = useState("");
+  const [editedBio, setEditedBio] = useState("");
+  const [editedProfilePic, setEditedProfilePic] = useState(profilePic);
+
+  // Fetch data from Firebase when the component mounts
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const profileData = await getProfileData();
+        setUser({
+          ...profileData, // Spread the data fetched from Firebase
+          username: profileData.Name, // Use Name from Firestore as username
+          points: profileData.LeaderBoardPoints,
+          questsCompleted: profileData.CompletedQuests,
+          level: profileData.Level,
+          // You can also add more fields from Firestore here
+          bio: profileData.Bio, 
+          profilePicture: profilePic, // Placeholder until you add the field in Firestore
+          rank: 12, // Placeholder until you figure out how to get the rank
+        });
+        setEditedUsername(profileData.Name);
+        setEditedBio(profileData.Bio); // Set bio for editing
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to fetch user data:", err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []); // The empty dependency array ensures this effect runs only once, on mount
 
   const handleEditClick = () => {
     setIsEditing(true);
   };
 
   const handleSave = () => {
+    // This is where you would update Firestore with the new data
+    // For now, we'll just update the local state
     setUser({
       ...user,
       username: editedUsername,
@@ -56,16 +78,28 @@ export default function ProfilePage() {
     }
   };
 
+  // Render different content based on loading, error, or data
+  if (loading) {
+    return <main className="profile-container">Loading profile...</main>;
+  }
+
+  if (error) {
+    return (
+      <main className="profile-container">
+        Error: {error}. Please try again later.
+      </main>
+    );
+  }
+
   return (
     <main className="profile-container">
       <section className="profile-card">
         <header
           className="profile-header"
           style={{
-            backgroundImage: `url(${user.backgroundImage})`
+            backgroundImage: `url(${user.backgroundImage})`,
           }}
         ></header>
-
         <section className="profile-info">
           <section className="profile-pic-wrapper">
             <img
@@ -95,7 +129,7 @@ export default function ProfilePage() {
             </section>
             <p className="bio">{user.bio}</p>
             <section className="profile-details">
-              <p className="detail">Level: {user.Level}</p>
+              <p className="detail">Level: {user.level}</p>
               <p className="detail">Points: {user.points}</p>
               <p className="detail">Rank: {user.rank}</p>
               <p className="detail">Quests completed: {user.questsCompleted}</p>

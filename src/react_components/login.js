@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginNormUser } from '../firebase/firebase';
+//import { addProfileFields } from '../firebase/profile_functions';
 import '../css/Login.css';
 
 function Login() {
@@ -8,7 +9,7 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
+  
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
   };
@@ -21,12 +22,14 @@ function Login() {
     event.preventDefault();
     setError('');
 
+   
     try {
+      
       await loginNormUser({ email, password });
       console.log('Login attempted with:', { email, password });
       
       // Navigate to the dashboard or home page after successful login
-      navigate('/success'); 
+      navigate('/'); 
 
       setEmail('');
       setPassword('');

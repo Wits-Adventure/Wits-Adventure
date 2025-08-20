@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signupNormUser } from '../firebase/firebase';
-import { validatePasswordStrength } from '../components/PasswordValidator'; 
 import '../css/Signup.css';
 import logoImage from '../media/LOGO_Alpha.png';
 
@@ -20,7 +19,6 @@ function Signup() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [passwordFeedback, setPasswordFeedback] = useState([]); // for live password strength tips
 
   const navigate = useNavigate();
 
@@ -31,9 +29,6 @@ function Signup() {
     const newPass = e.target.value;
     setPassword(newPass);
 
-    // Run strength check live
-    const strengthCheck = validatePasswordStrength(newPass);
-    setPasswordFeedback(strengthCheck.feedback);
   };
 
   const handleConfirmPasswordChange = (e) => setConfirmPassword(e.target.value);
@@ -41,21 +36,14 @@ function Signup() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-    setPasswordFeedback([]);
+    
 
     if (!check_email(email)) {
       setError('Please use your Wits student email.');
       return;
     }
 
-    // Validate password strength before signup
-    const strengthCheck = validatePasswordStrength(password);
-    if (strengthCheck.strength === "Weak") {
-      setError("Password is too weak. Try adding uppercase, numbers, and special characters.");
-      setPasswordFeedback(strengthCheck.feedback);
-      return;
-    }
-
+   
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
@@ -129,14 +117,7 @@ function Signup() {
             className="signup-input"
             placeholder="Enter your password"
           />
-          {/* Show password strength feedback */}
-          {passwordFeedback.length > 0 && (
-            <ul className="password-feedback">
-              {passwordFeedback.map((msg, idx) => (
-                <li key={idx}>{msg}</li>
-              ))}
-            </ul>
-          )}
+          
         </section>
 
         <section className="signup-input-group">
