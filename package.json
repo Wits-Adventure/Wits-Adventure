@@ -22,25 +22,9 @@
     "test:calculator": "jest __tests__/Calculator.test.js --coverage --collectCoverageFrom='src/pages/Calculator.js'",
     "test:coverage": "jest --coverage",
     "test": "jest --coverage",
-    "coverage": "npm run test:calculator",
-    "eject": "react-scripts eject"
-  },
-  "jest": {
-    "collectCoverageFrom": [
-      "src/**/*.{js,jsx}",
-      "!src/index.js",
-      "!src/reportWebVitals.js",
-      "!src/**/*.test.js"
-    ],
-    "transform": {
-      "^.+\\.[jt]sx?$": "babel-jest"
-    },
-    "testEnvironment": "jsdom",
-    "coverageReporters": [
-      "text",
-      "lcov",
-      "html"
-    ]
+    "report-coverage": "codecov",
+    "eject": "react-scripts eject",
+    "test:placeholder": "echo \"Error: no test specified\" && exit 1"
   },
   "eslintConfig": {
     "extends": [
@@ -66,7 +50,7 @@
     "@babel/plugin-transform-runtime": "^7.28.3",
     "@babel/preset-env": "^7.28.3",
     "@babel/preset-react": "^7.27.1",
-    "@testing-library/jest-dom": "^6.7.0",
+    "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "babel-jest": "^30.0.5",
