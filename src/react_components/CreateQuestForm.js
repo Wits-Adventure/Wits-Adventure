@@ -1,47 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../css/CreateQuestForm.css';
 import { useAuth } from '../context/AuthContext';
-import { getUserData } from '../firebase/firebase';
+import { getUserData, db } from '../firebase/firebase';
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, questCirclesRef }) {
   const [name, setName] = useState('');
   const [radius, setRadius] = useState(45);
-  const [questImage, setQuestImage] = useState(null); // New state for image
-  const [imagePreview, setImagePreview] = useState(null); // New state for preview
+  const [questImage, setQuestImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [following, setFollowing] = useState(false);
   const followMarkerRef = useRef(null);
   const moveHandlerRef = useRef(null);
   const clickHandlerRef = useRef(null);
-  const fileInputRef = useRef(null); // New ref for file input
-  const [dragActive, setDragActive] = useState(false); // New state for drag feedback
+  const fileInputRef = useRef(null);
+  const [dragActive, setDragActive] = useState(false);
 
-  // Import useAuth to get current user
   const { currentUser } = useAuth();
   const [username, setUsername] = useState('');
 
-  // Fetch username when component mounts or currentUser changes
   useEffect(() => {
     const fetchUsername = async () => {
       if (currentUser) {
         try {
           const userData = await getUserData();
-          if (userData && userData.Name) {
-            setUsername(userData.Name);
-          } else {
-            setUsername('User');
-          }
+          setUsername(userData?.Name || 'User');
         } catch (error) {
           console.error("Failed to fetch username:", error);
           setUsername('User');
         }
       }
     };
-
     fetchUsername();
   }, [currentUser]);
 
-  // A catalogue of fantasy emojis (32+)
-   const emojiCatalog = [
+  const emojiCatalog = [
     '🗡️','⚔️','🛡️','🐉','🧙‍♂️','🏰','📜','🗺️','💰','👑',
     '💀','🧪','🪓','🏹','🧝','🧚‍♀️','🔮','🗝️','🔥','🪄',
     '🪙','🌟','🪶','🍄','🦄','🏺','🧟','⚗️','⛲','🪨',
@@ -53,7 +46,6 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
 
   useEffect(() => {
     return () => stopFollowing();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function pickRandomEmoji() {
@@ -63,9 +55,33 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
 
   function randomHslColor() {
     const h = Math.floor(Math.random() * 360);
-    const s = 65 + Math.floor(Math.random() * 20); // 65-85%
-    const l = 40 + Math.floor(Math.random() * 15); // 40-55%
+    const s = 65 + Math.floor(Math.random() * 20);
+    const l = 40 + Math.floor(Math.random() * 15);
     return `hsl(${h} ${s}% ${l}%)`;
+  }
+
+  async function saveQuestToFirestore(questData) {
+    try {
+      const questRef = await addDoc(collection(db, "Quests"), {
+        name: questData.name,
+        radius: questData.radius,
+        reward: questData.reward,
+        latitude: questData.lat,
+        longitude: questData.lng,
+        imageUrl: questData.imageUrl,
+        creatorId: questData.creatorId,
+        creatorName: questData.creatorName,
+        createdAt: serverTimestamp(),
+        active: true,
+        completedBy: []
+      });
+      alert(`Quest "${questData.name}" added successfully!`);
+      console.log("Quest ID:", questRef.id);
+      return questRef.id;
+    } catch (error) {
+      console.error("Error adding quest to Firestore:", error);
+      alert("Failed to add quest. Please try again.");
+    }
   }
 
   const startFollowing = () => {
@@ -75,7 +91,6 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
       return;
     }
 
-    // Disable existing circle & emoji hit-testing
     if (questCirclesRef?.current) {
       questCirclesRef.current.forEach(c => {
         if (c._path) {
@@ -93,7 +108,7 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     window.__questPlacing = true;
     map.getContainer().classList.add('quest-placing');
     setFollowing(true);
-    onClose?.(); // close the form UI
+    onClose?.();
 
     const followIcon = window.L.divIcon({
       className: 'quest-follow-marker',
@@ -110,24 +125,17 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     };
     map.on('mousemove', moveHandlerRef.current);
 
-    clickHandlerRef.current = (e) => {
+    clickHandlerRef.current = async (e) => {
       const clickLatLng = e.latlng;
-      // const radius = 45; // The radius of the quest circle in meters - NOW FROM STATE
+      const offsetDistance = Math.random() * radius;
+      const offsetAngle = Math.random() * 360;
 
-      // Calculate a random offset for the circle's center
-      // This makes the click location a random point within the circle, not its center
-      const offsetDistance = Math.random() * radius; // Random distance from center (0 to radius)
-      const offsetAngle = Math.random() * 360; // Random angle in degrees
-
-      // A simplified way to calculate the new center LatLng
-      // For small distances, this approximation is sufficient
       const metersPerDegreeLat = 111132;
       const metersPerDegreeLng = metersPerDegreeLat * Math.cos(clickLatLng.lat * (Math.PI / 180));
-      
+
       const latOffset = (offsetDistance * Math.cos(offsetAngle * (Math.PI / 180))) / metersPerDegreeLat;
       const lngOffset = (offsetDistance * Math.sin(offsetAngle * (Math.PI / 180))) / metersPerDegreeLng;
 
-      // The new, randomized center for the circle
       const circleCenterLatLng = window.L.latLng(clickLatLng.lat - latOffset, clickLatLng.lng - lngOffset);
 
       const color = randomHslColor();
@@ -175,49 +183,26 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
       emojiMarker.bindPopup(popupHtml);
       circle._emojiMarker = emojiMarker;
 
-      // Overlap handling for dynamically created circles
-      circle.on('click', (e) => {
-        if (window.__questPlacing) return; // allow placement clicks to reach map
-        const clickLatLng = e.latlng;
-        if (!questCirclesRef?.current) return;
-        const overlapping = questCirclesRef.current.filter(c =>
-          c.getLatLng().distanceTo(clickLatLng) <= c.getRadius()
-        );
-        if (overlapping.length) {
-          const smallest = overlapping.reduce((a, b) => a.getRadius() < b.getRadius() ? a : b);
-          smallest.openPopup();
-          if (e.originalEvent) {
-            e.originalEvent.stopPropagation();
-            e.originalEvent.preventDefault();
-          }
-        }
-      });
-
-      // Overlap handling for emoji marker (always select its own circle)
-      const emojiClickHandler = (e2) => {
-        if (window.__questPlacing) return;
-        // Always open this emoji's circle popup, not the smallest overlapping one
-        circle.openPopup();
-        if (e2.originalEvent) {
-          e2.originalEvent.stopPropagation();
-          e2.originalEvent.preventDefault();
-        }
-      };
-      emojiMarker.on('click', emojiClickHandler);
-
-      // augment circle with reference to its emoji marker (used for pointer toggle)
-      circle._emojiMarker = emojiMarker;
-
-      // Existing overlap handler already on circle; no change needed
-
       if (questCirclesRef && Array.isArray(questCirclesRef.current)) {
         questCirclesRef.current.push(circle);
       }
 
+      // Save quest to Firestore
+      const questData = {
+        name: baseName || 'Unnamed Quest',
+        radius: radius,
+        reward: radius,
+        lat: circleCenterLatLng.lat,
+        lng: circleCenterLatLng.lng,
+        imageUrl: imagePreview,
+        creatorId: currentUser?.uid || 'unknown',
+        creatorName: username || 'User'
+      };
+      await saveQuestToFirestore(questData);
+
       stopFollowing();
     };
 
-    // Use once to avoid multiple placements
     map.once('click', clickHandlerRef.current);
   };
 
@@ -229,7 +214,6 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
       map.getContainer().classList.remove('quest-placing');
     }
 
-    // Restore circle pointer events
     if (questCirclesRef?.current) {
       questCirclesRef.current.forEach(c => {
         if (c._path) {
@@ -251,8 +235,8 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     setFollowing(false);
     setName('');
     setRadius(45);
-    setQuestImage(null); // Reset image
-    setImagePreview(null); // Reset preview
+    setQuestImage(null);
+    setImagePreview(null);
   };
 
   const handleSelectLocation = (e) => {
@@ -268,8 +252,8 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     if (following) stopFollowing();
     setName('');
     setRadius(45);
-    setQuestImage(null); // Reset image
-    setImagePreview(null); // Reset preview
+    setQuestImage(null);
+    setImagePreview(null);
     onClose?.();
   };
 
@@ -299,11 +283,8 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
+    if (e.type === 'dragenter' || e.type === 'dragover') setDragActive(true);
+    else if (e.type === 'dragleave') setDragActive(false);
   };
 
   if (!isOpen && !following) return null;
@@ -342,7 +323,6 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
             <p>Quest Reward: <strong>{radius} points</strong></p>
           </div>
 
-          {/* New Image Upload Section */}
           <div className="cq-image-section">
             <label className="cq-label">Quest Image (Required)</label>
             <div 
@@ -404,7 +384,7 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
   );
 }
 
-// small helper to avoid injecting raw HTML
+// Helpers
 function escapeHtml(unsafe) {
   return String(unsafe)
     .replace(/&/g, "&amp;")
@@ -414,7 +394,6 @@ function escapeHtml(unsafe) {
     .replace(/'/g, "&#039;");
 }
 
-// Add helper (place near other helpers)
 function extractLeadingEmoji(str) {
   if (!str) return null;
   const m = str.trim().match(/^\p{Extended_Pictographic}/u);

@@ -2,6 +2,9 @@
 import { initializeApp } from "firebase/app";
 import {  getAuth, createUserWithEmailAndPassword, sendEmailVerification ,signInWithEmailAndPassword,} from "firebase/auth";
 import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs } from "firebase/firestore";
+
+
 
 
 const firebaseConfig = {
@@ -42,6 +45,21 @@ async function addUserToFirestore(userId, email, name, role, autheProvider, lead
     console.error("Error adding user to Firestore:", error);
   }
 }
+
+
+// Fetch all quests from Firestore
+async function getAllQuests() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "Quests"));
+    const questsArray = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    console.log("Quests fetched from Firebase:", questsArray); // debug
+    return questsArray;
+  } catch (error) {
+    console.error("Error fetching quests:", error);
+    return [];
+  }
+}
+
 // Function to get user data from Firestore
 async function getUserData() {
   const user = auth.currentUser; // Accessing the authenticated user
@@ -144,11 +162,15 @@ export {
   db,
   doc,
   setDoc,
+  collection,
+  addDoc, 
+  getDocs,
   signupNormUser,
   addUserToFirestore,
   loginNormUser,
   getUserName,
   getUserRole,
   getUserData,
-  logout
+  logout,
+  getAllQuests
 };
