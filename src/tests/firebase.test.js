@@ -13,25 +13,31 @@ const { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWi
 const { getFirestore, doc, setDoc, getDoc, getDocs, collection } = require("firebase/firestore");
 
 // Mock Firebase methods
-jest.mock("firebase/auth", () => ({
-  getAuth: jest.fn(() => ({
+jest.mock("firebase/auth", () => {
+  const mockAuth = {
     signOut: jest.fn().mockResolvedValue(),
     currentUser: { uid: "123" },
-  })),
-  createUserWithEmailAndPassword: jest.fn(),
-  sendEmailVerification: jest.fn(),
-  signInWithEmailAndPassword: jest.fn(),
-}));
+  };
+  return {
+    getAuth: jest.fn(() => mockAuth),
+    createUserWithEmailAndPassword: jest.fn(),
+    sendEmailVerification: jest.fn(),
+    signInWithEmailAndPassword: jest.fn(),
+  };
+});
 
-jest.mock("firebase/firestore", () => ({
-  getFirestore: jest.fn(),
-  doc: jest.fn(() => "mock-doc"),
-  setDoc: jest.fn().mockResolvedValue(),
-  getDoc: jest.fn(),
-  getDocs: jest.fn(),
-  collection: jest.fn(() => "mock-collection"),
-  serverTimestamp: jest.fn(() => "mock-timestamp"),
-}));
+jest.mock("firebase/firestore", () => {
+  const mockDb = {};
+  return {
+    getFirestore: jest.fn(() => mockDb),
+    doc: jest.fn(() => "mock-doc"),
+    setDoc: jest.fn().mockResolvedValue(),
+    getDoc: jest.fn(),
+    getDocs: jest.fn(),
+    collection: jest.fn(() => "mock-collection"),
+    serverTimestamp: jest.fn(() => "mock-timestamp"),
+  };
+});
 
 // Mock console.log and console.error to suppress output
 jest.spyOn(console, "log").mockImplementation(() => {});
@@ -65,7 +71,7 @@ describe("Firebase helpers", () => {
       const mockUser = { uid: "123", email: "test@example.com", emailVerified: false };
       createUserWithEmailAndPassword.mockResolvedValue({ user: mockUser });
       sendEmailVerification.mockResolvedValue();
-      const addUserToFirestoreMock = jest.spyOn(require("../src/firebase/firebase"), "addUserToFirestore").mockResolvedValue();
+      const addUserToFirestoreMock = jest.spyOn(require("../firebase/firebase"), "addUserToFirestore").mockResolvedValue();
 
       await signupNormUser({
         Name: "Tetelo",
@@ -104,11 +110,12 @@ describe("Firebase helpers", () => {
     test("should throw if email not verified", async () => {
       const mockUser = { emailVerified: false };
       signInWithEmailAndPassword.mockResolvedValue({ user: mockUser });
+      const mockAuth = getAuth();
       await expect(
         loginNormUser({ email: "test@example.com", password: "1234" })
       ).rejects.toThrow("Email not verified");
       expect(global.alert).toHaveBeenCalledWith("Please verify your email before logging in.");
-      expect(getAuth().signOut).toHaveBeenCalled();
+      expect(mockAuth.signOut).toHaveBeenCalled();
     });
 
     test("should return user if email verified", async () => {
@@ -131,7 +138,7 @@ describe("Firebase helpers", () => {
   describe("addUserToFirestore", () => {
     test("should call setDoc with correct user data", async () => {
       await addUserToFirestore("123", "test@example.com", "Tetelo", "user", "Firebase Auth", 10);
-      expect(doc).toHaveBeenCalledWith(expect.anything(), "Users", "123");
+      expect(doc).toHaveBeenCalledWith(getFirestore(), "Users", "123");
       expect(setDoc).toHaveBeenCalledWith("mock-doc", {
         Email: "test@example.com",
         Name: "Tetelo",
@@ -162,11 +169,12 @@ describe("Firebase helpers", () => {
       getDoc.mockResolvedValue({ exists: () => true, data: () => mockData });
       const data = await getUserData();
       expect(data).toEqual(mockData);
-      expect(doc).toHaveBeenCalledWith(expect.anything(), "Users", "123");
+      expect(doc).toHaveBeenCalledWith(getFirestore(), "Users", "123");
     });
 
     test("should throw if user not authenticated", async () => {
-      getAuth.mockReturnValueOnce({ currentUser: null });
+      const mockAuth = getAuth();
+      mockAuth.currentUser = null;
       await expect(getUserData()).rejects.toThrow("User is not authenticated");
     });
 
@@ -222,7 +230,7 @@ describe("Firebase helpers", () => {
       });
       const quests = await getAllQuests();
       expect(quests).toEqual([{ id: "q1", title: "Quest 1" }]);
-      expect(collection).toHaveBeenCalledWith(expect.anything(), "Quests");
+      expect(collection).toHaveBeenCalledWith(getFirestore(), "Quests");
     });
 
     test("should return empty array on error", async () => {

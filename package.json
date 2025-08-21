@@ -19,7 +19,6 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test:calculator": "jest __tests__/Calculator.test.js --coverage --collectCoverageFrom='src/pages/Calculator.js'",
     "test:coverage": "jest --coverage",
     "test": "jest --coverage",
     "report-coverage": "codecov",
