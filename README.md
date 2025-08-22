@@ -51,12 +51,5 @@ npm run build
 ```
 
 <p align="center">
-  <strong>Code Coverage</strong><br><br>
-  <a href="https://codecov.io/gh/Wits-Adventure/Wits-Adventure">
-    <img src="https://codecov.io/gh/Wits-Adventure/Wits-Adventure/branch/Codecov/graph/badge.svg?" alt="codecov" />
-  </a>
-  <br><br>
-  <a href="https://codecov.io/gh/Wits-Adventure/Wits-Adventure">
-    <img src="https://codecov.io/gh/Wits-Adventure/Wits-Adventure/branch/Codecov/graph/sunburst.svg?" alt="codecov sunburst" />
-  </a>
+ [![codecov](https://codecov.io/gh/Wits-Adventure/Wits-Adventure/branch/Codecov/graph/badge.svg)](https://codecov.io/gh/Wits-Adventure/Wits-Adventure)
 </p>
