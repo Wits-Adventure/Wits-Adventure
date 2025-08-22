@@ -51,12 +51,6 @@ The website uses a **variety of brown and light beige** shades to create a fanta
 
 ## 🧭 Quest Design  
 
-For now, just an idea — but quests should contain:  
-- **Timestamps** (created, completed, uploaded)  
-- **Optional time limits**  
-
----
-
 ### 🗺️ Journey Quests  
 Equivalent to treasure hunts, but I prefered this name. 
 
@@ -108,4 +102,8 @@ Made by users and focused on individual locations.
 5. Upon approval:  
    - Quest becomes inactive/delisted.  
    - User receives points. 
+
+**Rewards:**
+1. The quest completer earns more gold for completing quests that have a bigger search area, since finding the goal would be more difficult. An additional slider could be added for more difficulty tweaking upon quest creation
+2. Upon quest completion the quest creator receives the same amount of gold, to incentivise quest creation.
 
