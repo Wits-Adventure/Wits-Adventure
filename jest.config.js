@@ -2,7 +2,7 @@ module.exports = {
   rootDir: './',
   collectCoverage: true,
   collectCoverageFrom: [
-    'src/firebase/firebase.js',
+    'src/react_components/Addition_test.js',
     '!**/node_modules/**',
     '!src/reportWebVitals.js',
     '!src/setupTests.js',
