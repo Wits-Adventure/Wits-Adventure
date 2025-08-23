@@ -27,6 +27,18 @@ const QuestBook = () => {
       }
     };
 
+    /*
+    From Tafara
+    To get user ID you can import auth from firebase
+        const user = auth.currentUser;
+        if (user) {
+          const uid = user.uid;
+          console.log("User ID:", uid);
+        } else {
+          console.log("No user is signed in.");
+          navigate to homepage as quest page is only accessible to signed in students
+        }
+    */
     const fetchUser = async () => {
       try {
         const userData = await getUserData();
