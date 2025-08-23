@@ -25,11 +25,11 @@
   font-size: 2rem;
   margin-bottom: 0.5rem;
   color: #4e342e;
-  font-family: 'Georgia', serif;
+  font-family: 'Cinzel', serif;;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;  /* space between logo and text */
+  gap: 7px;  /* space between logo and text */
 }
 
 .logo-circle {
@@ -37,11 +37,18 @@
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #162f83; /* subtle brown border to fit fantasy theme */
+  border: 2px solid #162f83; 
   box-shadow: 0 0 5px rgba(139, 69, 19, 0.5);
 }
 
+.trophy{
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  
 
+}
 /* Container holding filter and pagination side by side */
 .filter-pagination-container {
   display: flex;

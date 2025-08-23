@@ -3,6 +3,8 @@ module.exports = {
   collectCoverage: true,
   collectCoverageFrom: [
     'src/react_components/Addition_test.js',
+    'src/firebase/firebase.js',
+    'src/firebase/profile_functions.js',
     '!**/node_modules/**',
     '!src/reportWebVitals.js',
     '!src/setupTests.js',

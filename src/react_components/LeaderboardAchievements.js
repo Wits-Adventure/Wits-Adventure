@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
-import { app} from "../firebase/firebase"; // your Firebase config file
+import { app} from "../firebase/firebase"; 
 import "../css/LeaderboardAchievements.css";
 
 export default function LeaderboardAchievements() {

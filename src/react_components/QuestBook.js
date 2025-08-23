@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../css/QuestBook.css';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import logo from '../media/logo.jpg';
+import trophy from '../media/trophy.png';
 import { getAllQuests, getUserData } from '../firebase/firebase';
 
 const questsPerPage = 4;
@@ -130,7 +131,7 @@ const QuestBook = () => {
 
         {activeTab === 'Leaderboard' && (
           <div>
-            <h1 className="title">🏆 Leaderboard</h1>
+            <h1 className="title"> <img src={trophy} alt="trophy" className="trophy" /> Leaderboard</h1>
             <p style={{ textAlign: 'center' }}>Leaderboard content will go here.</p>
           </div>
         )}
