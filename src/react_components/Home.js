@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import '../css/Home.css';
 import logoImage from '../media/LOGO_Alpha.png';
 import questbookImage from '../media/questbook_outline.png';
+import profilePic from '../assets/profile.jpg'; // added: use same default pfp as ProfilePage
 import { useNavigate } from 'react-router-dom';
 import { logout, getUserData } from '../firebase/firebase'; // Import getUserData
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
@@ -315,7 +316,7 @@ const Home = () => {
           {currentUser ? ( // Conditional rendering based on currentUser
             <section className="user-profile" onClick={handleProfileClick} style={{ cursor: 'pointer' }}>
               <section className="profile-icon">
-                {username.charAt(0).toUpperCase()}
+                <img src={profilePic} alt={`${username}'s avatar`} className="profile-icon-img" />
               </section>
               <span className="username">{username}</span>
               <button className="logout-btn" onClick={handleLogout}>

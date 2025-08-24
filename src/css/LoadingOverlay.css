@@ -1,0 +1,36 @@
+/* ...existing code... */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.loading-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.loading-center {
+  position: relative;
+  z-index: 1;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.loading-spinner {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner { animation: none !important; }
+}
+/* ...existing code... */

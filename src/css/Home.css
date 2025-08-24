@@ -48,20 +48,21 @@
   z-index: 100;
 }
 
-/* Website Name with Logo */
+/* Website Name with Logo - Updated to match create quest button */
 .website-name {
-  background: #ffe8d1;
-  border: 3px solid #654321;
+  background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+  border: 2px solid #90774c;
   border-radius: 25px;
   padding: 8px 25px;
   box-shadow: 
-    0 8px 25px rgba(101, 67, 33, 0.4),
+    0 8px 25px rgba(144, 119, 76, 0.4),
     0 4px 15px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   display: flex;
   align-items: center;
   gap: 12px;
   position: relative;
+  overflow: hidden;
 }
 
 .website-name::before {
@@ -71,9 +72,20 @@
   left: -2px;
   right: -2px;
   bottom: -2px;
-  background: #654321;
+  background: #90774c;
   border-radius: 27px;
   z-index: -1;
+}
+
+.website-name::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
 }
 
 .logo {
@@ -87,36 +99,25 @@
   font-family: 'Cinzel Decorative', serif;
   font-size: 22px;
   font-weight: 700;
-  color: #654321;
+  color: #2F1B14;
   letter-spacing: 2px;
   margin: 0;
-  text-shadow: 1px 1px 2px rgba(101, 67, 33, 0.3);
+  text-shadow: 1px 1px 2px rgba(47, 27, 20, 0.3);
 }
 
-/* User Area */
+/* User Area - Updated to match create quest button */
 .user-area {
-  background: #ffe8d1;
-  border: 3px solid #654321;
+  background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+  border: 2px solid #90774c;
   border-radius: 25px;
   padding: 12px 25px;
   min-width: 220px;
   box-shadow: 
-    0 8px 25px rgba(101, 67, 33, 0.4),
+    0 8px 25px rgba(144, 119, 76, 0.4),
     0 4px 15px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   position: relative;
-}
-
-.user-area::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: #654321;
-  border-radius: 27px;
-  z-index: -1;
+  overflow: hidden;
 }
 
 /* Authentication Buttons */
@@ -130,7 +131,7 @@
 .signup-btn,
 .login-btn {
   padding: 10px 20px;
-  border: 2px solid #654321;
+  border: 2px solid #90774c;
   border-radius: 20px;
   font-family: 'Cinzel', serif;
   font-size: 14px;
@@ -142,26 +143,26 @@
 }
 
 .signup-btn {
-  background: #ffeadc;
-  color: #654321;
+  background: rgba(255, 234, 200, 0.8);
+  color: #2F1B14;
 }
 
 .signup-btn:hover {
-  background: linear-gradient(145deg, #654321, #8B4513);
+  background: linear-gradient(145deg, #473925, #846d4c);
   color: #F4E4BC;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(101, 67, 33, 0.3);
+  box-shadow: 0 4px 8px rgba(144, 119, 76, 0.3);
 }
 
 .login-btn {
-  background: linear-gradient(145deg, #654321, #8B4513);
+  background: linear-gradient(145deg, #473925, #846d4c);
   color: #F4E4BC;
 }
 
 .login-btn:hover {
-  background: linear-gradient(145deg, #8B4513, #A0522D);
+  background: linear-gradient(145deg, #594733, #a58d73);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(101, 67, 33, 0.3);
+  box-shadow: 0 4px 8px rgba(144, 119, 76, 0.3);
 }
 
 /* User Profile */
@@ -173,46 +174,91 @@
 }
 
 .profile-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #654321, #8B4513);
-  color: #F4E4BC;
+  /* keep existing background/spacing — do not override */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 18px;
-  border: 3px solid #B8860B;
-  box-shadow: 0 2px 8px rgba(101, 67, 33, 0.3);
+  overflow: hidden;
+
+  /* fantasy brown circular frame - increased size */
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 5px solid #90774c; /* fantasy brown */
+  box-shadow:
+    0 8px 16px rgba(0,0,0,0.22),
+    inset 0 3px 0 rgba(255,255,255,0.06);
+  padding: 0;
+  background-clip: padding-box; /* keep user-area background visible */
+}
+
+.profile-icon-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+/* smaller devices */
+@media (max-width: 480px) {
+  .profile-icon {
+    width: 48px;
+    height: 48px;
+    border-width: 4px;
+  }
+  .profile-icon-img {
+    width: 100%;
+    height: 100%;
+  }
 }
 
 .username {
   font-family: 'Cinzel', serif;
   font-size: 16px;
   font-weight: 500;
-  color: #654321;
+  color: #2F1B14;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 .logout-btn {
   padding: 8px 16px;
-  background: linear-gradient(145deg, #8B4513, #A0522D);
+  background: linear-gradient(145deg, #473925, #846d4c);
   color: #F4E4BC;
-  border: 2px solid #654321;
+  border: 2px solid #90774c;
   border-radius: 15px;
   font-family: 'Cinzel', serif;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   text-transform: uppercase;
+
+  /* enable shine effect */
+  position: relative;
+  overflow: hidden;
+}
+
+.logout-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+  transition: left 0.4s;
+}
+
+.logout-btn:hover::before {
+  left: 100%;
 }
 
 .logout-btn:hover {
-  background: linear-gradient(145deg, #A0522D, #CD853F);
+  background: linear-gradient(145deg, #594733, #a58d73);
   transform: translateY(-1px);
 }
+
 
 /* Map Section */
 .map-section {
@@ -841,7 +887,7 @@
 }
 
 /* Extra small screens */
-@media (max-width: 420px) {
+@media (max-width: 450px) {
   .website-name h1 { font-size: 16px; }
   .logo { width: 44px; height: 44px; }
   .create-quest-btn { font-size: 0.85rem; padding: 7px 10px; }
