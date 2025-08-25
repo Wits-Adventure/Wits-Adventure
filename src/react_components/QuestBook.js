@@ -14,6 +14,7 @@ const QuestBook = () => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
   const [activeTab, setActiveTab] = useState('Quests'); // Added tab state
+  const [acceptedQuests, setAcceptedQuests] = useState([]);
 
   // Fetch quests and user info on mount
   useEffect(() => {
@@ -45,6 +46,7 @@ const QuestBook = () => {
       try {
         const userData = await getUserData();
         setUserId(userData?.uid || null);
+        setAcceptedQuests(userData?.acceptedQuests || []);
       } catch (error) {
         console.error("Error fetching user:", error);
       }
@@ -54,10 +56,11 @@ const QuestBook = () => {
     fetchQuests();
   }, []);
 
-  const totalPages = Math.ceil(quests.length / questsPerPage);
+  const acceptedQuestList = quests.filter(q => acceptedQuests.includes(q.id));
+  const totalPages = Math.ceil(acceptedQuestList.length / questsPerPage);
   const indexOfLast = currentPage * questsPerPage;
   const indexOfFirst = indexOfLast - questsPerPage;
-  const currentQuests = quests.slice(indexOfFirst, indexOfLast);
+  const currentQuests = acceptedQuestList.slice(indexOfFirst, indexOfLast);
 
   const handlePageChange = (direction) => {
     setCurrentPage(prev => {
@@ -114,8 +117,8 @@ const QuestBook = () => {
             {currentQuests.map((quest) => (
               <div key={quest.id} className="quest-card">
                 <h2>{quest.name || "Untitled Quest"}</h2>
-                <p>Latitude: {quest.latitude?.toFixed(6) ?? "N/A"}</p>
-                <p>Longitude: {quest.longitude?.toFixed(6) ?? "N/A"}</p>
+                <p>Latitude: {quest.location ? quest.location.latitude.toFixed(6) : "N/A"}</p>
+                <p>Longitude: {quest.location ? quest.location.longitude.toFixed(6) : "N/A"}</p>
                 <span className="reward-tag">
                   {quest.reward ?? 0} points
                 </span>

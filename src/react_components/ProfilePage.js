@@ -4,6 +4,7 @@ import profilePic from "../assets/profile.jpg";
 import editIcon from "../assets/edit_icon.png";
 import { getProfileData } from "../firebase/profile_functions";
 import { useNavigate } from "react-router-dom";
+import { getAllQuests } from "../firebase/general_quest_functions";
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -14,6 +15,7 @@ export default function ProfilePage() {
   const [editedUsername, setEditedUsername] = useState("");
   const [editedBio, setEditedBio] = useState("");
   const [editedProfilePic, setEditedProfilePic] = useState(profilePic);
+  const [createdQuests, setCreatedQuests] = useState([]);
 
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -41,6 +43,14 @@ export default function ProfilePage() {
         });
         setEditedUsername(profileData.Name);
         setEditedBio(profileData.Bio);
+
+        // Fetch all quests and filter by creatorId
+        const allQuests = await getAllQuests();
+        const userCreated = allQuests.filter(
+          (q) => q.creatorId === profileData.uid // or whatever field is the user's UID
+        );
+        setCreatedQuests(userCreated);
+
         setLoading(false);
       } catch (err) {
         console.error("Failed to fetch user data:", err);
@@ -124,11 +134,11 @@ export default function ProfilePage() {
 
   // preview emojis for created-quests guide (extended for testing)
   const previewEmojis = [
-    '🗡️','🪄','🧭','🗺️','🐉','🧪','📜',
-    '🛡️','🏹','⚔️','🧙‍♂️','🧝‍♀️','🐲','🏺',
-    '🕯️','🗝️','🔮','🦉','🪶','🐺','🪙','📯','🔱','🧿',
+    '🗡️', '🪄', '🧭', '🗺️', '🐉', '🧪', '📜',
+    '🛡️', '🏹', '⚔️', '🧙‍♂️', '🧝‍♀️', '🐲', '🏺',
+    '🕯️', '🗝️', '🔮', '🦉', '🪶', '🐺', '🪙', '📯', '🔱', '🧿',
     // 15 more for testing (added)
-    '🏰','👑','🔥','🌕','🌲','⛏️','🧚','🧝‍♂️','🧛‍♂️','🧟‍♂️','🪓','⚜️','🦴','🔔','🧙‍♀️'
+    '🏰', '👑', '🔥', '🌕', '🌲', '⛏️', '🧚', '🧝‍♂️', '🧛‍♂️', '🧟‍♂️', '🪓', '⚜️', '🦴', '🔔', '🧙‍♀️'
   ];
 
   if (loading) {
@@ -161,7 +171,7 @@ export default function ProfilePage() {
               className="profile-pic"
             />
           </div>
-          
+
           <div className="profile-name-section">
             <h2 className="profile-username">
               {user.username}
@@ -212,23 +222,34 @@ export default function ProfilePage() {
           {/* Created Quests */}
           <section className="content-section">
             <h3 className="section-title">View And Manage Created Quests</h3>
-
-            {/* NEW: emoji preview grid (7 items in an 8-column grid) */}
             <div className="section-content">
-              <div className="emoji-grid" role="list" aria-label="Quest previews">
-                {previewEmojis.map((emoji, idx) => (
-                  <div
-                    key={idx}
-                    className="emoji-item"
-                    role="listitem"
-                    aria-label={`Quest preview ${idx + 1}`}
-                    title={`Quest preview ${idx + 1}`}
-                  >
-                    <span className="emoji-char" aria-hidden="true">{emoji}</span>
-                  </div>
-                ))}
-                {/* empty slot(s) allowed — grid is 8 columns */}
-              </div>
+              {createdQuests.length === 0 ? (
+                <p className="placeholder-text">You haven't created any quests yet.</p>
+              ) : (
+                <div className="emoji-grid" role="list" aria-label="Your created quests">
+                  {createdQuests.map((quest, idx) => (
+                    <div
+                      key={quest.id}
+                      className="emoji-item"
+                      role="listitem"
+                      aria-label={`Quest: ${quest.name}`}
+                      title={quest.name}
+                      style={{
+                        background: quest.color || "#ffeac8", // fill background with quest color
+                        borderColor: "#90774c", // keep fantasy border
+                        color: "#2F1B14" // emoji/text color for contrast
+                      }}
+                    >
+                      <span className="emoji-char" aria-hidden="true" style={{ fontSize: "2em" }}>
+                        {quest.emoji || "🗺️"}
+                      </span>
+                      <div className="quest-name" style={{ fontSize: "0.9em", marginTop: "0.3em", fontWeight: 600 }}>
+                        {quest.name}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         </div>
@@ -240,7 +261,7 @@ export default function ProfilePage() {
           <div className="modal">
             <div className="modal-content">
               <h2 className="modal-title">Edit Profile</h2>
-              
+
               <div className="input-group">
                 <label className="input-label">Username:</label>
                 <input
@@ -250,7 +271,7 @@ export default function ProfilePage() {
                   className="modal-input"
                 />
               </div>
-              
+
               <div className="input-group">
                 <label className="input-label">Bio:</label>
                 <textarea
@@ -260,7 +281,7 @@ export default function ProfilePage() {
                   rows="4"
                 />
               </div>
-              
+
               <div className="input-group">
                 <label className="input-label">Profile Picture:</label>
 
@@ -296,7 +317,7 @@ export default function ProfilePage() {
                   />
                 </div>
               </div>
-              
+
               <div className="modal-buttons">
                 <button onClick={handleSave} className="modal-button save-button">
                   Save

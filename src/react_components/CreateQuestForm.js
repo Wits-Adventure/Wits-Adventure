@@ -173,7 +173,9 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
         lng: circleCenterLatLng.lng,
         imageUrl: imagePreview,
         creatorId: currentUser?.uid || 'unknown',
-        creatorName: username || 'User'
+        creatorName: username || 'User',
+        emoji: chosenEmoji,
+        color: color
       };
       await saveQuestToFirestore(questData);
 

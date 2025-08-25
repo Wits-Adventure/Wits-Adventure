@@ -10,14 +10,16 @@
 
 .profile-container {
   width: 100%;
-  height: 100vh; /* Fixed viewport height */
+  height: 100vh;
+  /* Fixed viewport height */
   font-family: 'Cinzel', serif;
   background: #6f573c;
-  background-image: 
+  background-image:
     radial-gradient(circle at 25% 25%, rgba(139, 115, 85, 0.3) 0%, transparent 50%),
     radial-gradient(circle at 75% 75%, rgba(160, 149, 107, 0.3) 0%, transparent 50%);
   position: relative;
-  overflow: hidden; /* Keep this to prevent page scrolling */
+  overflow: hidden;
+  /* Keep this to prevent page scrolling */
   padding: 20px;
   box-sizing: border-box;
 }
@@ -41,8 +43,10 @@
   margin: 0 auto;
   position: relative;
   z-index: 10;
-  height: 100%; /* Fill container */
-  overflow: visible; /* Allow shadows to show */
+  height: 100%;
+  /* Fill container */
+  overflow: visible;
+  /* Allow shadows to show */
 }
 
 .profile-card {
@@ -51,16 +55,19 @@
   border: 4px solid #90774c;
   border-radius: 25px;
   padding: 30px 25px;
-  box-shadow: 
+  box-shadow:
     0 0 0 3px #90774c,
     0 20px 40px rgba(144, 119, 76, 0.5),
     0 30px 25px rgba(0, 0, 0, 0.3),
     inset 0 2px 0 rgba(255, 255, 255, 0.3);
   position: relative;
-  height: calc(100% - 40px); /* Account for shadow space */
-  overflow: hidden; /* Remove scrolling from profile card */
+  height: calc(100% - 40px);
+  /* Account for shadow space */
+  overflow: hidden;
+  /* Remove scrolling from profile card */
   box-sizing: border-box;
-  margin: 20px 0; /* Space for shadows */
+  margin: 20px 0;
+  /* Space for shadows */
 }
 
 .profile-card::before {
@@ -88,7 +95,7 @@
   height: 150px;
   border-radius: 50%;
   border: 4px solid #90774c;
-  box-shadow: 
+  box-shadow:
     0 0 0 2px #90774c,
     0 8px 16px rgba(144, 119, 76, 0.4);
   object-fit: cover;
@@ -197,9 +204,12 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  height: calc(100% - 40px); /* Account for shadow space */
-  overflow: visible; /* Allow shadows to show */
-  margin: 20px 0; /* Space for shadows */
+  height: calc(100% - 40px);
+  /* Account for shadow space */
+  overflow: visible;
+  /* Allow shadows to show */
+  margin: 20px 0;
+  /* Space for shadows */
 }
 
 .content-section {
@@ -207,17 +217,20 @@
   border: 4px solid #90774c;
   border-radius: 25px;
   padding: 25px;
-  box-shadow: 
+  box-shadow:
     0 0 0 3px #90774c,
     0 20px 40px rgba(144, 119, 76, 0.5),
     0 30px 25px rgba(0, 0, 0, 0.3),
     inset 0 2px 0 rgba(255, 255, 255, 0.3);
   position: relative;
-  flex: 1; /* Equal height sections */
+  flex: 1;
+  /* Equal height sections */
   display: flex;
   flex-direction: column;
-  min-height: 0; /* Allow flex shrinking */
-  overflow: visible; /* Allow shadows to show outside */
+  min-height: 0;
+  /* Allow flex shrinking */
+  overflow: visible;
+  /* Allow shadows to show outside */
 }
 
 .content-section::before {
@@ -246,9 +259,12 @@
 }
 
 .section-content {
-  flex: 1; /* Fill remaining space after title */
-  overflow-y: auto; /* Internal scrolling only */
-  overflow-x: visible; /* Allow horizontal shadows */
+  flex: 1;
+  /* Fill remaining space after title */
+  overflow-y: auto;
+  /* Internal scrolling only */
+  overflow-x: visible;
+  /* Allow horizontal shadows */
   padding-right: 8px;
   padding-top: 8px;
   scroll-behavior: smooth;
@@ -290,7 +306,7 @@
   padding: 40px;
   width: 90%;
   max-width: 500px;
-  box-shadow: 
+  box-shadow:
     0 0 0 3px #90774c,
     0 20px 40px rgba(144, 119, 76, 0.5),
     0 30px 25px rgba(0, 0, 0, 0.3);
@@ -354,7 +370,7 @@
   outline: none;
   border-color: #473925;
   background: linear-gradient(145deg, #ffffff, rgba(255, 234, 200, 0.9));
-  box-shadow: 
+  box-shadow:
     inset 0 2px 4px rgba(144, 119, 76, 0.1),
     0 0 0 3px rgba(71, 57, 37, 0.3);
 }
@@ -422,7 +438,7 @@
   min-height: 140px;
   border: 2px dashed #90774c;
   border-radius: 15px;
-  background: linear-gradient(145deg, rgba(255,255,255,0.9), rgba(250,247,240,0.9));
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(250, 247, 240, 0.9));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -436,7 +452,7 @@
   background: linear-gradient(145deg, #fff7eb, #fff1db);
   border-color: #473925;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(71,57,37,0.12);
+  box-shadow: 0 8px 20px rgba(71, 57, 37, 0.12);
 }
 
 .image-preview {
@@ -445,7 +461,7 @@
   object-fit: cover;
   border-radius: 12px;
   border: 3px solid #90774c;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
 }
 
 .drop-placeholder {
@@ -468,10 +484,12 @@
   width: 64px;
   height: 64px;
   padding: 8px;
-  background: #f5e9d6; /* light beige */
-  border: 3px solid #90774c; /* fantasy brown border */
+  background: #f5e9d6;
+  /* light beige */
+  border: 3px solid #90774c;
+  /* fantasy brown border */
   border-radius: 14px;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.25), inset 0 2px 0 rgba(255,255,255,0.4);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25), inset 0 2px 0 rgba(255, 255, 255, 0.4);
   cursor: pointer;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
@@ -486,7 +504,7 @@
 
 .back-home-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 26px rgba(0,0,0,0.28), inset 0 2px 0 rgba(255,255,255,0.45);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28), inset 0 2px 0 rgba(255, 255, 255, 0.45);
 }
 
 /* Slightly smaller on very small screens */
@@ -498,6 +516,7 @@
     height: 56px;
     border-radius: 12px;
   }
+
   .back-home-btn img {
     width: 24px;
     height: 24px;
@@ -518,14 +537,16 @@
     flex-direction: column;
     gap: 20px;
     overflow: visible;
-    height: auto; /* Remove fixed height constraint */
+    height: auto;
+    /* Remove fixed height constraint */
     min-height: auto;
   }
 
   .profile-card {
     flex: 0 0 auto;
     height: auto;
-    max-height: none; /* Remove height restrictions */
+    max-height: none;
+    /* Remove height restrictions */
     margin: 0;
     /* Make profile card more compact on mobile */
     padding: 25px 20px;
@@ -533,22 +554,27 @@
 
   .profile-right-panel {
     height: auto;
-    flex: 0 0 auto; /* Don't force flex behavior */
+    flex: 0 0 auto;
+    /* Don't force flex behavior */
     margin: 0;
-    max-height: none; /* Remove height restrictions */
+    max-height: none;
+    /* Remove height restrictions */
     overflow: visible;
     gap: 20px;
   }
 
   .content-section {
     flex: 0 0 auto;
-    min-height: auto; /* Remove forced heights */
+    min-height: auto;
+    /* Remove forced heights */
     max-height: none;
-    overflow: visible; /* Let content determine height */
+    overflow: visible;
+    /* Let content determine height */
   }
 
   .section-content {
-    max-height: 300px; /* Reasonable max for mobile scrolling */
+    max-height: 300px;
+    /* Reasonable max for mobile scrolling */
     overflow-y: auto;
     /* Better mobile scrolling */
     -webkit-overflow-scrolling: touch;
@@ -600,13 +626,15 @@
 
   /* Better mobile grid */
   .emoji-grid {
-    grid-template-columns: repeat(3, 1fr); /* 3 columns instead of 4 */
+    grid-template-columns: repeat(3, 1fr);
+    /* 3 columns instead of 4 */
     gap: 12px;
     padding: 8px;
   }
 
   .emoji-item {
-    height: 72px; /* Slightly smaller for 3-column layout */
+    height: 72px;
+    /* Slightly smaller for 3-column layout */
     border-radius: 18px;
   }
 
@@ -652,19 +680,23 @@
 
   /* Mobile-optimized grid */
   .emoji-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 columns for very small screens */
+    grid-template-columns: repeat(2, 1fr);
+    /* 2 columns for very small screens */
     gap: 10px;
     padding: 6px;
   }
 
   .emoji-item {
-    height: 80px; /* Larger touch targets */
+    height: 80px;
+    /* Larger touch targets */
     border-radius: 16px;
-    border-width: 2px; /* Thinner borders on small screens */
+    border-width: 2px;
+    /* Thinner borders on small screens */
   }
 
   .emoji-char {
-    font-size: 32px; /* Larger for better visibility */
+    font-size: 32px;
+    /* Larger for better visibility */
   }
 
   /* Adjust back button for mobile */
@@ -707,7 +739,7 @@
   .profile-container {
     scroll-behavior: smooth;
   }
-  
+
   .section-content {
     scroll-behavior: smooth;
   }
@@ -722,8 +754,10 @@
   }
 
   .emoji-item {
-    min-height: 72px; /* Ensure minimum touch target size */
-    cursor: pointer; /* Visual feedback that items are interactive */
+    min-height: 72px;
+    /* Ensure minimum touch target size */
+    cursor: pointer;
+    /* Visual feedback that items are interactive */
   }
 }
 
@@ -774,7 +808,8 @@
 .emoji-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(8, 1fr); /* 8 columns as requested */
+  grid-template-columns: repeat(8, 1fr);
+  /* 8 columns as requested */
   gap: 12px;
   align-content: start;
   margin-top: 4px;
@@ -784,84 +819,86 @@
   padding: 5px;
 }
 
-/* Random pastel backgrounds for emoji items */
-.emoji-item:nth-child(8n+1) { background: #ffd1dc; } /* pastel pink */
-.emoji-item:nth-child(8n+2) { background: #e6e6fa; } /* pastel lavender */
-.emoji-item:nth-child(8n+3) { background: #f0ffff; } /* pastel azure */
-.emoji-item:nth-child(8n+4) { background: #f5fffa; } /* pastel mint */
-.emoji-item:nth-child(8n+5) { background: #fff8dc; } /* pastel cornsilk */
-.emoji-item:nth-child(8n+6) { background: #ffe4e1; } /* pastel misty rose */
-.emoji-item:nth-child(8n+7) { background: #f0f8ff; } /* pastel alice blue */
-.emoji-item:nth-child(8n+8) { background: #faf0e6; } /* pastel linen */
-
-/* Additional pastel variations for more randomness */
-.emoji-item:nth-child(13n+1) { background: #fff0f5; } /* pastel lavender blush */
-.emoji-item:nth-child(13n+2) { background: #f8f8ff; } /* pastel ghost white */
-.emoji-item:nth-child(13n+3) { background: #fffacd; } /* pastel lemon chiffon */
-.emoji-item:nth-child(13n+4) { background: #e0ffff; } /* pastel light cyan */
-.emoji-item:nth-child(13n+5) { background: #f5f5dc; } /* pastel beige */
-.emoji-item:nth-child(17n+1) { background: #ffb6c1; } /* pastel light pink */
-.emoji-item:nth-child(17n+2) { background: #dda0dd; } /* pastel plum */
-.emoji-item:nth-child(17n+3) { background: #98fb98; } /* pastel pale green */
-.emoji-item:nth-child(17n+4) { background: #afeeee; } /* pastel pale turquoise */
-.emoji-item:nth-child(19n+1) { background: #ffefd5; } /* pastel papaya whip */
-.emoji-item:nth-child(19n+2) { background: #ffebcd; } /* pastel blanched almond */
-
 /* Enhanced emoji item styles */
 .emoji-item {
-  border: 3px solid #90774c; /* fantasy brown border */
-  border-radius: 24px; /* more rounded corners */
-  height: 96px; /* increased from 72px */
+  border: 3px solid #90774c;
+  /* fantasy brown border */
+  border-radius: 24px;
+  /* more rounded corners */
+  height: 96px;
+  /* increased from 72px */
   display: flex;
   align-items: center;
   justify-content: center;
   /* Enhanced shadows and embossed effect */
-  box-shadow: 
-    0 4px 8px rgba(0,0,0,0.15), /* starting shadow */
-    0 8px 18px rgba(0,0,0,0.08), /* depth shadow */
-    inset 0 3px 6px rgba(255,255,255,0.6), /* top highlight for emboss */
-    inset 0 -2px 4px rgba(0,0,0,0.1); /* bottom shadow for emboss */
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    /* starting shadow */
+    0 8px 18px rgba(0, 0, 0, 0.08),
+    /* depth shadow */
+    inset 0 3px 6px rgba(255, 255, 255, 0.6),
+    /* top highlight for emboss */
+    inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+  /* bottom shadow for emboss */
   transition: transform 0.12s ease, box-shadow 0.12s ease;
   cursor: default;
   user-select: none;
   /* Enhanced embossed look */
-  background-image: 
-    linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(0,0,0,0.05) 100%);
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%, rgba(0, 0, 0, 0.05) 100%);
 }
 
 .emoji-item:hover {
-  transform: translateY(-6px); /* increased lift */
-  box-shadow: 
-    0 8px 16px rgba(0,0,0,0.2), /* stronger starting shadow */
-    0 16px 32px rgba(0,0,0,0.12), /* deeper hover shadow */
-    inset 0 4px 8px rgba(255,255,255,0.7), /* stronger top highlight */
-    inset 0 -3px 6px rgba(0,0,0,0.15); /* stronger bottom shadow */
+  transform: translateY(-6px);
+  /* increased lift */
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    /* stronger starting shadow */
+    0 16px 32px rgba(0, 0, 0, 0.12),
+    /* deeper hover shadow */
+    inset 0 4px 8px rgba(255, 255, 255, 0.7),
+    /* stronger top highlight */
+    inset 0 -3px 6px rgba(0, 0, 0, 0.15);
+  /* stronger bottom shadow */
 }
 
 .emoji-char {
-  font-size: 36px; /* increased from 28px */
+  font-size: 36px;
+  /* increased from 28px */
   line-height: 1;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1)); /* subtle emoji shadow */
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  /* subtle emoji shadow */
 }
 
 /* Responsive: reduce columns on smaller screens to keep items readable */
 @media (max-width: 1200px) {
-  .emoji-grid { grid-template-columns: repeat(6, 1fr); }
+  .emoji-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
 }
+
 @media (max-width: 900px) {
-  .emoji-grid { grid-template-columns: repeat(4, 1fr); }
+  .emoji-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
+
 @media (max-width: 480px) {
-  .emoji-grid { 
-    grid-template-columns: repeat(2, 1fr); 
-    gap: 10px; 
+  .emoji-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
-  .emoji-item { 
-    height: 80px; /* increased from 56px for mobile */
-    border-radius: 20px; /* maintain rounded look on mobile */
+
+  .emoji-item {
+    height: 80px;
+    /* increased from 56px for mobile */
+    border-radius: 20px;
+    /* maintain rounded look on mobile */
   }
-  .emoji-char { 
-    font-size: 30px; /* increased from 22px for mobile */
+
+  .emoji-char {
+    font-size: 30px;
+    /* increased from 22px for mobile */
   }
 }
 
@@ -869,12 +906,14 @@
 .section-content::-webkit-scrollbar {
   width: 10px;
 }
+
 .section-content::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.04);
+  background: rgba(0, 0, 0, 0.04);
   border-radius: 8px;
 }
+
 .section-content::-webkit-scrollbar-thumb {
   background: #cdb99a;
   border-radius: 8px;
-  border: 2px solid rgba(0,0,0,0.04);
+  border: 2px solid rgba(0, 0, 0, 0.04);
 }

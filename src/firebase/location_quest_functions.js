@@ -4,3 +4,9 @@
     kept and framed pictures of locations they went to. 
 
 */
+
+
+/*  **From Sam** This file might not be neccessary as most location quest function
+    can work as general quest functions.
+
+*/

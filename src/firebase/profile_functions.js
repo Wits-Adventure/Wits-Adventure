@@ -16,13 +16,14 @@ export async function getProfileData() {
   }
 
   const userData = userDoc.data();
-  return{
-    Name:userData.Name,
+  return {
+    uid: user.uid,
+    Name: userData.Name,
     LeaderBoardPoints: userData.LeaderBoardPoints,
     CompletedQuests: userData.CompletedQuests.length,
     Level: userData.Level,
     Bio: userData.Bio
-    
+
     /*
     To be added later, using defaults for now
     ProfilePictureUrl: userData.ProfilePictureUrl
@@ -32,14 +33,14 @@ export async function getProfileData() {
 
 
 
-   }
+  }
 
- 
+
 }
 
 export async function addProfileFields() {
-   const usersCollectionRef = collection(db, "Users");
-  
+  const usersCollectionRef = collection(db, "Users");
+
   try {
     const querySnapshot = await getDocs(usersCollectionRef);
 
@@ -56,7 +57,7 @@ export async function addProfileFields() {
         Bio: "",
         SpendablePoints: 0,
         Experience: 0,
-        Quests:[],
+        Quests: [],
 
 
 
@@ -65,10 +66,10 @@ export async function addProfileFields() {
     });
 
     //console.log("All documents processed.");
-    
+
   } catch (error) {
     console.error("Error updating documents:", error);
   }
 
-    
+
 }
