@@ -1,6 +1,6 @@
 
 import { initializeApp } from "firebase/app";
-import {  getAuth, createUserWithEmailAndPassword, sendEmailVerification ,signInWithEmailAndPassword,} from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, } from "firebase/auth";
 import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 
@@ -33,30 +33,16 @@ async function addUserToFirestore(userId, email, name, role, autheProvider, lead
       LeaderBoardPoints: leaderboardPoints,
       autheProvider: autheProvider,
       Level: 0,
-        CompletedQuests: [],
-        Bio: "",
-        SpendablePoints: 0,
-        Experience: 0,
-        Quests:[],
+      CompletedQuests: [],
+      Bio: "",
+      SpendablePoints: 0,
+      Experience: 0,
+      Quests: [],
     };
     await setDoc(userDocRef, userData);
     console.log("User added to Firestore!");
   } catch (error) {
     console.error("Error adding user to Firestore:", error);
-  }
-}
-
-
-// Fetch all quests from Firestore
-async function getAllQuests() {
-  try {
-    const querySnapshot = await getDocs(collection(db, "Quests"));
-    const questsArray = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    console.log("Quests fetched from Firebase:", questsArray); // debug
-    return questsArray;
-  } catch (error) {
-    console.error("Error fetching quests:", error);
-    return [];
   }
 }
 
@@ -98,7 +84,7 @@ async function getUserRole() {
     return null; // In case of error, return null
   }
 }
-const logout=()=>{
+const logout = () => {
   auth.signOut();
 
 }
@@ -163,7 +149,7 @@ export {
   doc,
   setDoc,
   collection,
-  addDoc, 
+  addDoc,
   getDocs,
   signupNormUser,
   addUserToFirestore,
@@ -171,6 +157,5 @@ export {
   getUserName,
   getUserRole,
   getUserData,
-  logout,
-  getAllQuests
+  logout
 };

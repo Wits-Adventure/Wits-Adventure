@@ -3,7 +3,8 @@ import '../css/QuestBook.css';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import logo from '../media/logo.jpg';
 import trophy from '../media/trophy.png';
-import { getAllQuests, getUserData } from '../firebase/firebase';
+import { getUserData } from '../firebase/firebase';
+import { getAllQuests } from '../firebase/general_quest_functions';
 
 const questsPerPage = 4;
 

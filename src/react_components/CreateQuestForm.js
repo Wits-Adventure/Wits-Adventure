@@ -3,6 +3,7 @@ import '../css/CreateQuestForm.css';
 import { useAuth } from '../context/AuthContext';
 import { getUserData, db } from '../firebase/firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { saveQuestToFirestore } from '../firebase/general_quest_functions';
 
 export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, questCirclesRef }) {
   const [name, setName] = useState('');
@@ -35,13 +36,13 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
   }, [currentUser]);
 
   const emojiCatalog = [
-    '🗡️','⚔️','🛡️','🐉','🧙‍♂️','🏰','📜','🗺️','💰','👑',
-    '💀','🧪','🪓','🏹','🧝','🧚‍♀️','🔮','🗝️','🔥','🪄',
-    '🪙','🌟','🪶','🍄','🦄','🏺','🧟','⚗️','⛲','🪨',
-    '🍷','🕯️','📯','🪤','🧭','🔔','📯','🪶','🪄','🛡️',
-    '🪙','🧿','💎','🔱','🏺','🪓','🏹','🦅','🦇','🐺',
-    '🌙','☀️','🌪️','☄️','✨','🪄','🧜‍♀️','🧞‍♂️','🧌','🧝‍♀️',
-    '🧛‍♂️','🧚‍♂️','🪄','🎇','🕯️','📯','🔔','🧺','🏔️','🌲'
+    '🗡️', '⚔️', '🛡️', '🐉', '🧙‍♂️', '🏰', '📜', '🗺️', '💰', '👑',
+    '💀', '🧪', '🪓', '🏹', '🧝', '🧚‍♀️', '🔮', '🗝️', '🔥', '🪄',
+    '🪙', '🌟', '🪶', '🍄', '🦄', '🏺', '🧟', '⚗️', '⛲', '🪨',
+    '🍷', '🕯️', '📯', '🪤', '🧭', '🔔', '📯', '🪶', '🪄', '🛡️',
+    '🪙', '🧿', '💎', '🔱', '🏺', '🪓', '🏹', '🦅', '🦇', '🐺',
+    '🌙', '☀️', '🌪️', '☄️', '✨', '🪄', '🧜‍♀️', '🧞‍♂️', '🧌', '🧝‍♀️',
+    '🧛‍♂️', '🧚‍♂️', '🪄', '🎇', '🕯️', '📯', '🔔', '🧺', '🏔️', '🌲'
   ];
 
   useEffect(() => {
@@ -58,30 +59,6 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     const s = 65 + Math.floor(Math.random() * 20);
     const l = 40 + Math.floor(Math.random() * 15);
     return `hsl(${h} ${s}% ${l}%)`;
-  }
-
-  async function saveQuestToFirestore(questData) {
-    try {
-      const questRef = await addDoc(collection(db, "Quests"), {
-        name: questData.name,
-        radius: questData.radius,
-        reward: questData.reward,
-        latitude: questData.lat,
-        longitude: questData.lng,
-        imageUrl: questData.imageUrl,
-        creatorId: questData.creatorId,
-        creatorName: questData.creatorName,
-        createdAt: serverTimestamp(),
-        active: true,
-        completedBy: []
-      });
-      alert(`Quest "${questData.name}" added successfully!`);
-      console.log("Quest ID:", questRef.id);
-      return questRef.id;
-    } catch (error) {
-      console.error("Error adding quest to Firestore:", error);
-      alert("Failed to add quest. Please try again.");
-    }
   }
 
   const startFollowing = () => {
@@ -173,8 +150,8 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
       const emojiIcon = window.L.divIcon({
         className: 'quest-emoji-icon',
         html: `<div class="quest-emoji">${chosenEmoji}</div>`,
-        iconSize: [30,30],
-        iconAnchor: [15,15]
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
       });
       const emojiMarker = window.L.marker(circleCenterLatLng, {
         icon: emojiIcon,
@@ -325,7 +302,7 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
 
           <div className="cq-image-section">
             <label className="cq-label">Quest Image (Required)</label>
-            <div 
+            <div
               className={`cq-image-dropzone ${dragActive ? 'drag-active' : ''} ${imagePreview ? 'has-image' : ''}`}
               onDrop={handleDrop}
               onDragOver={handleDrag}
@@ -358,9 +335,9 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
           </div>
 
           <div className="cq-actions">
-            <button 
-              className={`cq-btn cq-select ${!questImage ? 'disabled' : ''}`} 
-              onClick={handleSelectLocation} 
+            <button
+              className={`cq-btn cq-select ${!questImage ? 'disabled' : ''}`}
+              onClick={handleSelectLocation}
               type="button"
               disabled={!questImage}
             >

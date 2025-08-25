@@ -5,10 +5,10 @@ import {
   getUserRole,
   getUserData,
   logout,
-  getAllQuests,
   addUserToFirestore
 } from '../src/firebase/firebase';
 import { initializeApp } from 'firebase/app';
+import { getAllQuests } from '../src/firebase/general_quest_functions';
 import {
   getAuth,
   createUserWithEmailAndPassword,
