@@ -49,6 +49,13 @@ The website uses a **variety of brown and light beige** shades to create a fanta
 
 </div>
 
+## 🧝 Emoji Catalogue
+<div class="emoji-catalogue">
+🗡️ ⚔️ 🛡️ 🐉 🧙‍♂️ 🏰 📜 🗺️ 💰 👑 💀 🧪 🪓 🏹 🧝 🧚‍♀️ 🔮 🗝️ 🔥 🪄 🕸️
+🪙 🌟 🪶 🍄 🦄 🏺 🧟 ⚗️ ⛲ 🪨 🍷 🕯️ 📯 🪤 🧭 🔔 🧿 💎 🔱 🦅 🦇 🐺 🤴 👸 🤺 🦉 🪃 ⛏️
+🌙 ☀️ 🌪️ ☄️ ✨ 🧜‍♀️ 🧞‍♂️ 🧌 🧝‍♀️ 🧛‍♂️ 🧚‍♂️ 🎇 🧺 🏔️ 🌲 ⚡  ⚒ ⚖️ 🖼  🪞 🐈‍⬛ 🐍 🐲 💫 ❄️ 🎁 ⛓️ 👩‍🎤 
+</div>
+
 ## 🧭 Quest Design  
 
 ### 🗺️ Journey Quests  
@@ -106,4 +113,11 @@ Made by users and focused on individual locations.
 **Rewards:**
 1. The quest completer earns more gold for completing quests that have a bigger search area, since finding the goal would be more difficult. An additional slider could be added for more difficulty tweaking upon quest creation
 2. Upon quest completion the quest creator receives the same amount of gold, to incentivise quest creation.
+
+## 🪙 Rewards system
+- Users get gold for completing quests. 
+- Gold earnt contributes to the leaderboad ranking, which periodically resets and might have rewards for the top performers. 
+- Gold can be used to buy cosmetics. 
+- Achievements/badges are received based on total gold earnt
+- Spending gold doesn't affect total gold earnt or your leaderboard ranking
 
