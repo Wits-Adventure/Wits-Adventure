@@ -25,6 +25,18 @@ export default function ProfilePage() {
     navigate("/");
   };
 
+  function pastelizeHSL(hslString) {
+    // Example input: "hsl(0 80% 40%)"
+    const match = hslString.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
+    if (!match) return hslString;
+    const h = match[1];
+    const origS = Number(match[2]);
+    const origL = Number(match[3]);
+    const s = Math.max(45, Math.min(65, Math.round(origS * 0.7))); // 45–65% saturation
+    const l = Math.max(60, Math.min(80, Math.round(origL + 15)));  // 60–80% lightness
+    return `hsl(${h} ${s}% ${l}%)`;
+  }
+
   // Fetch data from Firebase when the component mounts
   useEffect(() => {
     const fetchUserData = async () => {
@@ -235,9 +247,9 @@ export default function ProfilePage() {
                       aria-label={`Quest: ${quest.name}`}
                       title={quest.name}
                       style={{
-                        background: quest.color || "#ffeac8", // fill background with quest color
-                        borderColor: "#90774c", // keep fantasy border
-                        color: "#2F1B14" // emoji/text color for contrast
+                        background: pastelizeHSL(quest.color || "#ffeac8"),
+                        borderColor: "#90774c",
+                        color: "#2F1B14"
                       }}
                     >
                       <span className="emoji-char" aria-hidden="true" style={{ fontSize: "2em" }}>

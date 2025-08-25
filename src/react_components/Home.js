@@ -85,13 +85,18 @@ const Home = () => {
       }).addTo(mapInstanceRef.current);
 
       // Custom popup
+      const isOwnQuest = currentUser && quest.creatorId === currentUser.uid;
+      const buttonHtml = isOwnQuest
+        ? `<button class="quest-accept-btn your-quest-btn" disabled style="cursor: default; opacity: 0.7;">Your Quest</button>`
+        : `<button class="quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
+
       questCircle.bindPopup(`
         <div class="quest-popup">
           <h3>${titleEmoji} ${quest.name}</h3>
           ${quest.imageUrl ? `<div class="quest-image-container"><img src="${quest.imageUrl}" alt="Quest Image" class="quest-popup-image" /></div>` : ''}
           <p><strong>Reward:</strong> ${quest.reward ?? quest.radius} points</p>
           <p><strong>Radius:</strong> ${quest.radius}m</p>
-          <button class="quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>
+          ${buttonHtml}
         </div>
       `);
 

@@ -16,11 +16,20 @@
   flex-direction: column;
   font-family: 'Cinzel', serif;
   background: #6f573c;
-  background-image: 
+  background-image:
     radial-gradient(circle at 25% 25%, rgba(139, 115, 85, 0.3) 0%, transparent 50%),
     radial-gradient(circle at 75% 75%, rgba(160, 149, 107, 0.3) 0%, transparent 50%);
   position: relative;
   overflow: hidden;
+}
+
+.your-quest-btn {
+  background: #ccc !important;
+  color: #555 !important;
+  border: 1px solid #aaa !important;
+  cursor: default !important;
+  pointer-events: none !important;
+  opacity: 0.7;
 }
 
 .home-container::before {
@@ -54,7 +63,7 @@
   border: 2px solid #90774c;
   border-radius: 25px;
   padding: 8px 25px;
-  box-shadow: 
+  box-shadow:
     0 8px 25px rgba(144, 119, 76, 0.4),
     0 4px 15px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -112,7 +121,7 @@
   border-radius: 25px;
   padding: 12px 25px;
   min-width: 220px;
-  box-shadow: 
+  box-shadow:
     0 8px 25px rgba(144, 119, 76, 0.4),
     0 4px 15px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -184,12 +193,14 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  border: 5px solid #90774c; /* fantasy brown */
+  border: 5px solid #90774c;
+  /* fantasy brown */
   box-shadow:
-    0 8px 16px rgba(0,0,0,0.22),
-    inset 0 3px 0 rgba(255,255,255,0.06);
+    0 8px 16px rgba(0, 0, 0, 0.22),
+    inset 0 3px 0 rgba(255, 255, 255, 0.06);
   padding: 0;
-  background-clip: padding-box; /* keep user-area background visible */
+  background-clip: padding-box;
+  /* keep user-area background visible */
 }
 
 .profile-icon-img {
@@ -207,6 +218,7 @@
     height: 48px;
     border-width: 4px;
   }
+
   .profile-icon-img {
     width: 100%;
     height: 100%;
@@ -246,7 +258,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
   transition: left 0.4s;
 }
 
@@ -264,7 +276,8 @@
 .map-section {
   flex: 1;
   display: flex;
-  align-items: stretch; /* fill vertical space */
+  align-items: stretch;
+  /* fill vertical space */
   justify-content: center;
   padding: var(--header-offset, 120px) 30px 20px;
   width: 100%;
@@ -279,7 +292,8 @@
   flex: 1;
   height: 100%;
   position: relative;
-  min-height: 0; /* allow flex shrink */
+  min-height: 0;
+  /* allow flex shrink */
 }
 
 .map-frame {
@@ -290,7 +304,7 @@
   border: 8px solid #654321;
   border-radius: 20px;
   padding: 15px;
-  box-shadow: 
+  box-shadow:
     0 0 0 3px #b48e65,
     0 20px 40px rgba(101, 67, 33, 0.5),
     0 30px 25px rgba(0, 0, 0, 0.5),
@@ -315,21 +329,37 @@
   background: radial-gradient(circle, #ab855f 30%, transparent 30%);
 }
 
-.corner.top-left { top: 10px; left: 10px; }
-.corner.top-right { top: 10px; right: 10px; }
-.corner.bottom-left { bottom: 10px; left: 10px; }
-.corner.bottom-right { bottom: 10px; right: 10px; }
+.corner.top-left {
+  top: 10px;
+  left: 10px;
+}
+
+.corner.top-right {
+  top: 10px;
+  right: 10px;
+}
+
+.corner.bottom-left {
+  bottom: 10px;
+  left: 10px;
+}
+
+.corner.bottom-right {
+  bottom: 10px;
+  right: 10px;
+}
 
 #map {
   width: 100%;
   height: 100%;
-  min-height: 320px; /* was 400px */
+  min-height: 320px;
+  /* was 400px */
   border-radius: 10px;
   overflow: hidden;
   position: relative;
   z-index: 1;
   /* Updated filter for light brown buildings */
-  filter: sepia(0.55) saturate(1) contrast(1) brightness(1) ;
+  filter: sepia(0.55) saturate(1) contrast(1) brightness(1);
   /* Ensure minimum height */
   min-height: 400px;
 }
@@ -339,7 +369,8 @@
   width: 100% !important;
   height: 100% !important;
   border-radius: 10px;
-  background-color: #F4E4BC !important; /* Fantasy parchment background */
+  background-color: #F4E4BC !important;
+  /* Fantasy parchment background */
 }
 
 /* Ensure map tiles load properly */
@@ -351,7 +382,7 @@
 .leaflet-control-zoom {
   border: none !important;
   box-shadow: none !important;
-   margin-top: 25px !important;
+  margin-top: 25px !important;
 }
 
 .leaflet-control-zoom a {
@@ -421,10 +452,12 @@
     transform: scale(0.8);
     opacity: 1;
   }
+
   50% {
     transform: scale(1.2);
     opacity: 0.5;
   }
+
   100% {
     transform: scale(0.8);
     opacity: 1;
@@ -478,7 +511,7 @@
   font-size: 0.75rem;
   margin-bottom: 8px;
   justify-content: center;
-  box-shadow: 0 4px 8px rgba(75,46,26,0.18);
+  box-shadow: 0 4px 8px rgba(75, 46, 26, 0.18);
 }
 
 .quest-badge .badge-text {
@@ -493,10 +526,14 @@
   position: absolute;
   bottom: 15px;
   right: 15px;
-  background: transparent; /* Remove background */
-  border: none; /* Remove border */
-  width: 100px; /* Increased from 80px */
-  height: 100px; /* Increased from 80px */
+  background: transparent;
+  /* Remove background */
+  border: none;
+  /* Remove border */
+  width: 100px;
+  /* Increased from 80px */
+  height: 100px;
+  /* Increased from 80px */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -508,7 +545,8 @@
 }
 
 .questbook-icon::before {
-  display: none; /* Remove the circle background */
+  display: none;
+  /* Remove the circle background */
 }
 
 .questbook-icon:hover {
@@ -517,8 +555,10 @@
 }
 
 .questbook-icon img {
-  width: 70px; /* Increased from 45px */
-  height: 70px; /* Increased from 45px */
+  width: 70px;
+  /* Increased from 45px */
+  height: 70px;
+  /* Increased from 45px */
   object-fit: contain;
   /* Remove filter for cleaner PNG appearance */
   filter: none;
@@ -530,9 +570,12 @@
 }
 
 @keyframes quest-pulse-static {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.7;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -588,10 +631,14 @@
   position: absolute;
   bottom: 15px;
   right: 15px;
-  background: transparent; /* Remove background */
-  border: none; /* Remove border */
-  width: 100px; /* Increased from 80px */
-  height: 100px; /* Increased from 80px */
+  background: transparent;
+  /* Remove background */
+  border: none;
+  /* Remove border */
+  width: 100px;
+  /* Increased from 80px */
+  height: 100px;
+  /* Increased from 80px */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -603,7 +650,8 @@
 }
 
 .questbook-icon::before {
-  display: none; /* Remove the circle background */
+  display: none;
+  /* Remove the circle background */
 }
 
 .questbook-icon:hover {
@@ -612,8 +660,10 @@
 }
 
 .questbook-icon img {
-  width: 70px; /* Increased from 45px */
-  height: 70px; /* Increased from 45px */
+  width: 70px;
+  /* Increased from 45px */
+  height: 70px;
+  /* Increased from 45px */
   object-fit: contain;
   /* Remove filter for cleaner PNG appearance */
   filter: none;
@@ -654,7 +704,7 @@
 }
 
 .create-quest-btn:hover {
-  background: linear-gradient(135deg,#ffe8c4, #dbbc89);
+  background: linear-gradient(135deg, #ffe8c4, #dbbc89);
   border-color: #90774c;
   transform: translateY(-2px);
   box-shadow: 0 9px 20px rgba(49, 39, 31, 0.9);
@@ -748,9 +798,10 @@
   max-height: 100px;
   object-fit: cover;
   display: block;
-  border: 3px solid #4b2e1a; /* dark oak brown */
+  border: 3px solid #4b2e1a;
+  /* dark oak brown */
   border-radius: 6px;
-  box-shadow: 0 4px 8px rgba(75,46,26,0.35);
+  box-shadow: 0 4px 8px rgba(75, 46, 26, 0.35);
 }
 
 
@@ -824,7 +875,9 @@
     max-width: calc(100% - 40px);
   }
 
-  .website-name h1 { font-size: 18px; }
+  .website-name h1 {
+    font-size: 18px;
+  }
 
   /* put Create and User in the two columns under the title, trimmed to content and centered as a group */
   .create-quest-btn {
@@ -850,7 +903,8 @@
   }
 
   /* tighten gaps for small screens */
-  .auth-buttons, .user-profile {
+  .auth-buttons,
+  .user-profile {
     gap: 8px;
   }
 
@@ -883,13 +937,30 @@
   }
 
   /* reduce map min-height slightly for mobile space */
-  #map { min-height: 340px; }
+  #map {
+    min-height: 340px;
+  }
 }
 
 /* Extra small screens */
 @media (max-width: 450px) {
-  .website-name h1 { font-size: 16px; }
-  .logo { width: 44px; height: 44px; }
-  .create-quest-btn { font-size: 0.85rem; padding: 7px 10px; }
-  .username { display: none; } /* hide username if space is too small */
+  .website-name h1 {
+    font-size: 16px;
+  }
+
+  .logo {
+    width: 44px;
+    height: 44px;
+  }
+
+  .create-quest-btn {
+    font-size: 0.85rem;
+    padding: 7px 10px;
+  }
+
+  .username {
+    display: none;
+  }
+
+  /* hide username if space is too small */
 }
