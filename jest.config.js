@@ -2,9 +2,10 @@ module.exports = {
   rootDir: './',
   collectCoverage: true,
   collectCoverageFrom: [
-    'src/react_components/Addition_test.js',
+    'src/react_components/PasswordValidator.js',
     'src/firebase/firebase.js',
     'src/firebase/profile_functions.js',
+    'src/firebase/general_quest_functions.js',
     '!**/node_modules/**',
     '!src/reportWebVitals.js',
     '!src/setupTests.js',

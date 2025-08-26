@@ -1,4 +1,3 @@
-// firebase.test.js
 import {
   signupNormUser,
   loginNormUser,
