@@ -1,6 +1,6 @@
 name: Run tests and upload coverage
 
-on: 
+on:
   push:
     branches:
       - main
@@ -19,7 +19,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install dependencies
         run: npm install
@@ -37,6 +37,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: BlooBase/BlooBase
+          slug: Wits-Adventure/Wits-Adventure
           files: coverage/lcov.info
           fail_ci_if_error: true
