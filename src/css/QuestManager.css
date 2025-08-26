@@ -1,0 +1,635 @@
+/* QuestManager.css - Fantasy D&D Style matching ProfilePage.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cinzel+Decorative:wght@700&display=swap');
+
+/* Modal Overlay */
+.quest-manager-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(47, 27, 20, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(8px);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Main Modal Container */
+.quest-manager-modal {
+  background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+  border: 4px solid #90774c;
+  border-radius: 25px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  box-shadow:
+    0 0 0 3px #90774c,
+    0 20px 40px rgba(144, 119, 76, 0.5),
+    0 30px 25px rgba(0, 0, 0, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.quest-manager-modal::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  background: #90774c;
+  border-radius: 30px;
+  z-index: -1;
+}
+
+/* Top Section - Image Display Area */
+.quest-manager-top-section {
+  flex: 1;
+  display: flex;
+  position: relative;
+  min-height: 250px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(250, 247, 240, 0.1));
+  border-bottom: 2px solid #90774c;
+}
+
+/* Image Container */
+.submission-image-container {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.02));
+  border-radius: 20px 0 0 0;
+  overflow: hidden;
+}
+
+.submission-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 3px solid #90774c;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+/* No Submissions State */
+.no-submissions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #846d4c;
+  font-family: 'Cinzel', serif;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.no-submissions-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.no-submissions p {
+  font-size: 16px;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Image Navigation Buttons */
+.nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #473925, #846d4c);
+  color: #F4E4BC;
+  border: 2px solid #90774c;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.nav-button-prev {
+  left: 10px;
+}
+
+.nav-button-next {
+  right: 10px;
+}
+
+.nav-button:hover {
+  background: linear-gradient(135deg, #594733, #a58d73);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Image Counter */
+.image-counter {
+  position: absolute;
+  bottom: 10px;
+  right: 15px;
+  background: rgba(47, 27, 20, 0.8);
+  color: #F4E4BC;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  border: 1px solid #90774c;
+}
+
+/* Action Buttons Container */
+.action-buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 16px;
+  background: linear-gradient(135deg, rgba(255, 234, 200, 0.3), rgba(216, 186, 138, 0.3));
+  border-radius: 0 20px 0 0;
+  min-width: 80px;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid #90774c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Cinzel', serif;
+  font-weight: bold;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  position: relative;
+}
+
+.accept-button {
+  background: linear-gradient(135deg, #4a7c59, #66a372);
+  color: #F4E4BC;
+}
+
+.accept-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5a8c69, #76b382);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.reject-button {
+  background: linear-gradient(135deg, #8b4513, #a0522d);
+  color: #F4E4BC;
+}
+
+.reject-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #9b5523, #b0623d);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #846d4c, #a08676);
+  color: #c4b8a3;
+}
+
+.action-icon {
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Bottom Section - Details */
+.quest-manager-bottom-section {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(250, 247, 240, 0.05));
+  border-bottom: 2px solid #90774c;
+  padding: 20px;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+}
+
+/* Submission Details */
+.submission-details {
+  width: 100%;
+}
+
+.submission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 16px;
+}
+
+.submission-user {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2F1B14;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(47, 27, 20, 0.1);
+  flex: 1;
+}
+
+.submission-timestamp {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  color: #846d4c;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.submission-description {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  color: #473925;
+  line-height: 1.4;
+  margin: 0;
+  font-style: italic;
+}
+
+/* No Submissions Details */
+.no-submissions-details {
+  width: 100%;
+  text-align: center;
+}
+
+.quest-name {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2F1B14;
+  margin: 0 0 8px 0;
+  text-shadow: 1px 1px 2px rgba(47, 27, 20, 0.1);
+}
+
+.waiting-message {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  color: #846d4c;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Control Buttons */
+.quest-manager-controls {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(250, 247, 240, 0.02));
+}
+
+.control-button {
+  flex: 1;
+  padding: 12px 20px;
+  border: 2px solid #90774c;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 15px;
+  position: relative;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-button {
+  background: linear-gradient(135deg, rgba(255, 234, 200, 0.8), #d8ba8a);
+  color: #2F1B14;
+}
+
+.map-button:hover {
+  background: linear-gradient(135deg, #ffe8c4, #dbbc89);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.close-button {
+  background: linear-gradient(135deg, #473925, #846d4c);
+  color: #F4E4BC;
+}
+
+.close-button:hover {
+  background: linear-gradient(135deg, #594733, #a58d73);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* In-modal confirmation overlay */
+.confirm-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(47, 27, 20, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.confirm-dialog {
+  width: min(420px, 92%);
+  background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+  border: 3px solid #90774c;
+  border-radius: 18px;
+  padding: 18px 18px 16px;
+  box-shadow:
+    0 0 0 3px #90774c,
+    0 16px 28px rgba(144, 119, 76, 0.45),
+    0 22px 18px rgba(0, 0, 0, 0.25),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+  text-align: center;
+  animation: confirmPopIn 180ms ease-out;
+}
+
+.confirm-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2F1B14;
+  margin: 0 0 8px 0;
+  text-shadow: 1px 1px 2px rgba(47, 27, 20, 0.1);
+}
+
+.confirm-message {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  color: #473925;
+  margin: 0 0 16px 0;
+  line-height: 1.35;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-cancel-button {
+  background: linear-gradient(135deg, rgba(255, 234, 200, 0.85), #d8ba8a);
+  color: #2F1B14;
+}
+
+.confirm-cancel-button:hover {
+  background: linear-gradient(135deg, #ffe8c4, #dbbc89);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.confirm-confirm-button {
+  background: linear-gradient(135deg, #8b4513, #a0522d);
+  color: #F4E4BC;
+}
+
+.confirm-confirm-button:hover {
+  background: linear-gradient(135deg, #9b5523, #b0623d);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes confirmPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .quest-manager-overlay {
+    padding: 10px;
+  }
+
+  .quest-manager-modal {
+    max-width: 95%;
+    max-height: 95vh;
+    border-radius: 20px;
+  }
+
+  .quest-manager-top-section {
+    min-height: 200px;
+  }
+
+  .submission-image-container {
+    padding: 15px;
+  }
+
+  .action-buttons-container {
+    padding: 15px 12px;
+    min-width: 70px;
+    gap: 12px;
+  }
+
+  .action-button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .action-icon {
+    font-size: 18px;
+  }
+
+  .nav-button {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .quest-manager-bottom-section {
+    padding: 16px;
+    min-height: 80px;
+  }
+
+  .submission-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .submission-user {
+    font-size: 15px;
+  }
+
+  .submission-timestamp {
+    font-size: 11px;
+  }
+
+  .submission-description {
+    font-size: 13px;
+  }
+
+  .quest-manager-controls {
+    padding: 12px 16px;
+    gap: 10px;
+  }
+
+  .control-button {
+    padding: 12px 16px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .quest-manager-modal {
+    border-radius: 18px;
+    border-width: 3px;
+  }
+
+  .quest-manager-top-section {
+    min-height: 180px;
+  }
+
+  .submission-image-container {
+    padding: 12px;
+  }
+
+  .action-buttons-container {
+    padding: 12px 8px;
+    min-width: 60px;
+    gap: 10px;
+  }
+
+  .action-button {
+    width: 38px;
+    height: 38px;
+    border-width: 2px;
+  }
+
+  .action-icon {
+    font-size: 16px;
+  }
+
+  .nav-button {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    border-width: 2px;
+  }
+
+  .nav-button-prev {
+    left: 8px;
+  }
+
+  .nav-button-next {
+    right: 8px;
+  }
+
+  .image-counter {
+    bottom: 8px;
+    right: 12px;
+    padding: 3px 10px;
+    font-size: 11px;
+  }
+
+  .quest-manager-bottom-section {
+    padding: 14px;
+    min-height: 70px;
+  }
+
+  .submission-user {
+    font-size: 14px;
+  }
+
+  .quest-name {
+    font-size: 16px;
+  }
+
+  .waiting-message,
+  .submission-description {
+    font-size: 12px;
+  }
+
+  .quest-manager-controls {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .control-button {
+    padding: 10px 14px;
+    font-size: 11px;
+    min-height: 36px;
+    border-radius: 12px;
+  }
+}
+
+/* Loading and Error States */
+.submission-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  font-family: 'Cinzel', serif;
+  color: #846d4c;
+  font-style: italic;
+}
+
+.submission-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #8b4513;
+  font-family: 'Cinzel', serif;
+  text-align: center;
+}
+
+.submission-error-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+  opacity: 0.7;
+}
+
+/* Animation for smooth transitions */
+.quest-manager-modal {
+  animation: questManagerSlideIn 0.3s ease-out;
+}
+
+@keyframes questManagerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

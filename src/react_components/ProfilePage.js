@@ -5,6 +5,7 @@ import editIcon from "../assets/edit_icon.png";
 import { getProfileData } from "../firebase/profile_functions";
 import { useNavigate } from "react-router-dom";
 import { getAllQuests } from "../firebase/general_quest_functions";
+import QuestManager from "./QuestManager";
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -16,6 +17,10 @@ export default function ProfilePage() {
   const [editedBio, setEditedBio] = useState("");
   const [editedProfilePic, setEditedProfilePic] = useState(profilePic);
   const [createdQuests, setCreatedQuests] = useState([]);
+
+  // Quest Manager state
+  const [selectedQuest, setSelectedQuest] = useState(null);
+  const [isQuestManagerOpen, setIsQuestManagerOpen] = useState(false);
 
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -144,15 +149,6 @@ export default function ProfilePage() {
     }
   };
 
-  // preview emojis for created-quests guide (extended for testing)
-  const previewEmojis = [
-    '🗡️', '🪄', '🧭', '🗺️', '🐉', '🧪', '📜',
-    '🛡️', '🏹', '⚔️', '🧙‍♂️', '🧝‍♀️', '🐲', '🏺',
-    '🕯️', '🗝️', '🔮', '🦉', '🪶', '🐺', '🪙', '📯', '🔱', '🧿',
-    // 15 more for testing (added)
-    '🏰', '👑', '🔥', '🌕', '🌲', '⛏️', '🧚', '🧝‍♂️', '🧛‍♂️', '🧟‍♂️', '🪓', '⚜️', '🦴', '🔔', '🧙‍♀️'
-  ];
-
   if (loading) {
     return (
       <main className="profile-container">
@@ -170,6 +166,27 @@ export default function ProfilePage() {
       </main>
     );
   }
+
+  // Quest Manager handlers
+  const handleQuestClick = (quest) => {
+    setSelectedQuest(quest);
+    setIsQuestManagerOpen(true);
+  };
+
+  const handleCloseQuestManager = () => {
+    setIsQuestManagerOpen(false);
+    setSelectedQuest(null);
+  };
+
+  const handleAcceptSubmission = (submissionId, questId) => {
+    console.log(`Accepted submission ${submissionId} for quest ${questId}`);
+    // Add your accept submission logic here
+  };
+
+  const handleRejectSubmission = (submissionId, questId) => {
+    console.log(`Rejected submission ${submissionId} for quest ${questId}`);
+    // Add your reject submission logic here
+  };
 
   return (
     <main className="profile-container">
@@ -249,8 +266,10 @@ export default function ProfilePage() {
                       style={{
                         background: pastelizeHSL(quest.color || "#ffeac8"),
                         borderColor: "#90774c",
-                        color: "#2F1B14"
+                        color: "#2F1B14",
+                        cursor: "pointer"
                       }}
+                      onClick={() => handleQuestClick(quest)}
                     >
                       <span className="emoji-char" aria-hidden="true" style={{ fontSize: "2em" }}>
                         {quest.emoji || "🗺️"}
@@ -345,6 +364,15 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Quest Manager Modal */}
+      <QuestManager
+        quest={selectedQuest}
+        isOpen={isQuestManagerOpen}
+        onClose={handleCloseQuestManager}
+        onAccept={handleAcceptSubmission}
+        onReject={handleRejectSubmission}
+      />
 
       {/* Back to Home button - fixed at bottom-left */}
       <button
