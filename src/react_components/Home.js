@@ -122,7 +122,9 @@ const Home = () => {
       }).addTo(mapInstanceRef.current);
 
       // Custom popup
-      const hasAccepted = quest.acceptedBy && quest.acceptedBy.includes(currentUser?.uid);
+      const hasAccepted = acceptedQuests[quest.id] !== undefined
+        ? acceptedQuests[quest.id]
+        : (quest.acceptedBy && quest.acceptedBy.includes(currentUser?.uid));
       const isOwnQuest = currentUser && quest.creatorId === currentUser.uid;
       const buttonHtml = isOwnQuest
         ? `<button class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>`
@@ -269,7 +271,7 @@ const Home = () => {
       // Store reference for cleanup
       questCirclesRef.current.push(questCircle);
     });
-  }, [allQuests, mapInstanceRef, questCirclesRef, currentUser]);
+  }, [allQuests, mapInstanceRef, questCirclesRef, currentUser, acceptedQuests]);
 
   // Map and header effects remain the same
   useEffect(() => {
