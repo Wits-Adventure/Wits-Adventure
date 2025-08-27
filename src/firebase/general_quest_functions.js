@@ -1,6 +1,6 @@
 import { db } from './firebase';
 import { collection, addDoc, serverTimestamp, getDocs } from "firebase/firestore";
-import { doc, updateDoc, arrayUnion, getDoc, setDoc, GeoPoint } from "firebase/firestore";
+import { doc, updateDoc, arrayUnion, getDoc, setDoc, GeoPoint, deleteDoc } from "firebase/firestore";
 
 // Fetch all quests from Firestore
 export async function getAllQuests() {
@@ -57,5 +57,49 @@ export async function acceptQuest(questId, userId) {
         });
     } else {
         await setDoc(userRef, { acceptedQuests: [questId] }, { merge: true });
+    }
+}
+
+// Remove quest from all users' acceptedQuests and delete the quest
+export async function closeQuestAndRemoveFromUsers(questId) {
+    // 1. Delete the quest document
+    const questRef = doc(db, "Quests", questId);
+    await deleteDoc(questRef);
+
+    // 2. Remove questId from all users' acceptedQuests arrays
+    const usersSnapshot = await getDocs(collection(db, "Users"));
+    const batch = [];
+    usersSnapshot.forEach(userDoc => {
+        const userData = userDoc.data();
+        if (userData.acceptedQuests && userData.acceptedQuests.includes(questId)) {
+            batch.push(
+                updateDoc(doc(db, "Users", userDoc.id), {
+                    acceptedQuests: userData.acceptedQuests.filter(qid => qid !== questId)
+                })
+            );
+        }
+    });
+    await Promise.all(batch);
+}
+
+export async function abandonQuest(questId, userId) {
+    // Remove userId from quest's acceptedBy array
+    const questRef = doc(db, "Quests", questId);
+    const questSnap = await getDoc(questRef);
+    if (questSnap.exists()) {
+        const acceptedBy = questSnap.data().acceptedBy || [];
+        await updateDoc(questRef, {
+            acceptedBy: acceptedBy.filter(uid => uid !== userId)
+        });
+    }
+
+    // Remove questId from user's acceptedQuests array
+    const userRef = doc(db, "Users", userId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+        const acceptedQuests = userSnap.data().acceptedQuests || [];
+        await updateDoc(userRef, {
+            acceptedQuests: acceptedQuests.filter(qid => qid !== questId)
+        });
     }
 }

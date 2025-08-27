@@ -6,7 +6,7 @@ import profilePic from '../assets/profile.jpg'; // added: use same default pfp a
 import { useNavigate } from 'react-router-dom';
 import { logout, getUserData } from '../firebase/firebase'; // Import getUserData
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
-import { getAllQuests, acceptQuest } from '../firebase/general_quest_functions';
+import { getAllQuests, acceptQuest, abandonQuest } from '../firebase/general_quest_functions';
 import CreateQuestForm from './CreateQuestForm';
 
 const Home = () => {
@@ -85,10 +85,13 @@ const Home = () => {
       }).addTo(mapInstanceRef.current);
 
       // Custom popup
+      const hasAccepted = quest.acceptedBy && quest.acceptedBy.includes(currentUser?.uid);
       const isOwnQuest = currentUser && quest.creatorId === currentUser.uid;
       const buttonHtml = isOwnQuest
-        ? `<button class="quest-accept-btn your-quest-btn" disabled style="cursor: default; opacity: 0.7;">Your Quest</button>`
-        : `<button class="quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
+        ? `<button class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>`
+        : hasAccepted
+          ? `<button class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonQuest('${quest.id}')">Abandon Quest</button>`
+          : `<button class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
 
       questCircle.bindPopup(`
         <div class="quest-popup">
@@ -230,7 +233,7 @@ const Home = () => {
       // Store reference for cleanup
       questCirclesRef.current.push(questCircle);
     });
-  }, [allQuests, mapInstanceRef, questCirclesRef]);
+  }, [allQuests, mapInstanceRef, questCirclesRef, currentUser]);
 
   // Map and header effects remain the same
   useEffect(() => {
@@ -312,7 +315,7 @@ const Home = () => {
         mapInstanceRef.current = null;
       }
     };
-  }, []);
+  }, [addQuestAreas]);
 
   useEffect(() => {
     const updateHeaderOffset = () => {
@@ -379,6 +382,26 @@ const Home = () => {
 
     return () => {
       delete window.handleAcceptQuest;
+    };
+  }, [currentUser, navigate]);
+
+  useEffect(() => {
+    window.handleAbandonQuest = async (questId) => {
+      if (!currentUser) {
+        navigate('/login');
+        return;
+      }
+      try {
+        await abandonQuest(questId, currentUser.uid);
+        alert('Quest abandoned.');
+      } catch (error) {
+        alert('Failed to abandon quest.');
+        console.error(error);
+      }
+    };
+
+    return () => {
+      delete window.handleAbandonQuest;
     };
   }, [currentUser, navigate]);
 

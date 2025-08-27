@@ -3,11 +3,18 @@ import "../css/QuestManager.css";
 import quest1 from '../media/quest-submission-1.jpg';
 import quest2 from '../media/quest-submission-2.jpg';
 import quest3 from '../media/quest-submission-3.jpg';
+import { closeQuestAndRemoveFromUsers } from "../firebase/general_quest_functions";
 
 export default function QuestManager({ quest, isOpen, onClose, onAccept, onReject, onCloseQuest }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoadStates, setImageLoadStates] = useState({});
   const [isConfirmingClose, setIsConfirmingClose] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsConfirmingClose(false);
+    }
+  }, [isOpen]);
 
   // Mock submission data - replace with actual data from your backend
   const mockSubmissions = [
@@ -21,7 +28,7 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
     },
     {
       id: 2,
-      userId: "user456", 
+      userId: "user456",
       userName: "Quest Master",
       imageUrl: quest2,
       timestamp: "2025-01-14T15:45:00Z",
@@ -30,7 +37,7 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
     {
       id: 3,
       userId: "user789",
-      userName: "Brave Explorer", 
+      userName: "Brave Explorer",
       imageUrl: quest3,
       timestamp: "2025-01-13T09:15:00Z",
       description: "Defeated the boss monster"
@@ -86,8 +93,9 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
   // Confirm and close quest (remove from menu)
   const openConfirmClose = () => setIsConfirmingClose(true);
   const cancelCloseQuest = () => setIsConfirmingClose(false);
-  const confirmCloseQuest = () => {
+  const confirmCloseQuest = async () => {
     if (typeof onCloseQuest === 'function') onCloseQuest(quest.id);
+    await closeQuestAndRemoveFromUsers(quest.id); // <-- call the new function
     if (typeof onClose === 'function') onClose();
     setIsConfirmingClose(false);
   };
@@ -126,7 +134,7 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
   return (
     <div className="quest-manager-overlay" onClick={onClose}>
       <div className="quest-manager-modal" onClick={(e) => e.stopPropagation()}>
-        
+
         {/* Top Section - Image Display */}
         <div className="quest-manager-top-section">
           <div className="submission-image-container">
@@ -138,8 +146,8 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
                     <p>Image not available</p>
                   </div>
                 ) : (
-                  <img 
-                    src={currentSubmission.imageUrl} 
+                  <img
+                    src={currentSubmission.imageUrl}
                     alt={`Submission by ${currentSubmission?.userName ?? 'Unknown'}`}
                     className="submission-image"
                     onLoad={() => handleImageLoad(currentSubmission.id)}
@@ -149,19 +157,19 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
                     }}
                   />
                 )}
-                
+
                 {/* Image Navigation */}
                 {listLength > 1 && (
                   <>
-                    <button 
+                    <button
                       className="nav-button nav-button-prev"
                       onClick={handlePrevious}
                       aria-label="Previous submission"
                     >
                       ‹
                     </button>
-                    <button 
-                      className="nav-button nav-button-next" 
+                    <button
+                      className="nav-button nav-button-next"
                       onClick={handleNext}
                       aria-label="Next submission"
                     >
@@ -185,7 +193,7 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
 
           {/* Accept/Reject Buttons */}
           <div className="action-buttons-container">
-            <button 
+            <button
               className="action-button accept-button"
               onClick={handleAccept}
               disabled={!hasSubmissions}
@@ -193,7 +201,7 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
             >
               <span className="action-icon">✓</span>
             </button>
-            <button 
+            <button
               className="action-button reject-button"
               onClick={handleReject}
               disabled={!hasSubmissions}
@@ -234,7 +242,7 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
 
         {/* Control Buttons */}
         <div className="quest-manager-controls">
-          <button 
+          <button
             className="control-button map-button"
             onClick={() => {
               // Add view on map functionality here
@@ -243,7 +251,7 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
           >
             View On Map
           </button>
-          <button 
+          <button
             className="control-button close-button"
             onClick={openConfirmClose}
           >

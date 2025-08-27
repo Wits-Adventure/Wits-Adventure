@@ -24,12 +24,63 @@
 }
 
 .your-quest-btn {
-  background: #ccc !important;
-  color: #555 !important;
-  border: 1px solid #aaa !important;
+  background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+  border: 2px solid #90774c;
+  color: #2F1B14;
+  opacity: 0.7;
   cursor: default !important;
   pointer-events: none !important;
-  opacity: 0.7;
+  margin-top: 8px;
+  width: 100%;
+  transition: none;
+}
+
+.abandon-quest-btn {
+  background: linear-gradient(135deg, #c89d5c 0%, #ffe3a1 100%);
+  border: 2px solid #a97a4c;
+  color: #4b2e1a;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(200, 157, 92, 0.18), 0 1.5px 4px rgba(0, 0, 0, 0.13);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border-radius: 20px;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+  display: block;
+}
+
+.abandon-quest-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transition: left 0.5s;
+}
+
+.abandon-quest-btn:hover::before {
+  left: 100%;
+}
+
+.abandon-quest-btn:hover {
+  background: linear-gradient(135deg, #e6b96a 0%, #fff2c9 100%);
+  border-color: #a97a4c;
+  color: #3a230a;
+  transform: translateY(-2px);
+  box-shadow: 0 9px 20px rgba(200, 157, 92, 0.22);
+}
+
+.abandon-quest-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.23);
 }
 
 .home-container::before {
@@ -720,20 +771,7 @@
   background: linear-gradient(135deg, #473925, #846d4c);
   border: 2px solid #46392a;
   color: white;
-  font-family: 'Cinzel', serif;
-  font-weight: 600;
-  font-size: 0.8rem;
-  padding: 6px 12px;
-  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  margin-top: 8px;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
 }
 
 .quest-accept-btn::before {
@@ -963,4 +1001,21 @@
   }
 
   /* hide username if space is too small */
+}
+
+.quest-popup-btn {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 14px;
+  width: 100%;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: block;
 }
