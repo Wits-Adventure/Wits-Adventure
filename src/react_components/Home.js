@@ -22,6 +22,7 @@ const Home = () => {
   const location = useLocation(); // Add this near the top of Home()
   const [showCreateForm, setShowCreateForm] = useState(false); // NEW
   const [allQuests, setAllQuests] = useState([]);
+  const [acceptedQuests, setAcceptedQuests] = useState({}); // NEW: state to track accepted quests
 
   // Use useEffect to fetch user data when the authentication state changes
   useEffect(() => {
@@ -406,36 +407,35 @@ const Home = () => {
         navigate('/login');
         return;
       }
+      // Optimistically update UI
+      setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
       try {
         await acceptQuest(questId, currentUser.uid);
-        alert('Quest accepted!');
+        // Optionally show a toast/snackbar here
       } catch (error) {
+        setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
         alert('Failed to accept quest.');
         console.error(error);
       }
     };
 
-    return () => {
-      delete window.handleAcceptQuest;
-    };
-  }, [currentUser, navigate]);
-
-  useEffect(() => {
     window.handleAbandonQuest = async (questId) => {
       if (!currentUser) {
         navigate('/login');
         return;
       }
+      setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
       try {
         await abandonQuest(questId, currentUser.uid);
-        alert('Quest abandoned.');
       } catch (error) {
+        setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
         alert('Failed to abandon quest.');
         console.error(error);
       }
     };
 
     return () => {
+      delete window.handleAcceptQuest;
       delete window.handleAbandonQuest;
     };
   }, [currentUser, navigate]);
@@ -463,8 +463,8 @@ const Home = () => {
       ) {
         setTimeout(() => {
           if (mapInstanceRef.current) {
-            mapInstanceRef.current.invalidateSize(); // <-- Add this line
-            mapInstanceRef.current.setView([latitude, longitude], 18, { animate: true }); // <-- And this line
+            mapInstanceRef.current.invalidateSize();
+            mapInstanceRef.current.setView([latitude, longitude], 18, { animate: true });
 
             // Optionally, open the popup for that quest
             const questId = location.state.focusQuest.id;
@@ -475,13 +475,15 @@ const Home = () => {
               questCircle.openPopup();
             }
           }
-        }, 200); // 200ms delay, adjust if needed
+          // Clear the focusQuest state so it doesn't persist on refresh
+          navigate(".", { replace: true, state: {} });
+        }, 200);
       } else {
         console.warn("Invalid quest location:", location.state.focusQuest.location);
       }
     }
     // eslint-disable-next-line
-  }, [location.state, mapInstanceRef.current, questCirclesRef.current]);
+  }, [location.state, mapInstanceRef.current, questCirclesRef.current, navigate]);
 
   return (
     <section className="home-container">
