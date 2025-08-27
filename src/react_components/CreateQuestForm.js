@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import '../css/CreateQuestForm.css';
 import { useAuth } from '../context/AuthContext';
-import { getUserData, db } from '../firebase/firebase';
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { getUserData, } from '../firebase/firebase';
 import { saveQuestToFirestore } from '../firebase/general_quest_functions';
 
 export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, questCirclesRef }) {
@@ -19,6 +18,39 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
 
   const { currentUser } = useAuth();
   const [username, setUsername] = useState('');
+
+  const stopFollowing = useCallback(() => {
+    const map = mapInstanceRef?.current;
+    if (map) {
+      if (moveHandlerRef.current) map.off('mousemove', moveHandlerRef.current);
+      if (clickHandlerRef.current) map.off('click', clickHandlerRef.current);
+      map.getContainer().classList.remove('quest-placing');
+    }
+
+    if (questCirclesRef?.current) {
+      questCirclesRef.current.forEach(c => {
+        if (c._path) {
+          c._path.style.pointerEvents = c._path.dataset.prevPointer || 'auto';
+          delete c._path.dataset.prevPointer;
+        }
+        if (c._emojiMarker && c._emojiMarker._icon) {
+          const iconEl = c._emojiMarker._icon;
+          iconEl.style.pointerEvents = iconEl.dataset.prevPointer || 'auto';
+          delete iconEl.dataset.prevPointer;
+        }
+      });
+    }
+    if (followMarkerRef.current && mapInstanceRef?.current) {
+      mapInstanceRef.current.removeLayer(followMarkerRef.current);
+      followMarkerRef.current = null;
+    }
+    window.__questPlacing = false;
+    setFollowing(false);
+    setName('');
+    setRadius(45);
+    setQuestImage(null);
+    setImagePreview(null);
+  }, [mapInstanceRef, questCirclesRef]);
 
   useEffect(() => {
     const fetchUsername = async () => {
@@ -47,7 +79,7 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
 
   useEffect(() => {
     return () => stopFollowing();
-  }, []);
+  }, [stopFollowing]);
 
   function pickRandomEmoji() {
     const idx = Math.floor(Math.random() * emojiCatalog.length);
@@ -142,7 +174,7 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
           </div>
           <p>Placed here by ${username}</p>
           <p><strong>Reward:</strong> ${radius} points</p>
-          <button class="quest-accept-btn">Accept Quest</button>
+          <button class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>
         </div>
       `;
       circle.bindPopup(popupHtml);
@@ -185,38 +217,7 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     map.once('click', clickHandlerRef.current);
   };
 
-  const stopFollowing = () => {
-    const map = mapInstanceRef?.current;
-    if (map) {
-      if (moveHandlerRef.current) map.off('mousemove', moveHandlerRef.current);
-      if (clickHandlerRef.current) map.off('click', clickHandlerRef.current);
-      map.getContainer().classList.remove('quest-placing');
-    }
 
-    if (questCirclesRef?.current) {
-      questCirclesRef.current.forEach(c => {
-        if (c._path) {
-          c._path.style.pointerEvents = c._path.dataset.prevPointer || 'auto';
-          delete c._path.dataset.prevPointer;
-        }
-        if (c._emojiMarker && c._emojiMarker._icon) {
-          const iconEl = c._emojiMarker._icon;
-          iconEl.style.pointerEvents = iconEl.dataset.prevPointer || 'auto';
-          delete iconEl.dataset.prevPointer;
-        }
-      });
-    }
-    if (followMarkerRef.current && mapInstanceRef?.current) {
-      mapInstanceRef.current.removeLayer(followMarkerRef.current);
-      followMarkerRef.current = null;
-    }
-    window.__questPlacing = false;
-    setFollowing(false);
-    setName('');
-    setRadius(45);
-    setQuestImage(null);
-    setImagePreview(null);
-  };
 
   const handleSelectLocation = (e) => {
     e.preventDefault();

@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../css/QuestManager.css";
 import quest1 from '../media/quest-submission-1.jpg';
 import quest2 from '../media/quest-submission-2.jpg';
 import quest3 from '../media/quest-submission-3.jpg';
 import { closeQuestAndRemoveFromUsers } from "../firebase/general_quest_functions";
 
-export default function QuestManager({ quest, isOpen, onClose, onAccept, onReject, onCloseQuest }) {
+export default function QuestManager({ quest, isOpen, onClose, onAccept, onReject, onCloseQuest, focusQuest }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoadStates, setImageLoadStates] = useState({});
   const [isConfirmingClose, setIsConfirmingClose] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isOpen) {
@@ -131,6 +133,10 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
     e.target.src = '/placeholder-quest-image.jpg';
   };
 
+  const handleViewOnMap = (quest) => {
+    navigate("/", { state: { focusQuest: quest } });
+  };
+
   return (
     <div className="quest-manager-overlay" onClick={onClose}>
       <div className="quest-manager-modal" onClick={(e) => e.stopPropagation()}>
@@ -245,8 +251,7 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
           <button
             className="control-button map-button"
             onClick={() => {
-              // Add view on map functionality here
-              console.log("View on map clicked for quest:", quest.id);
+              handleViewOnMap(quest);
             }}
           >
             View On Map

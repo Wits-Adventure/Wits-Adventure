@@ -8,10 +8,12 @@ import { logout, getUserData } from '../firebase/firebase'; // Import getUserDat
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
 import { getAllQuests, acceptQuest, abandonQuest } from '../firebase/general_quest_functions';
 import CreateQuestForm from './CreateQuestForm';
+import { getProfileData } from '../firebase/profile_functions';
 
 const Home = () => {
   const { currentUser } = useAuth();
   const [username, setUsername] = useState('');
+  const [profilePicture, setProfilePicture] = useState(profilePic); // <-- new state for profile picture
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const headerRef = useRef(null);
@@ -42,6 +44,27 @@ const Home = () => {
 
     fetchUsername();
   }, [currentUser]); // Dependency array: run this effect when currentUser changes
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (currentUser) {
+        try {
+          const profileData = await getProfileData();
+          setUsername(profileData.Name || 'User');
+          setProfilePicture(profileData.profilePicture || profilePic); // <-- set profile picture
+        } catch (error) {
+          console.error("Failed to fetch profile:", error);
+          setUsername('User');
+          setProfilePicture(profilePic);
+        }
+      } else {
+        setUsername('');
+        setProfilePicture(profilePic);
+      }
+    };
+
+    fetchProfile();
+  }, [currentUser]);
 
   useEffect(() => {
     async function fetchQuests() {
@@ -98,7 +121,6 @@ const Home = () => {
           <h3>${titleEmoji} ${quest.name}</h3>
           ${quest.imageUrl ? `<div class="quest-image-container"><img src="${quest.imageUrl}" alt="Quest Image" class="quest-popup-image" /></div>` : ''}
           <p><strong>Reward:</strong> ${quest.reward ?? quest.radius} points</p>
-          <p><strong>Radius:</strong> ${quest.radius}m</p>
           ${buttonHtml}
         </div>
       `);
@@ -183,7 +205,7 @@ const Home = () => {
             </div>
             <p>${quest.description}</p>
             <p><strong>Reward:</strong> ${quest.radius} points</p>
-            <button class="quest-accept-btn" onclick="window.handleAcceptQuest()">Accept Quest</button>
+            <button class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest()">Accept Quest</button>
           </div>
         `);
 
@@ -432,7 +454,7 @@ const Home = () => {
           {currentUser ? ( // Conditional rendering based on currentUser
             <section className="user-profile" onClick={handleProfileClick} style={{ cursor: 'pointer' }}>
               <section className="profile-icon">
-                <img src={profilePic} alt={`${username}'s avatar`} className="profile-icon-img" />
+                <img src={profilePicture} alt={`${username}'s avatar`} className="profile-icon-img" />
               </section>
               <span className="username">{username}</span>
               <button className="logout-btn" onClick={handleLogout}>

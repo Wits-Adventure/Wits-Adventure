@@ -2,6 +2,8 @@ import { db, auth } from "./firebase";
 import { collection, getDocs, getDoc, updateDoc, doc } from "firebase/firestore";
 
 
+
+
 export async function getProfileData() {
   const user = auth.currentUser; // Accessing the authenticated user
   if (!user) {
@@ -22,11 +24,11 @@ export async function getProfileData() {
     LeaderBoardPoints: userData.LeaderBoardPoints,
     CompletedQuests: userData.CompletedQuests.length,
     Level: userData.Level,
-    Bio: userData.Bio
+    Bio: userData.Bio,
+    profilePicture: userData.ProfilePictureUrl,
 
     /*
     To be added later, using defaults for now
-    ProfilePictureUrl: userData.ProfilePictureUrl
     Badge: userData.Badge
     Rank: userData.Rank? Have to figure out how we'll get the user's rank
     */
@@ -73,3 +75,14 @@ export async function addProfileFields() {
 
 
 }
+
+export async function updateProfileData({ uid, Name, Bio, ProfilePictureUrl }) {
+  if (!uid) throw new Error("No user ID provided");
+  const userDocRef = doc(db, "Users", uid);
+  const updateObj = {};
+  if (Name !== undefined) updateObj.Name = Name;
+  if (Bio !== undefined) updateObj.Bio = Bio;
+  if (ProfilePictureUrl !== undefined) updateObj.ProfilePictureUrl = ProfilePictureUrl;
+  await updateDoc(userDocRef, updateObj);
+}
+

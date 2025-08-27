@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import "../css/ProfilePage.css";
 import profilePic from "../assets/profile.jpg";
 import editIcon from "../assets/edit_icon.png";
-import { getProfileData } from "../firebase/profile_functions";
+import { getProfileData, updateProfileData } from "../firebase/profile_functions";
 import { useNavigate } from "react-router-dom";
 import { getAllQuests } from "../firebase/general_quest_functions";
 import QuestManager from "./QuestManager";
 
-export default function ProfilePage() {
+export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,6 +25,10 @@ export default function ProfilePage() {
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const navigate = useNavigate();
+
+  const handleCloseQuest = (questId) => {
+    setCreatedQuests((prev) => prev.filter((q) => q.id !== questId));
+  };
 
   const handleBackHome = () => {
     navigate("/");
@@ -54,7 +58,7 @@ export default function ProfilePage() {
           questsCompleted: profileData.CompletedQuests,
           level: profileData.Level,
           bio: profileData.Bio,
-          profilePicture: profilePic,
+          profilePicture: profileData.profilePicture || profilePic,
           rank: 12,
           questsInProgress: 3, // Placeholder
         });
@@ -83,14 +87,25 @@ export default function ProfilePage() {
     setIsEditing(true);
   };
 
-  const handleSave = () => {
-    setUser({
-      ...user,
-      username: editedUsername,
-      bio: editedBio,
-      profilePicture: editedProfilePic,
-    });
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      await updateProfileData({
+        uid: user.uid,
+        Name: editedUsername,
+        Bio: editedBio,
+        ProfilePictureUrl: editedProfilePic
+      });
+      setUser({
+        ...user,
+        username: editedUsername,
+        bio: editedBio,
+        profilePicture: editedProfilePic,
+      });
+      setIsEditing(false);
+    } catch (err) {
+      alert("Failed to update profile. Please try again.");
+      console.error(err);
+    }
   };
 
   const handleCancel = () => {
@@ -188,6 +203,11 @@ export default function ProfilePage() {
     // Add your reject submission logic here
   };
 
+  const handleFocusQuest = (quest) => {
+  };
+
+  const profilePicture = user.profilePicture || "/profile.png";
+
   return (
     <main className="profile-container">
       <div className="profile-layout">
@@ -195,7 +215,7 @@ export default function ProfilePage() {
         <section className="profile-card">
           <div className="profile-pic-container">
             <img
-              src={user.profilePicture}
+              src={profilePicture}
               alt={`${user.username}'s avatar`}
               className="profile-pic"
             />
@@ -371,7 +391,8 @@ export default function ProfilePage() {
         isOpen={isQuestManagerOpen}
         onClose={handleCloseQuestManager}
         onAccept={handleAcceptSubmission}
-        onReject={handleRejectSubmission}
+        onCloseQuest={handleCloseQuest}
+        focusQuest={handleFocusQuest} // <-- add this line
       />
 
       {/* Back to Home button - fixed at bottom-left */}
