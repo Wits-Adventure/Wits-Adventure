@@ -67,9 +67,18 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
 
         // Fetch all quests and filter by creatorId
         const allQuests = await getAllQuests();
-        const userCreated = allQuests.filter(
-          (q) => q.creatorId === profileData.uid // or whatever field is the user's UID
-        );
+        const userCreated = allQuests
+          .filter(q => q.creatorId === profileData.uid)
+          .map(q => ({
+            ...q,
+            location: q.location && typeof q.location.latitude === "number"
+              ? { latitude: q.location.latitude, longitude: q.location.longitude }
+              : q.location && typeof q.location._lat === "number"
+                ? { latitude: q.location._lat, longitude: q.location._long }
+                : Array.isArray(q.location)
+                  ? { latitude: q.location[0], longitude: q.location[1] }
+                  : null
+          }));
         setCreatedQuests(userCreated);
 
         setLoading(false);
@@ -203,8 +212,6 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
     // Add your reject submission logic here
   };
 
-  const handleFocusQuest = (quest) => {
-  };
 
   const profilePicture = user.profilePicture || "/profile.png";
 
@@ -392,7 +399,6 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
         onClose={handleCloseQuestManager}
         onAccept={handleAcceptSubmission}
         onCloseQuest={handleCloseQuest}
-        focusQuest={handleFocusQuest} // <-- add this line
       />
 
       {/* Back to Home button - fixed at bottom-left */}

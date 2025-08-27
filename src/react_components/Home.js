@@ -3,7 +3,7 @@ import '../css/Home.css';
 import logoImage from '../media/LOGO_Alpha.png';
 import questbookImage from '../media/questbook_outline.png';
 import profilePic from '../assets/profile.jpg'; // added: use same default pfp as ProfilePage
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { logout, getUserData } from '../firebase/firebase'; // Import getUserData
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
 import { getAllQuests, acceptQuest, abandonQuest } from '../firebase/general_quest_functions';
@@ -19,6 +19,7 @@ const Home = () => {
   const headerRef = useRef(null);
   const questCirclesRef = useRef([]); // Add this to track quest circles
   const navigate = useNavigate();
+  const location = useLocation(); // Add this near the top of Home()
   const [showCreateForm, setShowCreateForm] = useState(false); // NEW
   const [allQuests, setAllQuests] = useState([]);
 
@@ -69,7 +70,18 @@ const Home = () => {
   useEffect(() => {
     async function fetchQuests() {
       const quests = await getAllQuests();
-      setAllQuests(quests);
+      setAllQuests(
+        quests.map(q => ({
+          ...q,
+          location: q.location && typeof q.location.latitude === "number"
+            ? { latitude: q.location.latitude, longitude: q.location.longitude }
+            : q.location && typeof q.location._lat === "number"
+              ? { latitude: q.location._lat, longitude: q.location._long }
+              : Array.isArray(q.location)
+                ? { latitude: q.location[0], longitude: q.location[1] }
+                : null
+        }))
+      );
     }
     fetchQuests();
   }, []);
@@ -104,7 +116,8 @@ const Home = () => {
         fillColor: color,
         fillOpacity: 0.3,
         radius: quest.radius || 50,
-        weight: 2
+        weight: 2,
+        questId: quest.id // <-- add this line
       }).addTo(mapInstanceRef.current);
 
       // Custom popup
@@ -432,6 +445,43 @@ const Home = () => {
       addQuestAreas();
     }
   }, [addQuestAreas]);
+
+  // Focus map on quest if navigated from "View On Map"
+  useEffect(() => {
+    if (
+      mapInstanceRef.current &&
+      location.state &&
+      location.state.focusQuest &&
+      location.state.focusQuest.location
+    ) {
+      const { latitude, longitude } = location.state.focusQuest.location;
+      if (
+        typeof latitude === "number" &&
+        typeof longitude === "number" &&
+        !isNaN(latitude) &&
+        !isNaN(longitude)
+      ) {
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize(); // <-- Add this line
+            mapInstanceRef.current.setView([latitude, longitude], 18, { animate: true }); // <-- And this line
+
+            // Optionally, open the popup for that quest
+            const questId = location.state.focusQuest.id;
+            const questCircle = questCirclesRef.current.find(
+              c => c.options && c.options.questId === questId
+            );
+            if (questCircle) {
+              questCircle.openPopup();
+            }
+          }
+        }, 200); // 200ms delay, adjust if needed
+      } else {
+        console.warn("Invalid quest location:", location.state.focusQuest.location);
+      }
+    }
+    // eslint-disable-next-line
+  }, [location.state, mapInstanceRef.current, questCirclesRef.current]);
 
   return (
     <section className="home-container">
