@@ -10,6 +10,7 @@ import { getAllQuests, acceptQuest, abandonQuest } from '../firebase/general_que
 import CreateQuestForm from './CreateQuestForm';
 import { getProfileData } from '../firebase/profile_functions';
 
+
 const Home = () => {
   const { currentUser } = useAuth();
   const [username, setUsername] = useState('');
@@ -127,10 +128,10 @@ const Home = () => {
         : (quest.acceptedBy && quest.acceptedBy.includes(currentUser?.uid));
       const isOwnQuest = currentUser && quest.creatorId === currentUser.uid;
       const buttonHtml = isOwnQuest
-        ? `<button class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>`
+        ? `<button id="quest-btn-${quest.id}" class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>`
         : hasAccepted
-          ? `<button class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonQuest('${quest.id}')">Abandon Quest</button>`
-          : `<button class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
+          ? `<button id="quest-btn-${quest.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonQuest('${quest.id}')">Abandon Quest</button>`
+          : `<button id="quest-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
 
       questCircle.bindPopup(`
         <div class="quest-popup">
@@ -409,13 +410,25 @@ const Home = () => {
         navigate('/login');
         return;
       }
-      // Optimistically update UI
       setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
+
+      // Instantly update button UI
+      const btn = document.getElementById(`quest-btn-${questId}`);
+      if (btn) {
+        btn.textContent = "Abandon Quest";
+        btn.className = "quest-popup-btn abandon-quest-btn";
+        btn.onclick = () => window.handleAbandonQuest(questId);
+      }
+
       try {
         await acceptQuest(questId, currentUser.uid);
-        // Optionally show a toast/snackbar here
       } catch (error) {
         setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
+        if (btn) {
+          btn.textContent = "Accept Quest";
+          btn.className = "quest-popup-btn quest-accept-btn";
+          btn.onclick = () => window.handleAcceptQuest(questId);
+        }
         alert('Failed to accept quest.');
         console.error(error);
       }
@@ -427,10 +440,24 @@ const Home = () => {
         return;
       }
       setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
+
+      // Instantly update button UI
+      const btn = document.getElementById(`quest-btn-${questId}`);
+      if (btn) {
+        btn.textContent = "Accept Quest";
+        btn.className = "quest-popup-btn quest-accept-btn";
+        btn.onclick = () => window.handleAcceptQuest(questId);
+      }
+
       try {
         await abandonQuest(questId, currentUser.uid);
       } catch (error) {
         setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
+        if (btn) {
+          btn.textContent = "Abandon Quest";
+          btn.className = "quest-popup-btn abandon-quest-btn";
+          btn.onclick = () => window.handleAbandonQuest(questId);
+        }
         alert('Failed to abandon quest.');
         console.error(error);
       }
