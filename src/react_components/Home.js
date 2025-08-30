@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext'; // Import useAuth hook
 import { getAllQuests, acceptQuest, abandonQuest } from '../firebase/general_quest_functions';
 import CreateQuestForm from './CreateQuestForm';
 import { getProfileData } from '../firebase/profile_functions';
+import bellImage from '../media/bell.png'; // Add this import
 
 
 const Home = () => {
@@ -24,6 +25,7 @@ const Home = () => {
   const [showCreateForm, setShowCreateForm] = useState(false); // NEW
   const [allQuests, setAllQuests] = useState([]);
   const [acceptedQuests, setAcceptedQuests] = useState({}); // NEW: state to track accepted quests
+  const [toastMsg, setToastMsg] = useState('');
 
   // Use useEffect to fetch user data when the authentication state changes
   useEffect(() => {
@@ -514,6 +516,11 @@ const Home = () => {
     // eslint-disable-next-line
   }, [location.state, mapInstanceRef.current, questCirclesRef.current, navigate]);
 
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(''), 2200); // Hide after 2.2s
+  };
+
   return (
     <section className="home-container">
       <header ref={headerRef} className="header">
@@ -574,10 +581,65 @@ const Home = () => {
               <button className="questbook-icon" onClick={handleQuestbookClick}>
                 <img src={questbookImage} alt="Questbook" />
               </button>
+              {/* Bell icon */}
+              <button
+                className="bell-icon"
+                onClick={() => {
+                  showToast("The bell tolls");
+                  if (window.L && mapInstanceRef.current) {
+                    if (window.__bellPulseCircle) {
+                      mapInstanceRef.current.removeLayer(window.__bellPulseCircle);
+                      window.__bellPulseCircle = null;
+                    }
+                    const coords = [-26.1929, 28.0305];
+                    const circle = window.L.circle(coords, {
+                      color: "#e6d5a8",
+                      fillColor: "#fff2c9",
+                      fillOpacity: 0.7, // more opaque
+                      radius: 30,
+                      weight: 3,
+                      interactive: false,
+                      className: "bell-pulse-circle"
+                    }).addTo(mapInstanceRef.current);
+                    window.__bellPulseCircle = circle;
+
+                    let frame = 0;
+                    const maxFrames = 80; // slower animation
+                    const startRadius = 30;
+                    const endRadius = 220;
+                    function animate() {
+                      frame++;
+                      const r = startRadius + ((endRadius - startRadius) * (frame / maxFrames));
+                      circle.setRadius(r);
+                      circle.setStyle({
+                        opacity: 0.9 - frame / maxFrames, // more opaque
+                        fillOpacity: 0.7 - 0.7 * (frame / maxFrames) // more opaque
+                      });
+                      if (frame < maxFrames) {
+                        requestAnimationFrame(animate);
+                      } else {
+                        mapInstanceRef.current.removeLayer(circle);
+                        window.__bellPulseCircle = null;
+                      }
+                    }
+                    animate();
+                  }
+                }}
+                aria-label="Bell"
+              >
+                <img src={bellImage} alt="Bell" />
+              </button>
             </div>
           </div>
         </section>
       </main>
+
+      {toastMsg && (
+        <div className="fantasy-toast">
+          <span className="toast-bell"></span>
+          {toastMsg}
+        </div>
+      )}
     </section>
   );
 };

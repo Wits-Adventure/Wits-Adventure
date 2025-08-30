@@ -1021,3 +1021,73 @@
   transition: all 0.3s ease;
   display: block;
 }
+
+.bell-icon {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  background: transparent;
+  border: none;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  z-index: 1000;
+}
+
+.bell-icon:hover {
+  transform: scale(1.1) translateY(-3px);
+}
+
+.bell-icon img {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  filter: none;
+}
+
+/* Optional: style for the radiating pulse circle (Leaflet adds SVG) */
+.leaflet-interactive.bell-pulse-circle {
+  stroke: #e6d5a8 !important;
+  stroke-width: 3 !important;
+  fill: #fff2c9 !important;
+  opacity: 0.9 !important; /* more opaque */
+  pointer-events: none !important;
+  transition: opacity 0.3s;
+}
+
+.fantasy-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 60px;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ffeac8 80%, #d8ba8a 100%);
+  color: #2F1B14;
+  border: 3px solid #90774c;
+  border-radius: 18px;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  padding: 12px 32px 12px 24px;
+  box-shadow: 0 8px 32px rgba(144,119,76,0.18), 0 2px 0 #fff2c9 inset;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: toastPopIn 0.22s cubic-bezier(.7,.2,.3,1);
+  pointer-events: none;
+}
+
+.toast-bell {
+  font-size: 1.3em;
+  margin-right: 2px;
+}
+
+@keyframes toastPopIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.96);}
+  to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1);}
+}
