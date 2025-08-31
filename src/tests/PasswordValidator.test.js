@@ -1,4 +1,7 @@
-const { validatePasswordStrength } = require('../react_components/PasswordValidator'); // Adjust path as needed
+/**
+ * @jest-environment node
+ */
+const { validatePasswordStrength } = require('../react_components/PasswordValidator'); 
 
 describe('validatePasswordStrength', () => {
   test('should return weak strength for empty password', () => {

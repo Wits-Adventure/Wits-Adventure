@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 // Polyfill fetch for Node.js
 global.fetch = jest.fn(() =>
   Promise.resolve({
