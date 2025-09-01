@@ -9,7 +9,10 @@ import { useAuth } from '../context/AuthContext'; // Import useAuth hook
 import { getAllQuests, acceptQuest, abandonQuest } from '../firebase/general_quest_functions';
 import CreateQuestForm from './CreateQuestForm';
 import { getProfileData } from '../firebase/profile_functions';
-import bellImage from '../media/bell.png'; // Add this import
+import bellImage from '../media/bell.png';
+import musicImage from '../media/music.png'; 
+import useMusic from './useMusic';
+
 
 
 const Home = () => {
@@ -27,6 +30,12 @@ const Home = () => {
   const [acceptedQuests, setAcceptedQuests] = useState({}); // NEW: state to track accepted quests
   const [toastMsg, setToastMsg] = useState('');
 
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(''), 2200);
+  };
+
+  const { isMusicPlaying, toggleMusic } = useMusic(showToast);
   // Use useEffect to fetch user data when the authentication state changes
   useEffect(() => {
     const fetchUsername = async () => {
@@ -516,11 +525,7 @@ const Home = () => {
     // eslint-disable-next-line
   }, [location.state, mapInstanceRef.current, questCirclesRef.current, navigate]);
 
-  const showToast = (msg) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(''), 2200); // Hide after 2.2s
-  };
-
+  
   return (
     <section className="home-container">
       <header ref={headerRef} className="header">
@@ -528,6 +533,14 @@ const Home = () => {
           <img src={logoImage} alt="Logo" className="logo" />
           <h1>WITS ADVENTURE</h1>
         </section>
+        {/* The music button */}
+        <button
+            className={`music-icon ${isMusicPlaying ? 'playing' : ''}`}
+            onClick={toggleMusic}
+            aria-label="Toggle Music"
+        >
+            <img src={musicImage} alt="Music" />
+        </button>
 
         {/* Create Quest button inserted between site name and user-area */}
         <button
@@ -628,6 +641,15 @@ const Home = () => {
                 aria-label="Bell"
               >
                 <img src={bellImage} alt="Bell" />
+              </button>
+
+              {/* Music icon */}
+              <button
+                className="music-icon"
+                onClick={toggleMusic}
+                aria-label="Toggle Music"
+              >
+                <img src={musicImage} alt="Music" />
               </button>
             </div>
           </div>

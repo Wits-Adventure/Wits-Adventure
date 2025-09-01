@@ -35,6 +35,49 @@
   transition: none;
 }
 
+/* Style for the music button */
+.music-icon {
+  position: relative; /* Needed for positioning the slash, if used */
+  width: 45px;
+  height: 45px;
+  background-color: transparent;
+  border: 2px solid #2F1B14; 
+  border-radius: 50%; 
+  cursor: pointer;
+  padding: 0;
+  margin-left: -250px; 
+  overflow: hidden; 
+  box-sizing: border-box; 
+  display: flex; 
+  justify-content: center; /* Center horizontally */
+  align-items: center; 
+}
+
+.music-icon img {
+  width: 72%;
+  height: 72%;
+  object-fit: cover; 
+  display: flex;
+}
+
+.music-icon:not(.playing)::before {
+  content: '';
+  position: absolute;
+  width: 95%; 
+  height: 2px; 
+  background-color:#4b2e1a; 
+  transform: rotate(45deg);
+  top: 50%; 
+  left: 50%; 
+  transform-origin: center;
+  translate: -50% -50%; 
+  z-index: 2; 
+}
+.music-icon.playing {
+  border-color: #d4a017; /* Change border color when playing */
+  transform: scale(1.1); 
+  box-shadow: 0 0 8px rgba(212, 160, 23, 0.6); /* Subtle glow */
+}
 .abandon-quest-btn {
   background: linear-gradient(135deg, #c89d5c 0%, #ffe3a1 100%);
   border: 2px solid #a97a4c;
