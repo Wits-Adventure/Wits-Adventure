@@ -4,4 +4,5 @@
 - [⚖️ Methodologies](methodologies.md)
 - [🖼 Website Planning](WebsitePlanning.md)
 - [📋 Sprint Tasks](sprintTasks.md)
-- [🧙‍♂️ Development guides](developmentGuides.md)
+- [🧙‍♂️ Development guides](make_backend.md)
+- [Schema and explanation](schema.md)
