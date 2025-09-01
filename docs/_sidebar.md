@@ -1,6 +1,7 @@
 - [🏰 Home](/)
-- [⚡Using the website](usage.md)
+- [⚡ Using the website](usage.md)
 - [⚒ Techstack](techStack.md)
 - [⚖️ Methodologies](methodologies.md)
 - [🖼 Website Planning](WebsitePlanning.md)
 - [📋 Sprint Tasks](sprintTasks.md)
+- [🧙‍♂️ Development guides](developmentGuides.md)

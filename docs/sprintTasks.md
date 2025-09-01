@@ -2,7 +2,7 @@
 
 | Tasks                                                                                                                                                 |
 | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| As a student, I want to see available quests on a quest page, so that I can choose which ones to complete.                                            |
+| As a student, I want to see available quests on the map so that i can choose which to accept.                                            |
 | As a student, I want to create my own quests, so that I can challenge my classmates with custom activities.                                           |
 | As a student, I want to submit quest completions, so that I can prove I have completed the activity.                                                  |
 | As a moderator/quest creator, I want to verify quest completion, so that rewards are fairly given.                                                    |
