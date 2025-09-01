@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import '../css/CreateQuestForm.css'; // reuse styling
 import { useAuth } from '../context/AuthContext';
 import { getUserData } from '../firebase/firebase';
+import { submitQuestAttempt } from '../firebase/general_quest_functions';
 
 export default function CompleteQuestForm({ isOpen, onClose, quest }) {
   const { currentUser } = useAuth();
@@ -41,7 +42,7 @@ export default function CompleteQuestForm({ isOpen, onClose, quest }) {
     handleImageUpload(e.target.files[0]);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!currentUser) {
@@ -54,11 +55,16 @@ export default function CompleteQuestForm({ isOpen, onClose, quest }) {
       return;
     }
 
-    // Instead of submitting to Firebase, just show an alert
-    alert(
-      'Your image is under review. Feedback will be provided shortly on whether you have successfully completed the quest.'
-    );
-    onClose();
+    try {
+      await submitQuestAttempt(quest.id, currentUser.uid, proofImage, username);
+      alert(
+        'Your image is under review. Feedback will be provided shortly on whether you have successfully completed the quest.'
+      );
+      onClose();
+    } catch (error) {
+      alert('Failed to submit your proof. Please try again.');
+      console.error(error);
+    }
   };
 
   return (

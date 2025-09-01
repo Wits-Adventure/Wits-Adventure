@@ -4,12 +4,13 @@ import "../css/QuestManager.css";
 import quest1 from '../media/quest-submission-1.jpg';
 import quest2 from '../media/quest-submission-2.jpg';
 import quest3 from '../media/quest-submission-3.jpg';
-import { closeQuestAndRemoveFromUsers } from "../firebase/general_quest_functions";
+import { approveSubmissionAndCloseQuest, fetchQuestSubmissions, removeQuestSubmission, closeQuestAndRemoveFromUsers } from "../firebase/general_quest_functions";
 
 export default function QuestManager({ quest, isOpen, onClose, onAccept, onReject, onCloseQuest, focusQuest }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoadStates, setImageLoadStates] = useState({});
   const [isConfirmingClose, setIsConfirmingClose] = useState(false);
+  const [submissions, setSubmissions] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,45 +19,17 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
     }
   }, [isOpen]);
 
-  // Mock submission data - replace with actual data from your backend
-  const mockSubmissions = [
-    {
-      id: 1,
-      userId: "user123",
-      userName: "Adventure Seeker",
-      imageUrl: quest1,
-      timestamp: "2025-01-15T10:30:00Z",
-      description: "Completed the dragon quest!"
-    },
-    {
-      id: 2,
-      userId: "user456",
-      userName: "Quest Master",
-      imageUrl: quest2,
-      timestamp: "2025-01-14T15:45:00Z",
-      description: "Found the ancient artifact"
-    },
-    {
-      id: 3,
-      userId: "user789",
-      userName: "Brave Explorer",
-      imageUrl: quest3,
-      timestamp: "2025-01-13T09:15:00Z",
-      description: "Defeated the boss monster"
-    }
-  ];
-
-  const [submissions, setSubmissions] = useState(mockSubmissions);
 
   // Clamp the index when the list shrinks/changes
   useEffect(() => {
-    const len = submissions.length;
-    if (len === 0 && currentImageIndex !== 0) {
-      setCurrentImageIndex(0);
-    } else if (len > 0 && currentImageIndex >= len) {
-      setCurrentImageIndex(len - 1);
+    if (isOpen && quest?.id) {
+      fetchQuestSubmissions(quest.id).then(setSubmissions);
     }
-  }, [submissions.length, currentImageIndex]);
+    if (!isOpen) {
+      setIsConfirmingClose(false);
+      setSubmissions([]); // Optionally clear submissions when closed
+    }
+  }, [isOpen, quest?.id]);
 
   if (!isOpen || !quest) return null;
 
@@ -80,16 +53,17 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
     );
   };
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     if (!currentSubmission) return;
-    if (onAccept) onAccept(currentSubmission.id, quest.id);
-    removeSubmissionAt(safeIndex);
+    await approveSubmissionAndCloseQuest(quest.id, currentSubmission.userId);
+    if (typeof onClose === 'function') onClose();
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
+    console.log("Reject button clicked!", currentSubmission);
     if (!currentSubmission) return;
-    if (onReject) onReject(currentSubmission.id, quest.id);
-    removeSubmissionAt(safeIndex);
+    await removeQuestSubmission(quest.id, safeIndex);
+    setSubmissions(prev => prev.filter((_, i) => i !== safeIndex));
   };
 
   // Confirm and close quest (remove from menu)
@@ -224,10 +198,12 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
             <div className="submission-details">
               <div className="submission-header">
                 <h4 className="submission-user">
-                  Submitted by: {currentSubmission.userName}
+                  Submitted by: {currentSubmission.Name}
                 </h4>
                 <span className="submission-timestamp">
-                  {new Date(currentSubmission.timestamp).toLocaleDateString()}
+                  {currentSubmission.submittedAt
+                    ? new Date(currentSubmission.submittedAt).toLocaleDateString()
+                    : "Unknown date"}
                 </span>
               </div>
               {currentSubmission.description && (

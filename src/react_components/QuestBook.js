@@ -5,6 +5,7 @@ import logo from '../media/logo.jpg';
 import trophy from '../media/trophy.png';
 import { getUserData } from '../firebase/firebase';
 import { getAllQuests } from '../firebase/general_quest_functions';
+import CompleteQuestForm from './CompleteQuestForm';
 
 const questsPerPage = 4;
 
@@ -15,6 +16,8 @@ const QuestBook = () => {
   const [userId, setUserId] = useState(null);
   const [activeTab, setActiveTab] = useState('Quests'); // Added tab state
   const [acceptedQuests, setAcceptedQuests] = useState([]);
+  const [showCompleteForm, setShowCompleteForm] = useState(false);
+  const [activeQuest, setActiveQuest] = useState(null);
 
   // Fetch quests and user info on mount
   useEffect(() => {
@@ -69,8 +72,9 @@ const QuestBook = () => {
     });
   };
 
-  const handleCompleteQuest = (questName) => {
-    alert(`Quest "${questName}" marked as complete!`);
+  const handleTurnInQuest = (quest) => {
+    setActiveQuest(quest);
+    setShowCompleteForm(true);
   };
 
   if (loading) return <p style={{ textAlign: 'center' }}>Loading quests...</p>;
@@ -124,12 +128,19 @@ const QuestBook = () => {
                 </span>
                 <button
                   className="complete-btn"
-                  onClick={() => handleCompleteQuest(quest.name || "this quest")}
+                  onClick={() => handleTurnInQuest(quest)}
                 >
-                  Complete Quest
+                  Turn in Quest
                 </button>
               </div>
             ))}
+
+            {/* Place CompleteQuestForm here */}
+            <CompleteQuestForm
+              isOpen={showCompleteForm}
+              onClose={() => { setShowCompleteForm(false); setActiveQuest(null); }}
+              quest={activeQuest}
+            />
           </>
         )}
 

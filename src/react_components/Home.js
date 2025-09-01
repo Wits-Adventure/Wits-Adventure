@@ -11,7 +11,7 @@ import CreateQuestForm from './CreateQuestForm';
 import CompleteQuestForm from './CompleteQuestForm';
 import { getProfileData } from '../firebase/profile_functions';
 import bellImage from '../media/bell.png';
-import musicImage from '../media/music.png'; 
+import musicImage from '../media/music.png';
 import useMusic from './useMusic';
 
 
@@ -30,7 +30,7 @@ const Home = () => {
   const [allQuests, setAllQuests] = useState([]);
   const [acceptedQuests, setAcceptedQuests] = useState({}); // NEW: state to track accepted quests
   const [showCompleteForm, setShowCompleteForm] = useState(false);
-   const [activeQuest, setActiveQuest] = useState(null);
+  const [activeQuest, setActiveQuest] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
 
   const showToast = (msg) => {
@@ -144,7 +144,10 @@ const Home = () => {
       const buttonHtml = isOwnQuest
         ? `<button id="quest-btn-${quest.id}" class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>`
         : hasAccepted
-          ? `<button id="quest-btn-${quest.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonQuest('${quest.id}')">Abandon Quest</button>`
+          ? `
+      <button id="quest-btn-${quest.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonQuest('${quest.id}')">Abandon Quest</button>
+      <button id="turnin-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleTurnInQuest('${quest.id}')">Turn in Quest</button>
+      `
           : `<button id="quest-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
 
       questCircle.bindPopup(`
@@ -485,7 +488,7 @@ const Home = () => {
   }, [currentUser, navigate]);
 */
 
-const handleCreateQuestClick = () => {
+  const handleCreateQuestClick = () => {
     if (!currentUser) return navigate('/login');
     setShowCreateForm(true);
   };
@@ -498,7 +501,6 @@ const handleCreateQuestClick = () => {
       if (!quest) return;
 
       setActiveQuest(quest);
-      setShowCompleteForm(true);
 
       setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
 
@@ -520,11 +522,17 @@ const handleCreateQuestClick = () => {
       }
     };
 
-    
+    window.handleTurnInQuest = (questId) => {
+      const quest = allQuests.find(q => q.id === questId);
+      if (!quest) return;
+      setActiveQuest(quest);
+      setShowCompleteForm(true);
+    };
 
     return () => {
       delete window.handleAcceptQuest;
       delete window.handleAbandonQuest;
+      delete window.handleTurnInQuest;
     };
   }, [currentUser, navigate, allQuests, acceptedQuests]);
 
@@ -573,7 +581,7 @@ const handleCreateQuestClick = () => {
     // eslint-disable-next-line
   }, [location.state, mapInstanceRef.current, questCirclesRef.current, navigate]);
 
-  
+
   return (
     <section className="home-container">
       <header ref={headerRef} className="header">
@@ -583,11 +591,11 @@ const handleCreateQuestClick = () => {
         </section>
         {/* The music button */}
         <button
-            className={`music-icon ${isMusicPlaying ? 'playing' : ''}`}
-            onClick={toggleMusic}
-            aria-label="Toggle Music"
+          className={`music-icon ${isMusicPlaying ? 'playing' : ''}`}
+          onClick={toggleMusic}
+          aria-label="Toggle Music"
         >
-            <img src={musicImage} alt="Music" />
+          <img src={musicImage} alt="Music" />
         </button>
 
         {/* Create Quest button inserted between site name and user-area */}
@@ -621,7 +629,7 @@ const handleCreateQuestClick = () => {
         </section>
       </header>
 
-       <CompleteQuestForm
+      <CompleteQuestForm
         isOpen={showCompleteForm}
         onClose={() => { setShowCompleteForm(false); setActiveQuest(null); }}
         quest={activeQuest}
