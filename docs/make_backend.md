@@ -15,7 +15,7 @@ Instead of a single, monolithic file, a well-structured backend uses a modular d
 
     index.js: This is the entry point of your application. Its primary job is to initialize Firebase, apply global middleware (like cors and express.json), and "mount" your route files. It acts as the central hub for your entire API.
 
-    middleware/auth.js: This file contains your authenticate function. It is a reusable "gatekeeper" that checks for a valid authentication token on incoming requests before they can access a protected endpoint.
+    functions/auth.js: This file contains your authenticate function. It is a reusable "gatekeeper" that checks for a valid authentication token on incoming requests before they can access a protected endpoint.
 
     routes/*.js: These files contain all the business logic for specific parts of your application (e.g., users, quests, products). They define the actual API endpoints (GET, POST, PATCH, DELETE).
 
