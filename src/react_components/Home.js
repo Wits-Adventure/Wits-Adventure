@@ -8,6 +8,7 @@ import { logout, getUserData } from '../firebase/firebase'; // Import getUserDat
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
 import { getAllQuests, acceptQuest, abandonQuest } from '../firebase/general_quest_functions';
 import CreateQuestForm from './CreateQuestForm';
+import CompleteQuestForm from './CompleteQuestForm';
 import { getProfileData } from '../firebase/profile_functions';
 import bellImage from '../media/bell.png';
 import musicImage from '../media/music.png'; 
@@ -28,6 +29,8 @@ const Home = () => {
   const [showCreateForm, setShowCreateForm] = useState(false); // NEW
   const [allQuests, setAllQuests] = useState([]);
   const [acceptedQuests, setAcceptedQuests] = useState({}); // NEW: state to track accepted quests
+  const [showCompleteForm, setShowCompleteForm] = useState(false);
+   const [activeQuest, setActiveQuest] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
 
   const showToast = (msg) => {
@@ -404,6 +407,7 @@ const Home = () => {
   const handleQuestbookClick = () => {
     navigate('/questbook');
   };
+  /*
 
   // NEW: open create form only for logged-in users; otherwise go to login
   const handleCreateQuestClick = () => {
@@ -479,6 +483,50 @@ const Home = () => {
       delete window.handleAbandonQuest;
     };
   }, [currentUser, navigate]);
+*/
+
+const handleCreateQuestClick = () => {
+    if (!currentUser) return navigate('/login');
+    setShowCreateForm(true);
+  };
+
+  // Accept/Abandon normal quests
+  useEffect(() => {
+    window.handleAcceptQuest = async (questId) => {
+      if (!currentUser) return navigate('/login');
+      const quest = allQuests.find(q => q.id === questId);
+      if (!quest) return;
+
+      setActiveQuest(quest);
+      setShowCompleteForm(true);
+
+      setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
+
+      try { await acceptQuest(questId, currentUser.uid); }
+      catch (error) {
+        setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
+        alert('Failed to accept quest.');
+        console.error(error);
+      }
+    };
+
+    window.handleAbandonQuest = async (questId) => {
+      setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
+      try { await abandonQuest(questId, currentUser.uid); }
+      catch (error) {
+        setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
+        alert('Failed to abandon quest.');
+        console.error(error);
+      }
+    };
+
+    
+
+    return () => {
+      delete window.handleAcceptQuest;
+      delete window.handleAbandonQuest;
+    };
+  }, [currentUser, navigate, allQuests, acceptedQuests]);
 
   useEffect(() => {
     if (window.L && mapInstanceRef.current) {
@@ -572,6 +620,12 @@ const Home = () => {
           )}
         </section>
       </header>
+
+       <CompleteQuestForm
+        isOpen={showCompleteForm}
+        onClose={() => { setShowCompleteForm(false); setActiveQuest(null); }}
+        quest={activeQuest}
+      />
 
       {/* Render floating form component (controlled by state) */}
       <CreateQuestForm
