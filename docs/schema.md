@@ -36,3 +36,5 @@ Journey Quest Process
 	
 
 Creation:<br>1. Quest maker defines a chain of locations.<br>2. At each physical checkpoint, uploads a hint image and geolocation data.<br>3. Adds riddles for each location and publishes the quest.<br><br>Completion:<br>1. User accepts the quest, unlocking the first checkpoint.<br>2. Travels to the checkpoint's geolocation.<br>3. The API verifies their location, automatically unlocking the next checkpoint.<br>4. User repeats the process for all checkpoints.<br>5. A significantly larger point reward is awarded upon completion.
+
+![alt text](./assets/schema.png)
