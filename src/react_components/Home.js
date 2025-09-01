@@ -8,6 +8,7 @@ import { logout, getUserData } from '../firebase/firebase'; // Import getUserDat
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
 import { getAllQuests, acceptQuest, abandonQuest } from '../firebase/general_quest_functions';
 import CreateQuestForm from './CreateQuestForm';
+import CompleteQuestForm from './CompleteQuestForm';
 import { getProfileData } from '../firebase/profile_functions';
 import bellImage from '../media/bell.png';
 import musicImage from '../media/music.png'; 
@@ -28,12 +29,31 @@ const Home = () => {
   const [showCreateForm, setShowCreateForm] = useState(false); // NEW
   const [allQuests, setAllQuests] = useState([]);
   const [acceptedQuests, setAcceptedQuests] = useState({}); // NEW: state to track accepted quests
+  const [showCompleteForm, setShowCompleteForm] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+  const [activeQuest, setActiveQuest] = useState(null);
 
   const showToast = (msg) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(''), 2200);
   };
+
+  // JOURNEY QUEST: Integrated with description, reward, and three stops
+  const [journeyQuests, setJourneyQuests] = useState([
+    {
+      id: 'campus_explorer',
+      name: 'Campus Explorer Quest',
+      description: 'Visit the three key locations on campus in order.',
+      reward: 50,
+      stops: [
+         { name: 'Stop 1: Cullen Library', latitude: -26.190630, longitude: 28.029952 },
+        { name: 'Stop 2: Main Library', latitude: -26.1905, longitude: 28.0315 },
+        { name: 'Stop 3: Law Lawns', latitude: -26.1890, longitude: 28.0320 }
+      ],
+      radius: 30, 
+      currentStopIndex: 0
+    }
+  ]);
 
   const { isMusicPlaying, toggleMusic } = useMusic(showToast);
   // Use useEffect to fetch user data when the authentication state changes
@@ -178,6 +198,8 @@ const Home = () => {
       questCirclesRef.current.push(questCircle);
     });
 
+
+    /*
     // Example quest locations (you can modify these coordinates)
     const questLocations = [
       {
@@ -284,6 +306,8 @@ const Home = () => {
       questCirclesRef.current.push(questCircle);
     });
   }, [allQuests, mapInstanceRef, questCirclesRef, currentUser, acceptedQuests]);
+*/
+/*
 
   // Map and header effects remain the same
   useEffect(() => {
@@ -365,6 +389,96 @@ const Home = () => {
         mapInstanceRef.current = null;
       }
     };
+  }, [addQuestAreas]);*/
+  // Journey quests: add markers for all stops
+    journeyQuests.forEach(jq => {
+      jq.stops.forEach((stop, index) => {
+        if (!stop || !mapInstanceRef.current) return;
+        const isCurrentStop = index === jq.currentStopIndex;
+        const color = isCurrentStop ? '#1E90FF' : '#87CEFA';
+
+        const jqCircle = window.L.circle([stop.latitude, stop.longitude], {
+          color,
+          fillColor: color,
+          fillOpacity: 0.3,
+          radius: jq.radius,
+          weight: 2,
+          questId: jq.id,
+          journeyQuest: true
+        }).addTo(mapInstanceRef.current);
+
+        const popupHtml = `<div class="quest-popup">
+            <h3>🗺️ ${jq.name} - Stop ${index + 1}</h3>
+            <p>${stop.name}</p>
+            ${isCurrentStop 
+              ? `<button class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptJourneyQuest('${jq.id}')">Check Stop</button>` 
+              : `<p>Next stop</p>`}
+          </div>`;
+
+        jqCircle.bindPopup(popupHtml);
+
+        const jqEmojiMarker = window.L.marker([stop.latitude, stop.longitude], {
+          icon: window.L.divIcon({ html: isCurrentStop ? '🗺️' : `${index + 1}`, className: 'quest-emoji-icon' })
+        }).addTo(mapInstanceRef.current);
+        jqEmojiMarker.bindPopup(jqCircle.getPopup());
+        jqCircle._emojiMarker = jqEmojiMarker;
+
+        jqEmojiMarker.on('click', e => {
+          jqCircle.openPopup();
+          if (e.originalEvent) {
+            e.originalEvent.stopPropagation();
+            e.originalEvent.preventDefault();
+          }
+        });
+
+        questCirclesRef.current.push(jqCircle);
+      });
+    });
+
+  }, [allQuests, currentUser, acceptedQuests, journeyQuests]);
+
+  // Initialize map
+  useEffect(() => {
+    const initializeMap = () => {
+      if (mapRef.current && !mapInstanceRef.current && window.L) {
+        mapInstanceRef.current = window.L.map(mapRef.current, {
+          zoomControl: false,
+          attributionControl: false
+        }).setView([-26.1929, 28.0305], 17);
+
+        window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: ''
+        }).addTo(mapInstanceRef.current);
+
+        window.L.control.zoom({ position: 'topleft' }).addTo(mapInstanceRef.current);
+
+        addQuestAreas();
+        setTimeout(() => {
+          if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+        }, 100);
+      }
+    };
+
+    if (window.L) initializeMap();
+    else {
+      const checkLeaflet = setInterval(() => {
+        if (window.L) {
+          clearInterval(checkLeaflet);
+          initializeMap();
+        }
+      }, 100);
+      setTimeout(() => clearInterval(checkLeaflet), 5000);
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        questCirclesRef.current.forEach(circle => mapInstanceRef.current.removeLayer(circle));
+        questCirclesRef.current = [];
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
   }, [addQuestAreas]);
 
   useEffect(() => {
@@ -405,6 +519,8 @@ const Home = () => {
     navigate('/questbook');
   };
 
+  
+
   // NEW: open create form only for logged-in users; otherwise go to login
   const handleCreateQuestClick = () => {
     if (!currentUser) {
@@ -413,7 +529,7 @@ const Home = () => {
     }
     setShowCreateForm(true);
   };
-
+/*
   // Add global function for Accept Quest button
   useEffect(() => {
     window.handleAcceptQuest = async (questId) => {
@@ -479,13 +595,68 @@ const Home = () => {
       delete window.handleAbandonQuest;
     };
   }, [currentUser, navigate]);
+*/
+// Accept/Abandon normal quests
+  useEffect(() => {
+    window.handleAcceptQuest = async (questId) => {
+      if (!currentUser) return navigate('/login');
+      const quest = allQuests.find(q => q.id === questId);
+      if (!quest) return;
+
+      setActiveQuest(quest);
+      setShowCompleteForm(true);
+
+      setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
+
+      try { await acceptQuest(questId, currentUser.uid); }
+      catch (error) {
+        setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
+        alert('Failed to accept quest.');
+        console.error(error);
+      }
+    };
+
+    window.handleAbandonQuest = async (questId) => {
+      setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
+      try { await abandonQuest(questId, currentUser.uid); }
+      catch (error) {
+        setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
+        alert('Failed to abandon quest.');
+        console.error(error);
+      }
+    };
+
+    window.handleAcceptJourneyQuest = (questId) => {
+      const jq = journeyQuests.find(j => j.id === questId);
+      if (!jq) return;
+      if (!acceptedQuests[jq.id]) {
+        setAcceptedQuests(prev => ({ ...prev, [jq.id]: true }));
+        alert(`You accepted the journey quest: ${jq.name}`);
+      } else {
+        // Check current stop
+        validateJourneyStop(jq);
+      }
+    };
+
+    window.handleAbandonJourneyQuest = (questId) => {
+      setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
+      alert('Journey quest abandoned.');
+    };
+
+    return () => {
+      delete window.handleAcceptQuest;
+      delete window.handleAbandonQuest;
+      delete window.handleAcceptJourneyQuest;
+      delete window.handleAbandonJourneyQuest;
+    };
+  }, [currentUser, navigate, allQuests, journeyQuests, acceptedQuests]);
 
   useEffect(() => {
     if (window.L && mapInstanceRef.current) {
       addQuestAreas();
     }
   }, [addQuestAreas]);
-
+/*
   // Focus map on quest if navigated from "View On Map"
   useEffect(() => {
     if (
@@ -524,7 +695,73 @@ const Home = () => {
     }
     // eslint-disable-next-line
   }, [location.state, mapInstanceRef.current, questCirclesRef.current, navigate]);
+*/
 
+// Distance calculation
+  const getDistanceFromLatLonInMeters = (lat1, lon1, lat2, lon2) => {
+    const R = 6371e3;
+    const toRad = deg => deg * (Math.PI / 180);
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Validate journey stop
+  const validateJourneyStop = (jq) => {
+    if (!navigator.geolocation) return alert('Geolocation not supported.');
+    if (!acceptedQuests[jq.id]) return alert('You must accept the quest first.');
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const currentStop = jq.stops[jq.currentStopIndex];
+        if (!currentStop) return;
+
+        const distance = getDistanceFromLatLonInMeters(
+          latitude, longitude,
+          currentStop.latitude, currentStop.longitude
+        );
+
+        if (distance <= jq.radius) {
+          alert(`You've reached: ${currentStop.name}!`);
+          jq.currentStopIndex++;
+          setJourneyQuests([...journeyQuests]);
+          if (jq.currentStopIndex >= jq.stops.length) {
+            alert(`Congratulations! You completed the journey quest: ${jq.name}`);
+            setAcceptedQuests(prev => ({ ...prev, [jq.id]: false }));
+          } else {
+            alert(`Proceed to the next stop: ${jq.stops[jq.currentStopIndex].name}`);
+          }
+        } else {
+          alert(`You are ${Math.round(distance)}m away from ${currentStop.name}. Move closer!`);
+        }
+      },
+      (error) => alert('Unable to get your location'),
+      { enableHighAccuracy: true }
+    );
+  };
+
+  // Focus map on quest if navigated from Questbook
+  useEffect(() => {
+    if (mapInstanceRef.current && location.state?.focusQuest?.location) {
+      const { latitude, longitude } = location.state.focusQuest.location;
+      if (typeof latitude === "number" && typeof longitude === "number") {
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+            mapInstanceRef.current.setView([latitude, longitude], 18, { animate: true });
+            const questId = location.state.focusQuest.id;
+            const questCircle = questCirclesRef.current.find(c => c.options?.questId === questId);
+            if (questCircle) questCircle.openPopup();
+          }
+          navigate(".", { replace: true, state: {} });
+        }, 200);
+      }
+    }
+  }, [location.state, navigate]);
   
   return (
     <section className="home-container">
@@ -572,6 +809,12 @@ const Home = () => {
           )}
         </section>
       </header>
+
+      <CompleteQuestForm
+        isOpen={showCompleteForm}
+        onClose={() => { setShowCompleteForm(false); setActiveQuest(null); }}
+        quest={activeQuest}
+      />
 
       {/* Render floating form component (controlled by state) */}
       <CreateQuestForm

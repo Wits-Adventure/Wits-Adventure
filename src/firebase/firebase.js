@@ -3,6 +3,8 @@ import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, } from "firebase/auth";
 import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { collection, addDoc, getDocs } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+
 
 
 
@@ -21,6 +23,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 
 async function addUserToFirestore(userId, email, name, role, autheProvider, leaderboardPoints) {
   try {
@@ -146,6 +149,7 @@ export {
   app,
   auth,
   db,
+  storage,
   doc,
   setDoc,
   collection,

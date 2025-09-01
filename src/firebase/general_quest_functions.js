@@ -82,6 +82,40 @@ export async function closeQuestAndRemoveFromUsers(questId) {
     await Promise.all(batch);
 }
 
+// Submit quest proof
+export async function submitQuestProof(questId, userId, file) {
+  console.log("submitQuestProof called with:", { questId, userId, file });
+
+  if (!questId || !userId || !file) {
+    throw new Error("Missing parameters for submitQuestProof");
+  }
+
+  try {
+    // 1. Upload the proof image
+    console.log("Uploading proof image...");
+    const imageUrl = await uploadQuestImage(file, questId, userId);
+    console.log("Image uploaded, URL:", imageUrl);
+
+    // 2. Create a new document in the CompletedQuests collection
+    const completedRef = await addDoc(collection(db, "CompletedQuests"), {
+      questId,
+      userId,
+      imageUrl,
+      submittedAt: serverTimestamp(),
+      status: "pending"
+    });
+
+    console.log("Quest submission saved with ID:", completedRef.id);
+    return completedRef.id;
+
+  } catch (error) {
+    console.error("Error submitting quest proof:", error);
+    throw error;
+  }
+}
+
+
+
 export async function abandonQuest(questId, userId) {
     // Remove userId from quest's acceptedBy array
     const questRef = doc(db, "Quests", questId);
