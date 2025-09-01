@@ -3,3 +3,4 @@
 - [⚒ Techstack](techStack.md)
 - [⚖️ Methodologies](methodologies.md)
 - [🖼 Website Planning](WebsitePlanning.md)
+- [📋 Sprint Tasks](sprintTasks.md)
