@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { loginNormUser } from '../firebase/firebase';
+import { getUserRole, loginNormUser } from '../firebase/firebase';
 //import { addProfileFields } from '../firebase/profile_functions';
 import '../css/Login.css';
 
@@ -33,7 +33,7 @@ function Login() {
 
       setEmail('');
       setPassword('');
-
+      console.log(getUserRole)
     } catch (error) {
       console.error("Login failed:", error.message);
       setError(error.message); // Set the error state to display to the user

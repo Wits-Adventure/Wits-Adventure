@@ -55,7 +55,7 @@ function Signup() {
       Password: password,
       ConfirmPassword: confirmPassword,
       Role: 'student',
-      LeaderBoardPoints: 0,
+     
     })
     .then(() => {
       setUsername('');

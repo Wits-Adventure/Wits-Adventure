@@ -21,6 +21,9 @@ export async function AddJourneyQuestLocation(params) {
 export async function PublishJourneyQuest(params) {
     
 }
+export async function checkpoint(params){
+    
+}
 
 
 

@@ -7,7 +7,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { logout, getUserData } from '../firebase/firebase'; // Import getUserData
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
 import { getAllQuests, acceptQuest, abandonQuest } from '../firebase/general_quest_functions';
-import CreateQuestForm from './CreateQuestForm';
+import CreateQuestForm from './CreateLocationQuestForm';
 import { getProfileData } from '../firebase/profile_functions';
 import bellImage from '../media/bell.png';
 import musicImage from '../media/music.png'; 

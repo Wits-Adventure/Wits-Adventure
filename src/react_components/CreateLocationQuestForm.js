@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import '../css/CreateQuestForm.css';
 import { useAuth } from '../context/AuthContext';
-import { getUserData, } from '../firebase/firebase';
+import { getUserData, uploadImage } from '../firebase/firebase';
 import { saveQuestToFirestore } from '../firebase/general_quest_functions';
 
 export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, questCirclesRef }) {
   const [name, setName] = useState('');
   const [radius, setRadius] = useState(45);
-  const [questImage, setQuestImage] = useState(null);
+  const [questImageFile, setQuestImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [following, setFollowing] = useState(false);
   const followMarkerRef = useRef(null);
@@ -48,7 +48,7 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     setFollowing(false);
     setName('');
     setRadius(45);
-    setQuestImage(null);
+    setQuestImageFile(null);
     setImagePreview(null);
   }, [mapInstanceRef, questCirclesRef]);
 
@@ -93,6 +93,102 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     return `hsl(${h} ${s}% ${l}%)`;
   }
 
+  const createQuestAtLocation = async (latLng) => {
+    const map = mapInstanceRef?.current;
+    if (!map) return;
+    
+    // UPLOAD THE IMAGE FIRST
+    let imageUrl = '';
+    if (questImageFile) {
+      try {
+        imageUrl = await uploadImage(questImageFile);
+      } catch (error) {
+        alert("Failed to upload image. Please try again.");
+        return; // Stop the function if image upload fails
+      }
+    }
+
+    const offsetDistance = Math.random() * radius;
+    const offsetAngle = Math.random() * 360;
+
+    const metersPerDegreeLat = 111132;
+    const metersPerDegreeLng = metersPerDegreeLat * Math.cos(latLng.lat * (Math.PI / 180));
+
+    const latOffset = (offsetDistance * Math.cos(offsetAngle * (Math.PI / 180))) / metersPerDegreeLat;
+    const lngOffset = (offsetDistance * Math.sin(offsetAngle * (Math.PI / 180))) / metersPerDegreeLng;
+
+    const circleCenterLatLng = window.L.latLng(latLng.lat - latOffset, latLng.lng - lngOffset);
+
+    const color = randomHslColor();
+    const rawName = name.trim();
+    const userEmoji = extractLeadingEmoji(rawName);
+    const baseName = userEmoji ? rawName.replace(/^\p{Extended_Pictographic}\s*/u, '').trim() : rawName;
+    const chosenEmoji = userEmoji || pickRandomEmoji();
+    const displayName = `${chosenEmoji} ${baseName || 'Unnamed Quest'}`;
+    const safeName = escapeHtml(displayName);
+
+    const circle = window.L.circle(circleCenterLatLng, {
+      color,
+      fillColor: color,
+      fillOpacity: 0.85,
+      radius: radius,
+      weight: 3,
+      opacity: 0.95,
+      className: 'quest-circle'
+    }).addTo(map);
+    circle._emoji = chosenEmoji;
+
+    // Use the returned imageUrl instead of imagePreview
+    const popupHtml = `
+      <div class="quest-popup">
+        <h3>${safeName}</h3>
+        <div class="quest-image-container">
+          <img src="${imageUrl}" alt="Quest Image" class="quest-popup-image" />
+        </div>
+        <p>Placed here by ${username}</p>
+        <p><strong>Reward:</strong> ${radius} points</p>
+        <button class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>
+      </div>
+    `;
+    circle.bindPopup(popupHtml);
+
+    const emojiIcon = window.L.divIcon({
+      className: 'quest-emoji-icon',
+      html: `<div class="quest-emoji">${chosenEmoji}</div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    });
+    const emojiMarker = window.L.marker(circleCenterLatLng, {
+      icon: emojiIcon,
+      riseOnHover: true
+    }).addTo(map);
+    emojiMarker.bindPopup(popupHtml);
+    circle._emojiMarker = emojiMarker;
+
+    if (questCirclesRef && Array.isArray(questCirclesRef.current)) {
+      questCirclesRef.current.push(circle);
+    }
+
+    // Save quest to Firestore with the new image URL
+    const questData = {
+      name: baseName || 'Unnamed Quest',
+      radius: radius,
+      reward: radius,
+      lat: circleCenterLatLng.lat,
+      lng: circleCenterLatLng.lng,
+      imageUrl: imageUrl, // Use the new URL from the upload
+      creatorId: currentUser?.uid || 'unknown',
+      creatorName: username || 'User',
+      emoji: chosenEmoji,
+      color: color,
+      type: "location"
+    };
+    await saveQuestToFirestore(questData);
+
+    stopFollowing();
+    map.flyTo(circleCenterLatLng, 15);
+  };
+
   const startFollowing = () => {
     const map = mapInstanceRef?.current;
     if (!map) {
@@ -135,93 +231,41 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     map.on('mousemove', moveHandlerRef.current);
 
     clickHandlerRef.current = async (e) => {
-      const clickLatLng = e.latlng;
-      const offsetDistance = Math.random() * radius;
-      const offsetAngle = Math.random() * 360;
-
-      const metersPerDegreeLat = 111132;
-      const metersPerDegreeLng = metersPerDegreeLat * Math.cos(clickLatLng.lat * (Math.PI / 180));
-
-      const latOffset = (offsetDistance * Math.cos(offsetAngle * (Math.PI / 180))) / metersPerDegreeLat;
-      const lngOffset = (offsetDistance * Math.sin(offsetAngle * (Math.PI / 180))) / metersPerDegreeLng;
-
-      const circleCenterLatLng = window.L.latLng(clickLatLng.lat - latOffset, clickLatLng.lng - lngOffset);
-
-      const color = randomHslColor();
-      const rawName = name.trim();
-      const userEmoji = extractLeadingEmoji(rawName);
-      const baseName = userEmoji ? rawName.replace(/^\p{Extended_Pictographic}\s*/u, '').trim() : rawName;
-      const chosenEmoji = userEmoji || pickRandomEmoji();
-      const displayName = `${chosenEmoji} ${baseName || 'Unnamed Quest'}`;
-      const safeName = escapeHtml(displayName);
-
-      const circle = window.L.circle(circleCenterLatLng, {
-        color,
-        fillColor: color,
-        fillOpacity: 0.85,
-        radius: radius,
-        weight: 3,
-        opacity: 0.95,
-        className: 'quest-circle'
-      }).addTo(map);
-      circle._emoji = chosenEmoji;
-
-      const popupHtml = `
-        <div class="quest-popup">
-          <h3>${safeName}</h3>
-          <div class="quest-image-container">
-            <img src="${imagePreview}" alt="Quest Image" class="quest-popup-image" />
-          </div>
-          <p>Placed here by ${username}</p>
-          <p><strong>Reward:</strong> ${radius} points</p>
-          <button class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>
-        </div>
-      `;
-      circle.bindPopup(popupHtml);
-
-      const emojiIcon = window.L.divIcon({
-        className: 'quest-emoji-icon',
-        html: `<div class="quest-emoji">${chosenEmoji}</div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
-      const emojiMarker = window.L.marker(circleCenterLatLng, {
-        icon: emojiIcon,
-        riseOnHover: true
-      }).addTo(map);
-      emojiMarker.bindPopup(popupHtml);
-      circle._emojiMarker = emojiMarker;
-
-      if (questCirclesRef && Array.isArray(questCirclesRef.current)) {
-        questCirclesRef.current.push(circle);
-      }
-
-      // Save quest to Firestore
-      const questData = {
-        name: baseName || 'Unnamed Quest',
-        radius: radius,
-        reward: radius,
-        lat: circleCenterLatLng.lat,
-        lng: circleCenterLatLng.lng,
-        imageUrl: imagePreview,
-        creatorId: currentUser?.uid || 'unknown',
-        creatorName: username || 'User',
-        emoji: chosenEmoji,
-        color: color
-      };
-      await saveQuestToFirestore(questData);
-
-      stopFollowing();
+      createQuestAtLocation(e.latlng);
     };
 
     map.once('click', clickHandlerRef.current);
   };
 
-
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLatLng = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          createQuestAtLocation(userLatLng);
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          let errorMessage = "Could not get your location. Please ensure location services are enabled and you have granted permission.";
+          if (error.code === error.PERMISSION_DENIED) {
+            errorMessage = "Location access denied. Please enable it in your browser settings.";
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            errorMessage = "Location information is currently unavailable.";
+          }
+          alert(errorMessage);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  };
 
   const handleSelectLocation = (e) => {
     e.preventDefault();
-    if (!questImage) {
+    if (!questImageFile) {
       alert('Please upload an image before selecting a location.');
       return;
     }
@@ -232,14 +276,14 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     if (following) stopFollowing();
     setName('');
     setRadius(45);
-    setQuestImage(null);
+    setQuestImageFile(null);
     setImagePreview(null);
     onClose?.();
   };
 
   const handleImageUpload = (file) => {
     if (file && file.type.startsWith('image/')) {
-      setQuestImage(file);
+      setQuestImageFile(file);
       const reader = new FileReader();
       reader.onload = (e) => setImagePreview(e.target.result);
       reader.readAsDataURL(file);
@@ -339,12 +383,20 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
 
           <div className="cq-actions">
             <button
-              className={`cq-btn cq-select ${!questImage ? 'disabled' : ''}`}
+              className={`cq-btn cq-select ${!questImageFile ? 'disabled' : ''}`}
+              onClick={getLocation}
+              type="button"
+              disabled={!questImageFile}
+            >
+              Use My Location 🗺️
+            </button>
+            <button
+              className={`cq-btn cq-select ${!questImageFile ? 'disabled' : ''}`}
               onClick={handleSelectLocation}
               type="button"
-              disabled={!questImage}
+              disabled={!questImageFile}
             >
-              Select Location
+              Select on Map
             </button>
             <button className="cq-btn cq-cancel" onClick={handleCancel} type="button">
               Cancel
