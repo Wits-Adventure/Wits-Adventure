@@ -1,7 +1,113 @@
-.leaderboard-container {
-  font-family: 'Cinzel', serif;
-  background: transparent;  /* map-frame handles the background */
-  padding: 0;               /* optional, map-frame adds padding */
-  box-shadow: none;
+/* Leaderboard container */
+
+
+/* Leaderboard title */
+.leaderboard-title {
+  text-align: center;
+  font-family: 'Cinzel Decorative', serif;
+  color: #5c4033; /* dark brown */
+  font-size: 32px;
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 3px #deb887; /* subtle glow */
+  font-weight: 700;
+}
+
+/* List of players */
+.leaderboard-list {
+  list-style: none;
+  padding: 0;
   margin: 0;
 }
+
+/* Individual player item */
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #fff8dc; /* parchment */
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* added shadow for items */
+}
+
+/* Hover effect */
+.leaderboard-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2); /* more pronounced shadow on hover */
+}
+
+/* Avatar wrapper */
+.player-avatar-wrapper {
+  flex-shrink: 0;
+  width: 70px;
+  height: 70px;
+  border: 2px solid #5c4033;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 20px;
+  transition: transform 0.3s ease;
+}
+
+/* Avatar hover effect */
+.leaderboard-item:hover .player-avatar-wrapper {
+  transform: scale(1.1);
+}
+
+/* Avatar image */
+.player-avatar-wrapper .avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Player info section */
+.player-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Player name style */
+.player-name {
+  font-family: 'Cinzel Decorative', serif;
+  color: #5c4033; /* dark brown */
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* Player points style */
+.player-points {
+  font-family: 'Cinzel', serif;
+  color: #daa520; /* goldenrod accent */
+  font-size: 18px;
+}
+
+/* Animation for leaderboard items */
+@keyframes slideUp {
+  0% {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  80% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1; /* ensure fully visible at end */
+  }
+}
+
+/* Add slide-up animation */
+.leaderboard-item {
+  animation-name: slideUp;
+  animation-duration: 0.6s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+  opacity: 0;
+}
+

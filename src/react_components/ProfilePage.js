@@ -2,10 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import "../css/ProfilePage.css";
 import profilePic from "../assets/profile.jpg";
 import editIcon from "../assets/edit_icon.png";
-import { getProfileData, updateProfileData, getOtherUserProfileData } from "../firebase/profile_functions";  // Update with new function
+import { getProfileData, updateProfileData, getOtherUserProfileData } from "../firebase/profile_functions";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAllQuests } from "../firebase/general_quest_functions";
 import QuestManager from "./QuestManager";
+
+
+
+
+
 
 export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
   const { userId } = useParams(); // Get userId from the URL
@@ -71,16 +76,7 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
         const allQuests = await getAllQuests();
         const userCreated = allQuests
           .filter(q => q.creatorId === profileData.uid)
-          .map(q => ({
-            ...q,
-            location: q.location && typeof q.location.latitude === "number"
-              ? { latitude: q.location.latitude, longitude: q.location.longitude }
-              : q.location && typeof q.location._lat === "number"
-                ? { latitude: q.location._lat, longitude: q.location._long }
-                : Array.isArray(q.location)
-                  ? { latitude: q.location[0], longitude: q.location[1] }
-                  : null
-          }));
+          .map(q => (q)); // No location conversion here, assume it's properly handled
         setCreatedQuests(userCreated);
 
         setLoading(false);
