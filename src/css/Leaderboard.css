@@ -1,5 +1,32 @@
-/* Leaderboard container */
+/* Ensure the map-frame container fills the screen */
+.map-frame {
+  width: 100%;
+  height: 100%; /* Make sure map-frame takes up full height */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
 
+/* Leaderboard container that fills map-frame */
+.leaderboard-container {
+  width: 100%;
+  height: 100%; /* Fill the entire map-frame */
+  padding: 2rem;
+  background: transparent; /* Make the container transparent */
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden; /* Hide the scrollbar in the container */
+}
+
+/* Hide the scrollbar on the leaderboard-container */
+.leaderboard-container::-webkit-scrollbar {
+  display: none;
+}
 
 /* Leaderboard title */
 .leaderboard-title {
@@ -17,6 +44,17 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  width: 100%; /* Fill the container */
+  max-height: 100%; /* Take up the full height of the container */
+  overflow-y: auto; /* Enable scroll when needed */
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Keep the gap between list items */
+  background: linear-gradient(145deg, #D2B48C, #DEB887); /* Gradient background between gaps */
+  border-radius: 12px; /* Circular edges */
+  padding-bottom: 2rem; /* Padding for smoother scrolling */
+  overflow-x: hidden; /* Hide horizontal scroll if any */
+  border: none; /* Remove the border around the leaderboard list */
 }
 
 /* Individual player item */
@@ -25,18 +63,20 @@
   align-items: center;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #fff8dc; /* parchment */
+  background-color: #fff8dc; /* Same color as container and list */
   border-radius: 10px;
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* added shadow for items */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Added shadow for items */
+  opacity: 0; /* Start invisible */
+  animation: slideUp 0.6s forwards; /* Apply slide-up animation */
 }
 
 /* Hover effect */
 .leaderboard-item:hover {
   transform: translateY(-5px);
-  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2); /* more pronounced shadow on hover */
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
 }
 
 /* Avatar wrapper */
@@ -89,16 +129,16 @@
 /* Animation for leaderboard items */
 @keyframes slideUp {
   0% {
-    transform: translateY(50px);
-    opacity: 0;
+    transform: translateY(50px); /* Start from bottom */
+    opacity: 0; /* Start invisible */
   }
   80% {
-    transform: translateY(-10px);
-    opacity: 1;
+    transform: translateY(-10px); /* Almost at final position */
+    opacity: 1; /* Fully visible */
   }
   100% {
-    transform: translateY(0);
-    opacity: 1; /* ensure fully visible at end */
+    transform: translateY(0); /* Final position */
+    opacity: 1; /* Ensure fully visible at end */
   }
 }
 
@@ -111,3 +151,36 @@
   opacity: 0;
 }
 
+/* Hide the scrollbar on the leaderboard-list but allow scrolling */
+.leaderboard-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%; /* Fill the container */
+  max-height: 100%; /* Take up the full height of the container */
+  overflow-y: scroll; /* Enable vertical scrolling */
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Keep the gap between list items */
+  background: linear-gradient(145deg, #D2B48C, #DEB887); /* Gradient background between gaps */
+  border-radius: 12px; /* Circular edges */
+  padding-bottom: 2rem; /* Padding for smoother scrolling */
+  overflow-x: hidden; /* Hide horizontal scroll if any */
+  border: none; /* Remove the border around the leaderboard list */
+}
+
+/* Hide the scrollbar in WebKit browsers (Chrome, Safari, etc.) */
+.leaderboard-list::-webkit-scrollbar {
+  width: 0px; /* Set width to 0 to hide the scrollbar */
+  background: transparent; /* Optional: make it transparent */
+}
+
+/* Hide the scrollbar track (background) */
+.leaderboard-list::-webkit-scrollbar-track {
+  background: transparent; /* Remove the track background */
+}
+
+/* Hide the scrollbar thumb (the draggable part) */
+.leaderboard-list::-webkit-scrollbar-thumb {
+  background: transparent; /* Make the thumb transparent */
+}

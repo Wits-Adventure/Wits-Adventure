@@ -73,7 +73,7 @@ const QuestBook = () => {
       <div className="header-container">
         <div className="logo-title">
           <img src={logo} alt="Logo" className="logo-circle" />
-          <h1 className="title" className="website-name">Wits Adventure Quests</h1>
+          <h1 className="title website-name">Wits Adventure Quests</h1>
         </div>
 
         <div className="tab-container">

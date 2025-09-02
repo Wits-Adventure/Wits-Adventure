@@ -41,33 +41,29 @@ const Leaderboard = () => {
   }
 
   return (
-    <div className="home-container">
-      <div className="map-frame">
-        <div className="leaderboard-container">
-          <h1 className="leaderboard-title">Leaderboard</h1>
-          <ul className="leaderboard-list">
-            {players.map((player, index) => (
-              <li
-                key={player.id}
-                className="leaderboard-item home-card"  // home-card for same card style
-                onClick={() => navigate(`/profile/${player.id}`)}
-              >
-                <div className="player-avatar-wrapper">
-                  <img
-                    src={player.profilePicture}
-                    alt={player.Name || "Unknown Hero"}
-                    className="avatar"
-                  />
-                </div>
-                <div className="player-info">
-                  <span className="player-name">{index + 1}. {player.Name || "Unnamed Hero"}</span>
-                  <span className="player-points">{player.LeaderBoardPoints || 0} pts</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+    <div className="leaderboard-container">
+      <h1 className="leaderboard-title">Leaderboard</h1>
+      <ul className="leaderboard-list">
+        {players.map((player, index) => (
+          <li
+            key={player.id}
+            className="leaderboard-item"
+            onClick={() => navigate(`/profile/${player.id}`)}
+          >
+            <div className="player-avatar-wrapper">
+              <img
+                src={player.profilePicture}
+                alt={player.Name || "Unknown Hero"}
+                className="avatar"
+              />
+            </div>
+            <div className="player-info">
+              <span className="player-name">{index + 1}. {player.Name || "Unnamed Hero"}</span>
+              <span className="player-points">{player.LeaderBoardPoints || 0} pts</span>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
