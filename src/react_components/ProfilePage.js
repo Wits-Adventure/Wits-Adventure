@@ -252,10 +252,6 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
                 <span className="stat-value">{user.spendablePoints}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Rank:</span>
-                <span className="stat-value">{user.rank}</span>
-              </div>
-              <div className="stat-item">
                 <span className="stat-label">Quests Completed:</span>
                 <span className="stat-value">{user.questsCompleted}</span>
               </div>
