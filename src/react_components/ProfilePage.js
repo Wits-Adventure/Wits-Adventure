@@ -55,12 +55,14 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
           ...profileData,
           username: profileData.Name,
           points: profileData.LeaderBoardPoints,
-          questsCompleted: profileData.CompletedQuests,
+          questsCompleted: profileData.CompletedQuests.length,
+          questsInProgress: profileData.acceptedQuests.length,
           level: profileData.Level,
           bio: profileData.Bio,
           profilePicture: profileData.profilePicture || profilePic,
-          rank: 12,
-          questsInProgress: 3, // Placeholder
+          experience: profileData.Experience,
+          spendablePoints: profileData.SpendablePoints,
+          rank: 12, // Placeholder
         });
         setEditedUsername(profileData.Name);
         setEditedBio(profileData.Bio);
@@ -242,12 +244,12 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
             <h3 className="info-title">INFO</h3>
             <div className="profile-stats">
               <div className="stat-item">
-                <span className="stat-label">Level:</span>
-                <span className="stat-value">{user.level}</span>
+                <span className="stat-label">Experience:</span>
+                <span className="stat-value">{user.experience}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Points:</span>
-                <span className="stat-value">{user.points}</span>
+                <span className="stat-label">Spendable points:</span>
+                <span className="stat-value">{user.spendablePoints}</span>
               </div>
               <div className="stat-item">
                 <span className="stat-label">Rank:</span>
