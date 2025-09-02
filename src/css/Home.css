@@ -1134,3 +1134,95 @@
   from { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.96);}
   to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1);}
 }
+/* Tab Navigation Styles */
+.tab-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  gap: 10px;
+  margin-top: -1.5cm; /* Adjust this if necessary to make it fit nicely */
+}
+
+.tab {
+  background-color: #d2b48c; /* Tan background */
+  padding: 10px 20px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border: 2px solid #8b5a2b; /* Darker border color */
+  border-bottom: none; /* To make it look connected to the content */
+  font-family: 'Georgia', serif;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  position: relative;
+  top: 2px; /* Overlap with content box */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.tab:hover {
+  background-color: #deb887; /* Lighter tan on hover */
+  transform: translateY(-2px); /* Lift effect */
+}
+
+.tab.active {
+  background-color: #fff8dc; /* Light background for active tab */
+  color: #3e2723; /* Dark text */
+  border-bottom: 2px solid #fff8dc; /* Makes active tab look connected to content */
+}
+
+/* General button styling */
+.home-btn {
+  background-color: #d2b48c; /* Tan background */
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.home-btn:hover {
+  background-color: #deb887; /* Lighter tan on hover */
+}
+
+/* Complete Quest Button Styling */
+.complete-btn {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.complete-btn:hover {
+  background-color: #388e3c;
+}
+
+/* Pagination Buttons */
+.pagination button {
+  background-color: rgba(139, 69, 19, 1);
+  color: #fff8dc;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.pagination button:disabled {
+  background-color: rgba(139, 69, 19, 1);
+  cursor: not-allowed;
+}
+
+.pagination span {
+  color: #4e342e;
+  font-size: 16px;
+  font-weight: bold;
+  min-width: 75px;
+  text-align: center;
+}

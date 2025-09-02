@@ -1,101 +1,77 @@
-
-
-
-
-
-.quest-list {
+/* General container for the home page */
+.home-container {
+  display: flex;
+  justify-content: center; /* horizontal centering */
+  align-items: center;     /* vertical centering */
+  min-height: 100vh;
   padding: 2rem;
-  border-radius: 12px;
-  max-width: 600px;
-  width: 90%;
+  flex-direction: column;
 }
 
-.title {
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-  color: #4e342e;
-  font-family: 'Cinzel', serif;;
+/* Header containing logo and title */
+.header-container {
+  display: flex;
+  flex-direction: column; /* Stack logo and title vertically */
+  align-items: center;
+  margin-bottom: 20px; /* Adds space below the header */
+}
+
+/* Logo and title container */
+.logo-title {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 7px;  /* space between logo and text */
+  gap: 10px; /* space between logo and title */
 }
 
 .logo-circle {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #162f83; 
+  border: 2px solid #162f83;
   box-shadow: 0 0 5px rgba(139, 69, 19, 0.5);
 }
 
-.trophy{
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  object-fit: cover;
-  
-
-}
-/* Container holding filter and pagination side by side */
-.filter-pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
-  gap: 20px;
-}
-
-/* Filter icon in a small square fantasy-themed block */
-.filter-icon-btn {
-  background-color: rgba(139, 69, 19, 0.8); /* brown fantasy tone */
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 20px;
-  color: #fff8dc;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s ease;
-}
-
-.filter-icon-btn:hover {
-  background-color: rgba(139, 69, 19, 1);
-}
-
-/* Dropdown for filter */
-.dropdown-menu {
-  position: absolute;
-  top: 50px;
-  background-color: #f8f0e3;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  list-style: none;
-  padding: 0;
+/* Title styling */
+.title {
+  font-size: 2rem;
+  color: #4e342e;
+  font-family: 'Cinzel', serif;
   margin: 0;
-  z-index: 2;
-  width: 120px;
-  text-align: center;
 }
 
-.dropdown-menu li {
-  padding: 8px;
+/* Tab navigation styles */
+.tab-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 15px; /* Spacing between title and tabs */
+}
+
+.tab {
+  background-color: #d2b48c;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 16px;
   cursor: pointer;
-  color: #5b3c1d;
+  border: 2px solid #8b5a2b;
   font-family: 'Georgia', serif;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.dropdown-menu li:hover {
-  background-color: #e0d3c0;
+.tab:hover {
+  background-color: #deb887;
+  transform: translateY(-2px);
 }
 
-/* Quest Card */
+.tab.active {
+  background-color: #fff8dc;
+  color: #3e2723;
+  border-bottom: 2px solid #fff8dc;
+}
+
+/* Quest Card Styles */
 .quest-card {
   background-color: rgba(255, 250, 205, 0.9);
   padding: 1rem;
@@ -104,6 +80,7 @@
   border-radius: 8px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
   font-family: 'Georgia', serif;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Added transition for smooth effect */
 }
 
 .quest-card h2 {
@@ -112,25 +89,13 @@
   color: #3e2723;
 }
 
-.quest-card p {
-  margin: 0;
-  color: #5d4037;
+/* Hover effect on Quest Card */
+.quest-card:hover {
+  transform: translateY(-5px); /* Moves the card up slightly */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
 }
 
-/* Reward Tag Styling */
-.reward-tag {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 4px 8px;
-  background-color: rgba(139, 69, 19, 0.1);
-  color: #4e342e;
-  border-radius: 4px;
-  font-size: 12px;
-  font-family: 'Georgia', serif;
-  border: 1px solid #162f83;
-}
-
-/* Pagination Section now inside the flex container */
+/* Pagination Section */
 .pagination {
   display: flex;
   justify-content: center;
@@ -162,62 +127,110 @@
   text-align: center;
 }
 
-/* Tab Navigation Styles */
-.tab-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
-  gap: 10px;
-   margin-top: -1.5cm;
-}
-
-.tab {
-  background-color: #d2b48c;
-  padding: 10px 20px;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  border: 2px solid #8b5a2b;
-  border-bottom: none;
-  font-family: 'Georgia', serif;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  position: relative;
-  top: 2px; /* overlap nicely with content box */
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.tab:hover {
-  background-color: #deb887;
-  transform: translateY(-2px);
-}
-
-.tab.active {
-  background-color: #fff8dc;
-  color: #3e2723;
-  border-bottom: 2px solid #fff8dc; /* makes active tab look connected to content */
-}
-
-.complete-btn {
-  margin-top: 10px;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
-  background-color: #4caf50;
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.complete-btn:hover {
-  background-color: #388e3c;
-}
-.home-container {
-  display: flex;
-  justify-content: center; /* horizontal centering */
-  align-items: center;     /* vertical centering */
-  min-height: 100vh;
+/* Quest List Styling */
+.quest-list {
   padding: 2rem;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+}
+
+/* Leaderboard Styling */
+.leaderboard-title {
+  text-align: center;
+  font-family: 'Cinzel Decorative', serif;
+  color: #5c4033; /* dark brown */
+  font-size: 32px;
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 3px #deb887; /* subtle glow */
+  font-weight: 700;
+}
+
+.leaderboard-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #fff8dc;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.player-avatar-wrapper {
+  flex-shrink: 0;
+  width: 70px;
+  height: 70px;
+  border: 2px solid #5c4033;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 20px;
+  transition: transform 0.3s ease;
+}
+
+.leaderboard-item:hover .player-avatar-wrapper {
+  transform: scale(1.1);
+}
+
+.player-avatar-wrapper .avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-info {
+  display: flex;
   flex-direction: column;
+  justify-content: center;
+}
+
+.player-name {
+  font-family: 'Cinzel Decorative', serif;
+  color: #5c4033;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.player-points {
+  font-family: 'Cinzel', serif;
+  color: #daa520;
+  font-size: 18px;
+}
+
+/* Animation for leaderboard items */
+@keyframes slideUp {
+  0% {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  80% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.leaderboard-item {
+  animation-name: slideUp;
+  animation-duration: 0.6s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+  opacity: 0;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../css/QuestBook.css';
-import '../css/Home.css'; // use Home.css for fonts and buttons
+import '../css/Home.css'; // Use Home.css for fonts and buttons
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import logo from '../media/logo.jpg';
 import { getUserData } from '../firebase/firebase';
@@ -67,84 +67,83 @@ const QuestBook = () => {
   if (loading) return <p style={{ textAlign: 'center' }}>Loading quests...</p>;
   if (quests.length === 0) return <p style={{ textAlign: 'center' }}>No quests available.</p>;
 
-return (
-  <div className="home-container">
-    {/* HEADER + LOGO + TITLE + TABS */}
-    <div className="header-container">
-      <div className="logo-title">
-        <img src={logo} alt="Logo" className="logo-circle" />
-        <h1 className="title">Wits Adventure Quests</h1>
+  return (
+    <div className="home-container">
+      {/* HEADER + LOGO + TITLE + TABS */}
+      <div className="header-container">
+        <div className="logo-title">
+          <img src={logo} alt="Logo" className="logo-circle" />
+          <h1 className="title">Wits Adventure Quests</h1>
+        </div>
+
+        <div className="tab-container">
+          <button
+            className={`home-btn tab ${activeTab === 'Quests' ? 'active' : ''}`}
+            onClick={() => setActiveTab('Quests')}
+          >
+            Quests
+          </button>
+          <button
+            className={`home-btn tab ${activeTab === 'Leaderboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('Leaderboard')}
+          >
+            Leaderboard
+          </button>
+        </div>
       </div>
 
-      <div className="tab-container">
-        <button
-          className={`home-btn tab ${activeTab === 'Quests' ? 'active' : ''}`}
-          onClick={() => setActiveTab('Quests')}
-        >
-          Quests
-        </button>
-        <button
-          className={`home-btn tab ${activeTab === 'Leaderboard' ? 'active' : ''}`}
-          onClick={() => setActiveTab('Leaderboard')}
-        >
-          Leaderboard
-        </button>
-      </div>
-    </div>
+      {/* CONTENT FRAME */}
+      <div className="map-frame">
+        {activeTab === 'Quests' && (
+          <>
+            {currentQuests.map((quest) => (
+              <div key={quest.id} className="quest-card">
+                <h2>{quest.name || "Untitled Quest"}</h2>
+                <p>Latitude: {quest.location ? quest.location.latitude.toFixed(6) : "N/A"}</p>
+                <p>Longitude: {quest.location ? quest.location.longitude.toFixed(6) : "N/A"}</p>
+                <span className="reward-tag">{quest.reward ?? 0} points</span>
+                <button className="home-btn complete-btn" onClick={() => handleTurnInQuest(quest)}>
+                  Turn in Quest
+                </button>
+              </div>
+            ))}
 
-    {/* CONTENT FRAME */}
-    <div className="map-frame">
-      {activeTab === 'Quests' && (
-        <>
-          {currentQuests.map((quest) => (
-            <div key={quest.id} className="quest-card">
-              <h2>{quest.name || "Untitled Quest"}</h2>
-              <p>Latitude: {quest.location ? quest.location.latitude.toFixed(6) : "N/A"}</p>
-              <p>Longitude: {quest.location ? quest.location.longitude.toFixed(6) : "N/A"}</p>
-              <span className="reward-tag">{quest.reward ?? 0} points</span>
-              <button className="home-btn complete-btn" onClick={() => handleTurnInQuest(quest)}>
-                Turn in Quest
+            <CompleteQuestForm
+              isOpen={showCompleteForm}
+              onClose={() => {
+                setShowCompleteForm(false);
+                setActiveQuest(null);
+              }}
+              quest={activeQuest}
+            />
+
+            {/* PAGINATION */}
+            <div className="pagination">
+              <button
+                className="home-btn"
+                onClick={() => handlePageChange("prev")}
+                disabled={currentPage === 1}
+              >
+                <FaArrowLeft />
+              </button>
+              <span>
+                Page {currentPage} / {totalPages}
+              </span>
+              <button
+                className="home-btn"
+                onClick={() => handlePageChange("next")}
+                disabled={currentPage === totalPages}
+              >
+                <FaArrowRight />
               </button>
             </div>
-          ))}
+          </>
+        )}
 
-          <CompleteQuestForm
-            isOpen={showCompleteForm}
-            onClose={() => {
-              setShowCompleteForm(false);
-              setActiveQuest(null);
-            }}
-            quest={activeQuest}
-          />
-
-          {/* PAGINATION */}
-          <div className="pagination">
-            <button
-              className="home-btn"
-              onClick={() => handlePageChange("prev")}
-              disabled={currentPage === 1}
-            >
-              <FaArrowLeft />
-            </button>
-            <span>
-              Page {currentPage} / {totalPages}
-            </span>
-            <button
-              className="home-btn"
-              onClick={() => handlePageChange("next")}
-              disabled={currentPage === totalPages}
-            >
-              <FaArrowRight />
-            </button>
-          </div>
-        </>
-      )}
-
-      {activeTab === 'Leaderboard' && <Leaderboard />}
+        {activeTab === 'Leaderboard' && <Leaderboard />}
+      </div>
     </div>
-  </div>
-);
-
+  );
 };
 
 export default QuestBook;

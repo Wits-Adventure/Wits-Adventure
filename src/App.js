@@ -41,17 +41,19 @@ const App = () => {
               }
             />
 
-            {/* Role-Based Protected Routes */}
+            {/* Profile Page with dynamic userId */}
             <Route
-              path="/ProfilePage"
+              path="/profile/:userId"
               element={
                 <ProtectedRoute requiredRole="student">
                   <ProfilePage />
                 </ProtectedRoute>
               }
             />
+
             <Route
-              path="/questbook" element={
+              path="/questbook"
+              element={
                 <ProtectedRoute requiredRole="student">
                   <QuestBook />
                 </ProtectedRoute>
@@ -66,9 +68,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-
-            {/* Dynamic Route for Other User's Profile */}
-            <Route path="/profile/:userId" element={<ProfilePage />} />
 
             {/* Catch-all route, for invalid paths */}
             <Route path="*" element={<Navigate to="/" replace />} />
