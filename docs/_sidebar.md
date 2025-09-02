@@ -6,3 +6,4 @@
 - [📋 Sprint Tasks](sprintTasks.md)
 - [🧙‍♂️ Development guides](developmentGuides.md)
 - [🪤 Schema and explanation](schema.md)
+- [🔮 Testing](testing.md)
