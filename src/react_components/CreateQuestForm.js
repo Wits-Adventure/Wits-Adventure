@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import '../css/CreateQuestForm.css';
 import { useAuth } from '../context/AuthContext';
-import { getUserData, } from '../firebase/firebase';
-import { saveQuestToFirestore } from '../firebase/general_quest_functions';
+import {
+  createQuestAtLocation,
+  getLocation
+} from './general_quest_functions';
 
 export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, questCirclesRef }) {
   const [name, setName] = useState('');
@@ -56,8 +58,12 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     const fetchUsername = async () => {
       if (currentUser) {
         try {
-          const userData = await getUserData();
-          setUsername(userData?.Name || 'User');
+          const response = await fetch(`http://localhost:5000/api/profile?uid=${currentUser.uid}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch user data');
+          }
+          const userData = await response.json();
+          setUsername(userData.Name || 'User');
         } catch (error) {
           console.error("Failed to fetch username:", error);
           setUsername('User');
@@ -67,31 +73,9 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     fetchUsername();
   }, [currentUser]);
 
-  const emojiCatalog = [
-    '🗡️', '⚔️', '🛡️', '🐉', '🧙‍♂️', '🏰', '📜', '🗺️', '💰', '👑',
-    '💀', '🧪', '🪓', '🏹', '🧝', '🧚‍♀️', '🔮', '🗝️', '🔥', '🪄',
-    '🪙', '🌟', '🪶', '🍄', '🦄', '🏺', '🧟', '⚗️', '⛲', '🪨',
-    '🍷', '🕯️', '📯', '🪤', '🧭', '🔔', '📯', '🪶', '🪄', '🛡️',
-    '🪙', '🧿', '💎', '🔱', '🏺', '🪓', '🏹', '🦅', '🦇', '🐺',
-    '🌙', '☀️', '🌪️', '☄️', '✨', '🪄', '🧜‍♀️', '🧞‍♂️', '🧌', '🧝‍♀️',
-    '🧛‍♂️', '🧚‍♂️', '🪄', '🎇', '🕯️', '📯', '🔔', '🧺', '🏔️', '🌲'
-  ];
-
   useEffect(() => {
     return () => stopFollowing();
   }, [stopFollowing]);
-
-  function pickRandomEmoji() {
-    const idx = Math.floor(Math.random() * emojiCatalog.length);
-    return emojiCatalog[idx];
-  }
-
-  function randomHslColor() {
-    const h = Math.floor(Math.random() * 360);
-    const s = 65 + Math.floor(Math.random() * 20);
-    const l = 40 + Math.floor(Math.random() * 15);
-    return `hsl(${h} ${s}% ${l}%)`;
-  }
 
   const startFollowing = () => {
     const map = mapInstanceRef?.current;
@@ -135,89 +119,21 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     map.on('mousemove', moveHandlerRef.current);
 
     clickHandlerRef.current = async (e) => {
-      const clickLatLng = e.latlng;
-      const offsetDistance = Math.random() * radius;
-      const offsetAngle = Math.random() * 360;
-
-      const metersPerDegreeLat = 111132;
-      const metersPerDegreeLng = metersPerDegreeLat * Math.cos(clickLatLng.lat * (Math.PI / 180));
-
-      const latOffset = (offsetDistance * Math.cos(offsetAngle * (Math.PI / 180))) / metersPerDegreeLat;
-      const lngOffset = (offsetDistance * Math.sin(offsetAngle * (Math.PI / 180))) / metersPerDegreeLng;
-
-      const circleCenterLatLng = window.L.latLng(clickLatLng.lat - latOffset, clickLatLng.lng - lngOffset);
-
-      const color = randomHslColor();
-      const rawName = name.trim();
-      const userEmoji = extractLeadingEmoji(rawName);
-      const baseName = userEmoji ? rawName.replace(/^\p{Extended_Pictographic}\s*/u, '').trim() : rawName;
-      const chosenEmoji = userEmoji || pickRandomEmoji();
-      const displayName = `${chosenEmoji} ${baseName || 'Unnamed Quest'}`;
-      const safeName = escapeHtml(displayName);
-
-      const circle = window.L.circle(circleCenterLatLng, {
-        color,
-        fillColor: color,
-        fillOpacity: 0.85,
-        radius: radius,
-        weight: 3,
-        opacity: 0.95,
-        className: 'quest-circle'
-      }).addTo(map);
-      circle._emoji = chosenEmoji;
-
-      const popupHtml = `
-        <div class="quest-popup">
-          <h3>${safeName}</h3>
-          <div class="quest-image-container">
-            <img src="${imagePreview}" alt="Quest Image" class="quest-popup-image" />
-          </div>
-          <p>Placed here by ${username}</p>
-          <p><strong>Reward:</strong> ${radius} points</p>
-          <button class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>
-        </div>
-      `;
-      circle.bindPopup(popupHtml);
-
-      const emojiIcon = window.L.divIcon({
-        className: 'quest-emoji-icon',
-        html: `<div class="quest-emoji">${chosenEmoji}</div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
+      createQuestAtLocation({
+        latLng: e.latlng,
+        mapInstanceRef,
+        radius,
+        name,
+        imagePreview,
+        username,
+        currentUser,
+        questCirclesRef,
+        stopFollowing
       });
-      const emojiMarker = window.L.marker(circleCenterLatLng, {
-        icon: emojiIcon,
-        riseOnHover: true
-      }).addTo(map);
-      emojiMarker.bindPopup(popupHtml);
-      circle._emojiMarker = emojiMarker;
-
-      if (questCirclesRef && Array.isArray(questCirclesRef.current)) {
-        questCirclesRef.current.push(circle);
-      }
-
-      // Save quest to Firestore
-      const questData = {
-        name: baseName || 'Unnamed Quest',
-        radius: radius,
-        reward: radius,
-        lat: circleCenterLatLng.lat,
-        lng: circleCenterLatLng.lng,
-        imageUrl: imagePreview,
-        creatorId: currentUser?.uid || 'unknown',
-        creatorName: username || 'User',
-        emoji: chosenEmoji,
-        color: color
-      };
-      await saveQuestToFirestore(questData);
-
-      stopFollowing();
     };
 
     map.once('click', clickHandlerRef.current);
   };
-
-
 
   const handleSelectLocation = (e) => {
     e.preventDefault();
@@ -340,17 +256,34 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
           <div className="cq-actions">
             <button
               className={`cq-btn cq-select ${!questImage ? 'disabled' : ''}`}
+              onClick={() => getLocation({
+                mapInstanceRef,
+                radius,
+                name,
+                imagePreview,
+                username,
+                currentUser,
+                questCirclesRef,
+                stopFollowing
+              })}
+              type="button"
+              disabled={!questImage}
+            >
+              Use My Location 🗺️
+            </button>
+            <button
+              className={`cq-btn cq-select ${!questImage ? 'disabled' : ''}`}
               onClick={handleSelectLocation}
               type="button"
               disabled={!questImage}
             >
-              Select Location
+              Select on Map
             </button>
             <button className="cq-btn cq-cancel" onClick={handleCancel} type="button">
               Cancel
             </button>
           </div>
-          <p className="cq-hint">After pressing "Select Location", click on the map to place the quest.</p>
+          <p className="cq-hint">After pressing "Select on Map", click on the map to place the quest.</p>
         </form>
       )}
 
@@ -362,20 +295,4 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
       )}
     </div>
   );
-}
-
-// Helpers
-function escapeHtml(unsafe) {
-  return String(unsafe)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function extractLeadingEmoji(str) {
-  if (!str) return null;
-  const m = str.trim().match(/^\p{Extended_Pictographic}/u);
-  return m ? m[0] : null;
 }

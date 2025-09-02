@@ -1,88 +1,82 @@
-import { db, auth } from "./firebase";
-import { collection, getDocs, getDoc, updateDoc, doc } from "firebase/firestore";
+// client/src/api/profile-client.js
 
+// The client-side file now only uses fetch, no direct Firestore calls for writing.
+// The auth import is kept to get the current user's UID.
+import { auth } from "./firebase"; 
 
-
-
-export async function getProfileData() {
-  const user = auth.currentUser; // Accessing the authenticated user
-  if (!user) {
-    throw new Error("User is not authenticated");
+/**
+ * Fetches a user's profile data from the backend API.
+ * @param {string} uid - The user's ID.
+ * @returns {Promise<object>} The user's profile data.
+ */
+export async function getProfileData(uid) {
+  if (!uid) {
+    throw new Error("User ID is required to fetch profile data.");
   }
-
-  const userDocRef = doc(db, "Users", user.uid);
-  const userDoc = await getDoc(userDocRef);
-
-  if (!userDoc.exists()) {
-    throw new Error("User document does not exist in Firestore");
-  }
-
-  const userData = userDoc.data();
-  return {
-    uid: user.uid,
-    Name: userData.Name,
-    LeaderBoardPoints: userData.LeaderBoardPoints,
-    CompletedQuests: userData.CompletedQuests.length,
-    Level: userData.Level,
-    Bio: userData.Bio,
-    profilePicture: userData.ProfilePictureUrl,
-
-    /*
-    To be added later, using defaults for now
-    Badge: userData.Badge
-    Rank: userData.Rank? Have to figure out how we'll get the user's rank
-    */
-
-
-
-  }
-
-
-}
-
-export async function addProfileFields() {
-  const usersCollectionRef = collection(db, "Users");
 
   try {
-    const querySnapshot = await getDocs(usersCollectionRef);
-
-    if (querySnapshot.empty) {
-      console.log("No documents found in the users collection.");
-      return;
+    const response = await fetch(`http://localhost:5000/api/profile?uid=${uid}`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to fetch profile data.");
     }
-
-    querySnapshot.forEach(async (document) => {
-      const userDocRef = doc(db, "Users", document.id);
-      await updateDoc(userDocRef, {
-        Level: 0,
-        CompletedQuests: [],
-        Bio: "",
-        SpendablePoints: 0,
-        Experience: 0,
-        Quests: [],
-
-
-
-      });
-      //console.log(`Document with ID: ${document.id} successfully updated.`);
-    });
-
-    //console.log("All documents processed.");
-
+    const profileData = await response.json();
+    return profileData;
   } catch (error) {
-    console.error("Error updating documents:", error);
+    console.error("Error fetching profile data:", error);
+    throw error;
+  }
+}
+
+/**
+ * Updates a user's profile data by sending a request to the backend API.
+ * @param {object} profileUpdate - The object containing the user's UID and fields to update.
+ */
+export async function updateProfileData(profileUpdate) {
+  if (!profileUpdate || !profileUpdate.uid) {
+    throw new Error("User ID and update data are required.");
   }
 
+  try {
+    const response = await fetch('http://localhost:5000/api/profile/update', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(profileUpdate)
+    });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update profile.');
+    }
+    console.log("Profile updated successfully!");
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    throw error;
+  }
 }
 
-export async function updateProfileData({ uid, Name, Bio, ProfilePictureUrl }) {
-  if (!uid) throw new Error("No user ID provided");
-  const userDocRef = doc(db, "Users", uid);
-  const updateObj = {};
-  if (Name !== undefined) updateObj.Name = Name;
-  if (Bio !== undefined) updateObj.Bio = Bio;
-  if (ProfilePictureUrl !== undefined) updateObj.ProfilePictureUrl = ProfilePictureUrl;
-  await updateDoc(userDocRef, updateObj);
-}
+/**
+ * Triggers the backend function to add profile fields to all users.
+ * NOTE: This is an administrative function and should not be accessible to all users.
+ */
+export async function addProfileFields() {
+  try {
+    const response = await fetch('http://localhost:5000/api/profile/add-fields', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to add profile fields.');
+    }
+    console.log("Profile fields added successfully for all users!");
+  } catch (error) {
+    console.error("Error adding profile fields:", error);
+    throw error;
+  }
+}

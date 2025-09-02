@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, } from "firebase/auth";
 import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { collection, addDoc, getDocs } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 
 
@@ -22,16 +23,60 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-async function addUserToFirestore(userId, email, name, role, autheProvider, leaderboardPoints) {
+const apiURL = 'http://localhost:5000'
+//const apiURL = 'https://bloobaseapi-cfbrbub4fzg5b8aq.southafricanorth-01.azurewebsites.net'
+
+
+export const apiRequest = async (url, method = 'GET', body = null, isFormData = false) => {
+  const headers = {};
+
+  const currentUser = auth.currentUser;
+  if (currentUser) {
+    const token = await currentUser.getIdToken();
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const config = {
+    method,
+    headers,
+  };
+
+  if (body) {
+    if (isFormData) {
+      config.body = body;
+    } else {
+      headers['Content-Type'] = 'application/json';
+      config.body = JSON.stringify(body);
+    }
+  }
+
+  const response = await fetch(`${apiURL}${url}`, config);
+
+  if (!response.ok) {
+    let errorMessage = `HTTP error! status: ${response.status}`;
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch (_) {}
+    throw new Error(errorMessage);
+  }
+
+  return await response.json();
+};
+
+
+async function addUserToFirestore(userId, email, name, role) {
   try {
+    await apiRequest('/api/users', 'POST', { userId, email, name, role });
+    console.log("User added via API!");
     const userDocRef = doc(db, "Users", userId);
     const userData = {
       Email: email,
       Name: name,
       joinedAt: serverTimestamp(),
       Role: role,
-      LeaderBoardPoints: leaderboardPoints,
-      autheProvider: autheProvider,
+     
+     
       Level: 0,
       CompletedQuests: [],
       Bio: "",
@@ -46,24 +91,26 @@ async function addUserToFirestore(userId, email, name, role, autheProvider, lead
   }
 }
 
-// Function to get user data from Firestore
-async function getUserData() {
-  const user = auth.currentUser; // Accessing the authenticated user
-  if (!user) {
-    throw new Error("User is not authenticated");
-  }
+/**
+ * Fetches the currently authenticated user's data from the backend.
+ * @returns {Promise<object>} The user data from Firestore.
+ */
+ const getUserData = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error("User is not authenticated");
+    }
 
-  const userDocRef = doc(db, "Users", user.uid);
-  const userDoc = await getDoc(userDocRef);
+    try {
+        // Call the backend GET endpoint using apiRequest
+        const userData = await apiRequest(`/api/users/${user.uid}`);
+        return userData;
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        throw error; // Re-throw the error to be handled by the UI
+    }
+};
 
-  if (!userDoc.exists()) {
-    throw new Error("User document does not exist in Firestore");
-  }
-
-  console.log(userDoc.data().Role)
-
-  return userDoc.data(); // Returns the user data from Firestore
-}
 
 // Function to get the user's name
 async function getUserName() {
@@ -75,6 +122,7 @@ async function getUserName() {
     return null; // In case of error, return null
   }
 }
+
 async function getUserRole() {
   try {
     const userData = await getUserData(); // Await the user data
@@ -84,11 +132,13 @@ async function getUserRole() {
     return null; // In case of error, return null
   }
 }
+
 const logout = () => {
   auth.signOut();
 
 }
-const signupNormUser = ({ Name, Email, Password, ConfirmPassword, Role, LeaderBoardPoints }) => {
+
+const signupNormUser = ({ Name, Email, Password, ConfirmPassword, Role }) => {
   if (Password !== ConfirmPassword) {
     alert("Passwords do not match");
     return Promise.reject(new Error("Passwords do not match"));
@@ -101,7 +151,7 @@ const signupNormUser = ({ Name, Email, Password, ConfirmPassword, Role, LeaderBo
       return sendEmailVerification(user)
         .then(() => {
           // Pass the correct fields to addUserToFirestore
-          addUserToFirestore(user.uid, Email, Name, Role, 'Firebase Auth', LeaderBoardPoints);
+          addUserToFirestore(user.uid, Email, Name, Role);
           alert("Account created! Please check your email for verification.");
         })
         .catch((error) => {
@@ -142,6 +192,31 @@ const loginNormUser = async ({ email, password }) => {
   }
 };
 
+
+/**
+ * Uploads a file to the backend API and returns its URL.
+ * @param {File} file - The image file to upload.
+ * @returns {Promise<string>} A promise that resolves with the public URL of the uploaded image.
+ */
+export const uploadImage = async (file) => {
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error("User is not authenticated. Cannot upload image.");
+    }
+
+    const idToken = await user.getIdToken();
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    try {
+        // Updated to use the new endpoint
+        const response = await apiRequest('/api/upload/image', 'POST', formData, true, idToken);
+        return response.imageUrl;
+    } catch (error) {
+        console.error("Error uploading image:", error);
+        throw error;
+    }
+};
 export {
   app,
   auth,
