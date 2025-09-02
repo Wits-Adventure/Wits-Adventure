@@ -1,17 +1,7 @@
-.full-page-background {
-  background-image: url('../media/questbook6.png'); /* Update path if needed */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  min-height: 100vh;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 4rem;
-  padding-bottom: 4rem;
-  overflow-x: hidden;
-}
+
+
+
+
 
 .quest-list {
   padding: 2rem;
@@ -222,4 +212,12 @@
 
 .complete-btn:hover {
   background-color: #388e3c;
+}
+.home-container {
+  display: flex;
+  justify-content: center; /* horizontal centering */
+  align-items: center;     /* vertical centering */
+  min-height: 100vh;
+  padding: 2rem;
+  flex-direction: column;
 }

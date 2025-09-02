@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import '../css/QuestBook.css';
+import '../css/Home.css'; // use Home.css for fonts and buttons
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import logo from '../media/logo.jpg';
-import trophy from '../media/trophy.png';
 import { getUserData } from '../firebase/firebase';
 import { getAllQuests } from '../firebase/general_quest_functions';
 import CompleteQuestForm from './CompleteQuestForm';
+import Leaderboard from "./Leaderboard";
 
 const questsPerPage = 4;
 
@@ -14,17 +15,15 @@ const QuestBook = () => {
   const [quests, setQuests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
-  const [activeTab, setActiveTab] = useState('Quests'); // Added tab state
+  const [activeTab, setActiveTab] = useState('Quests');
   const [acceptedQuests, setAcceptedQuests] = useState([]);
   const [showCompleteForm, setShowCompleteForm] = useState(false);
   const [activeQuest, setActiveQuest] = useState(null);
 
-  // Fetch quests and user info on mount
   useEffect(() => {
     const fetchQuests = async () => {
       try {
         const questsArray = await getAllQuests();
-        console.log("Fetched quests:", questsArray);
         setQuests(questsArray);
       } catch (error) {
         console.error("Error fetching quests:", error);
@@ -33,18 +32,6 @@ const QuestBook = () => {
       }
     };
 
-    /*
-    From Tafara
-    To get user ID you can import auth from firebase
-        const user = auth.currentUser;
-        if (user) {
-          const uid = user.uid;
-          console.log("User ID:", uid);
-        } else {
-          console.log("No user is signed in.");
-          navigate to homepage as quest page is only accessible to signed in students
-        }
-    */
     const fetchUser = async () => {
       try {
         const userData = await getUserData();
@@ -80,80 +67,84 @@ const QuestBook = () => {
   if (loading) return <p style={{ textAlign: 'center' }}>Loading quests...</p>;
   if (quests.length === 0) return <p style={{ textAlign: 'center' }}>No quests available.</p>;
 
-  return (
-    <div className="full-page-background">
-      <div className="quest-list">
+return (
+  <div className="home-container">
+    {/* HEADER + LOGO + TITLE + TABS */}
+    <div className="header-container">
+      <div className="logo-title">
+        <img src={logo} alt="Logo" className="logo-circle" />
+        <h1 className="title">Wits Adventure Quests</h1>
+      </div>
 
-        {/* TAB NAVIGATION */}
-        <div className="tab-container">
-          <div
-            className={`tab ${activeTab === 'Quests' ? 'active' : ''}`}
-            onClick={() => setActiveTab('Quests')}
-          >
-            Quests
-          </div>
-          <div
-            className={`tab ${activeTab === 'Leaderboard' ? 'active' : ''}`}
-            onClick={() => setActiveTab('Leaderboard')}
-          >
-            Leaderboard
-          </div>
-        </div>
-
-        {/* PAGE CONTENT */}
-        {activeTab === 'Quests' && (
-          <>
-            <h1 className="title">
-              <img src={logo} alt="Logo" className="logo-circle" />
-              Wits Adventure Quests
-            </h1>
-
-            <div className="pagination">
-              <button onClick={() => handlePageChange('prev')} disabled={currentPage === 1}>
-                <FaArrowLeft />
-              </button>
-              <span>Page {currentPage} / {totalPages}</span>
-              <button onClick={() => handlePageChange('next')} disabled={currentPage === totalPages}>
-                <FaArrowRight />
-              </button>
-            </div>
-
-            {currentQuests.map((quest) => (
-              <div key={quest.id} className="quest-card">
-                <h2>{quest.name || "Untitled Quest"}</h2>
-                <p>Latitude: {quest.location ? quest.location.latitude.toFixed(6) : "N/A"}</p>
-                <p>Longitude: {quest.location ? quest.location.longitude.toFixed(6) : "N/A"}</p>
-                <span className="reward-tag">
-                  {quest.reward ?? 0} points
-                </span>
-                <button
-                  className="complete-btn"
-                  onClick={() => handleTurnInQuest(quest)}
-                >
-                  Turn in Quest
-                </button>
-              </div>
-            ))}
-
-            {/* Place CompleteQuestForm here */}
-            <CompleteQuestForm
-              isOpen={showCompleteForm}
-              onClose={() => { setShowCompleteForm(false); setActiveQuest(null); }}
-              quest={activeQuest}
-            />
-          </>
-        )}
-
-        {activeTab === 'Leaderboard' && (
-          <div>
-            <h1 className="title"> <img src={trophy} alt="trophy" className="trophy" /> Leaderboard</h1>
-            <p style={{ textAlign: 'center' }}>Leaderboard content will go here.</p>
-          </div>
-        )}
-
+      <div className="tab-container">
+        <button
+          className={`home-btn tab ${activeTab === 'Quests' ? 'active' : ''}`}
+          onClick={() => setActiveTab('Quests')}
+        >
+          Quests
+        </button>
+        <button
+          className={`home-btn tab ${activeTab === 'Leaderboard' ? 'active' : ''}`}
+          onClick={() => setActiveTab('Leaderboard')}
+        >
+          Leaderboard
+        </button>
       </div>
     </div>
-  );
+
+    {/* CONTENT FRAME */}
+    <div className="map-frame">
+      {activeTab === 'Quests' && (
+        <>
+          {currentQuests.map((quest) => (
+            <div key={quest.id} className="quest-card">
+              <h2>{quest.name || "Untitled Quest"}</h2>
+              <p>Latitude: {quest.location ? quest.location.latitude.toFixed(6) : "N/A"}</p>
+              <p>Longitude: {quest.location ? quest.location.longitude.toFixed(6) : "N/A"}</p>
+              <span className="reward-tag">{quest.reward ?? 0} points</span>
+              <button className="home-btn complete-btn" onClick={() => handleTurnInQuest(quest)}>
+                Turn in Quest
+              </button>
+            </div>
+          ))}
+
+          <CompleteQuestForm
+            isOpen={showCompleteForm}
+            onClose={() => {
+              setShowCompleteForm(false);
+              setActiveQuest(null);
+            }}
+            quest={activeQuest}
+          />
+
+          {/* PAGINATION */}
+          <div className="pagination">
+            <button
+              className="home-btn"
+              onClick={() => handlePageChange("prev")}
+              disabled={currentPage === 1}
+            >
+              <FaArrowLeft />
+            </button>
+            <span>
+              Page {currentPage} / {totalPages}
+            </span>
+            <button
+              className="home-btn"
+              onClick={() => handlePageChange("next")}
+              disabled={currentPage === totalPages}
+            >
+              <FaArrowRight />
+            </button>
+          </div>
+        </>
+      )}
+
+      {activeTab === 'Leaderboard' && <Leaderboard />}
+    </div>
+  </div>
+);
+
 };
 
 export default QuestBook;

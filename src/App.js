@@ -9,11 +9,12 @@ import Home from './react_components/Home.js'; // Import the Home component
 import ProtectedRoute from './react_components/protectedRoute.js'; // Import ProtectedRoute
 import Unauthorized from './react_components/unauthorized.js'; // You'll need to create this component
 import ProfilePage from './react_components/ProfilePage.js';
-import LeaderBoardAchievements from './react_components/LeaderboardAchievements.js'
 import AdminDashboard from './react_components/adminDashboard.js';
 import QuestBook from './react_components/QuestBook.js';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Leaderboard from './react_components/Leaderboard';
+
 
 const App = () => {
   return (
@@ -27,7 +28,7 @@ const App = () => {
             <Route path="/Homepage" element={<HomePage />} />
             <Route path="/Login" element={<Login />} />
             <Route path="/Signup" element={<Signup />} />
-            <Route path="/LeaderBoardAchievements" element={<LeaderBoardAchievements />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
 
             <Route path="/unauthorized" element={<Unauthorized />} />
 

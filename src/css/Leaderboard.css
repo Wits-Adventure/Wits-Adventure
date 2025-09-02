@@ -1,0 +1,7 @@
+.leaderboard-container {
+  font-family: 'Cinzel', serif;
+  background: transparent;  /* map-frame handles the background */
+  padding: 0;               /* optional, map-frame adds padding */
+  box-shadow: none;
+  margin: 0;
+}
