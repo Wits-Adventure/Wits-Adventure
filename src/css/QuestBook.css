@@ -234,3 +234,59 @@
   animation-fill-mode: forwards;
   opacity: 0;
 }
+/* Website Name with Logo - Updated to match create quest button */
+.website-name {
+  background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+  border: 2px solid #90774c;
+  border-radius: 25px;
+  padding: 8px 25px;
+  box-shadow:
+    0 8px 25px rgba(144, 119, 76, 0.4),
+    0 4px 15px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.website-name::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: #90774c;
+  border-radius: 27px;
+  z-index: -1;
+}
+
+.website-name::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.website-name h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #2F1B14;
+  letter-spacing: 2px;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(47, 27, 20, 0.3);
+}
