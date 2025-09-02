@@ -7,6 +7,7 @@ import { getUserData } from '../firebase/firebase';
 import { getAllQuests } from '../firebase/general_quest_functions';
 import CompleteQuestForm from './CompleteQuestForm';
 import Leaderboard from "./Leaderboard";
+import { useNavigate } from 'react-router-dom';  // Import useNavigate for routing
 
 const questsPerPage = 4;
 
@@ -19,6 +20,8 @@ const QuestBook = () => {
   const [acceptedQuests, setAcceptedQuests] = useState([]);
   const [showCompleteForm, setShowCompleteForm] = useState(false);
   const [activeQuest, setActiveQuest] = useState(null);
+
+  const navigate = useNavigate(); // Initialize navigate for routing
 
   useEffect(() => {
     const fetchQuests = async () => {
@@ -142,6 +145,16 @@ const QuestBook = () => {
 
         {activeTab === 'Leaderboard' && <Leaderboard />}
       </div>
+
+      {/* Back to Home button - fixed at bottom-left */}
+      <button
+        type="button"
+        className="back-home-btn"
+        onClick={() => navigate("/")}
+        aria-label="Back to home"
+      >
+        <img src="/return.svg" alt="Back" />
+      </button>
     </div>
   );
 };
