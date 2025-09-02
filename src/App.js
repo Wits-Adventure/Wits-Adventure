@@ -15,7 +15,6 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Leaderboard from './react_components/Leaderboard';
 
-
 const App = () => {
   return (
     <Router>
@@ -31,7 +30,6 @@ const App = () => {
             <Route path="/leaderboard" element={<Leaderboard />} />
 
             <Route path="/unauthorized" element={<Unauthorized />} />
-
 
             {/* Protected Routes (Authenticated users only) */}
             <Route
@@ -60,7 +58,6 @@ const App = () => {
               }
             />
 
-
             <Route
               path="/Admin_Dashboard"
               element={
@@ -69,7 +66,11 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            {/*Catch all route, for invalid paths */}
+
+            {/* Dynamic Route for Other User's Profile */}
+            <Route path="/profile/:userId" element={<ProfilePage />} />
+
+            {/* Catch-all route, for invalid paths */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </>

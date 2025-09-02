@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import "../css/ProfilePage.css";
 import profilePic from "../assets/profile.jpg";
 import editIcon from "../assets/edit_icon.png";
-import { getProfileData, updateProfileData } from "../firebase/profile_functions";
-import { useNavigate } from "react-router-dom";
+import { getProfileData, updateProfileData, getOtherUserProfileData } from "../firebase/profile_functions";  // Update with new function
+import { useNavigate, useParams } from "react-router-dom";
 import { getAllQuests } from "../firebase/general_quest_functions";
 import QuestManager from "./QuestManager";
 
 export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
+  const { userId } = useParams(); // Get userId from the URL
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -46,11 +47,12 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
     return `hsl(${h} ${s}% ${l}%)`;
   }
 
-  // Fetch data from Firebase when the component mounts
+  // Fetch data from Firebase when the component mounts or userId changes
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const profileData = await getProfileData();
+        // Fetch data for the specified userId
+        const profileData = await getOtherUserProfileData(userId); // Fetch other user's profile data
         setUser({
           ...profileData,
           username: profileData.Name,
@@ -59,7 +61,7 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
           level: profileData.Level,
           bio: profileData.Bio,
           profilePicture: profileData.profilePicture || profilePic,
-          rank: 12,
+          rank: 12,  // Placeholder
           questsInProgress: 3, // Placeholder
         });
         setEditedUsername(profileData.Name);
@@ -90,7 +92,7 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
     };
 
     fetchUserData();
-  }, []);
+  }, [userId]);  // Trigger when userId changes
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -135,7 +137,6 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
   };
 
   const handleProfilePicChange = (e) => {
-    // e can be from input change or drop event
     const file = e?.target?.files?.[0] || e?.dataTransfer?.files?.[0];
     if (file) processFile(file);
     setIsDragging(false);
@@ -161,7 +162,6 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
     setIsDragging(false);
   };
 
-  // NEW: remove profile image and reset to default in public folder
   const handleRemoveImage = () => {
     setEditedProfilePic('/default.jpg');
     if (fileInputRef.current) {
@@ -211,7 +211,6 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
     console.log(`Rejected submission ${submissionId} for quest ${questId}`);
     // Add your reject submission logic here
   };
-
 
   const profilePicture = user.profilePicture || "/profile.png";
 
