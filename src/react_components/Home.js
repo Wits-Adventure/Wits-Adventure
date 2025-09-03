@@ -32,9 +32,15 @@ const Home = () => {
   const [showCompleteForm, setShowCompleteForm] = useState(false);
   const [activeQuest, setActiveQuest] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
+  const [isBellActive, setIsBellActive] = useState(false); // NEW: state to track bell animation
 
   const showToast = (msg) => {
     setToastMsg(msg);
+    // flash bell for the "The bell tolls" message (or any message you prefer)
+    if (msg && msg.toLowerCase().includes('bell')) {
+      setIsBellActive(true);
+      window.setTimeout(() => setIsBellActive(false), 1400); // brief pulse
+    }
     setTimeout(() => setToastMsg(''), 2200);
   };
 
@@ -658,7 +664,7 @@ const Home = () => {
               </button>
               {/* Bell icon */}
               <button
-                className="bell-icon"
+                className={`bell-icon ${isBellActive ? 'playing' : ''}`}
                 onClick={() => {
                   showToast("The bell tolls");
                   if (window.L && mapInstanceRef.current) {
@@ -707,7 +713,7 @@ const Home = () => {
 
               {/* Music icon */}
               <button
-                className="music-icon"
+                className={`music-icon ${isMusicPlaying ? 'playing' : ''}`}
                 onClick={toggleMusic}
                 aria-label="Toggle Music"
               >

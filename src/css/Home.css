@@ -35,49 +35,128 @@
   transition: none;
 }
 
-/* Style for the music button */
+/* Style for the music button - base (no large negative offset anymore) */
 .music-icon {
-  position: relative; /* Needed for positioning the slash, if used */
+  position: relative;
   width: 45px;
   height: 45px;
   background-color: transparent;
-  border: 2px solid #2F1B14; 
-  border-radius: 50%; 
+  border: 2px solid #2F1B14;
+  border-radius: 50%;
   cursor: pointer;
   padding: 0;
-  margin-left: -250px; 
-  overflow: hidden; 
-  box-sizing: border-box; 
-  display: flex; 
-  justify-content: center; /* Center horizontally */
-  align-items: center; 
+  overflow: hidden;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .music-icon img {
   width: 72%;
   height: 72%;
-  object-fit: cover; 
+  object-fit: cover;
   display: flex;
 }
 
-.music-icon:not(.playing)::before {
+/* replace previous pseudo-element rules with a clear behaviour:
+   - default ::before is hidden
+   - when NOT .playing the line is shown
+   - when .playing the line is hidden */
+.music-icon::before {
   content: '';
   position: absolute;
-  width: 95%; 
-  height: 2px; 
-  background-color:#4b2e1a; 
-  transform: rotate(45deg);
-  top: 50%; 
-  left: 50%; 
+  width: 56%;
+  height: 2px;
+  background-color: #fff0dc;
+  top: 50%;
+  left: 63%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  scale: 1.5;
   transform-origin: center;
-  translate: -50% -50%; 
-  z-index: 2; 
+  z-index: 2;
+  display: none;
 }
+
+/* Show the strike only when NOT playing (i.e. muted/stopped) */
+.music-icon:not(.playing)::before {
+  display: block;
+}
+
+/* Ensure playing state removes strike and gives active visuals */
 .music-icon.playing {
-  border-color: #d4a017; /* Change border color when playing */
-  transform: scale(1.1); 
-  box-shadow: 0 0 8px rgba(212, 160, 23, 0.6); /* Subtle glow */
+  border-color: #d4a017;
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(212, 160, 23, 0.6);
 }
+
+/* Hide the header's music button (the map has its own). This keeps layout clean. */
+.header > .music-icon {
+  display: none;
+}
+
+/* Position the music button inside the map area (top-right) */
+.map-frame .music-icon,
+#map > .music-icon {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 60px;
+  height: 60px;
+  z-index: 1200; /* sit above map controls */
+  border: 2px solid #fff2d8;
+  border-radius: 50%;
+  background-color: rgba(255, 235, 214, 0.02);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+/* make the icon image scale nicely inside the map button */
+.map-frame .music-icon img,
+#map > .music-icon img {
+  width: 70%;
+  height: 70%;
+}
+
+/* Mobile adjustments: smaller and slightly inset on small screens */
+@media (max-width: 800px) {
+  .map-frame .music-icon,
+  #map > .music-icon {
+    top: 12px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+  }
+
+  /* Ensure header's music remains hidden on mobile too */
+  .header > .music-icon {
+    display: none;
+  }
+
+  .leaflet-control-zoom {
+    margin-left: 18
+    px !important;
+  }
+
+  /* remove any prior mobile-specific music-icon overrides */
+  .music-icon {
+    /* no grid placement on mobile anymore; map-positioning is used */
+  }
+}
+
+@media (max-width: 450px) {
+  .map-frame .music-icon,
+  #map > .music-icon {
+    top: 10px;
+    right: 18px;
+    width: 58px;
+    height: 58px;
+  }
+}
+
+/* Abandon Quest button - updated styles */
 .abandon-quest-btn {
   background: linear-gradient(135deg, #c89d5c 0%, #ffe3a1 100%);
   border: 2px solid #a97a4c;
@@ -383,13 +462,39 @@
 }
 
 .map-container {
-  width: 100%;
-  max-width: 1400px;
+  width: calc(100% - 60px); /* account for the page's 30px horizontal padding each side */
+  max-width: none;          /* remove fixed cap so it grows with viewport */
+  margin: 0 30px;           /* keep the visual horizontal padding */
   flex: 1;
   height: 100%;
   position: relative;
   min-height: 0;
-  /* allow flex shrink */
+  box-sizing: border-box;   /* ensure padding/border don't create overflow */
+}
+
+/* ensure map-frame still uses full container */
+.map-frame {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: linear-gradient(145deg, #D2B48C, #DEB887);
+  border: 8px solid #654321;
+  border-radius: 20px;
+  padding: 15px;
+  box-shadow:
+    0 0 0 3px #b48e65,
+    0 20px 40px rgba(101, 67, 33, 0.5),
+    0 30px 25px rgba(0, 0, 0, 0.5),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2);
+  overflow: visible;  /* Changed from 'hidden' to prevent clipping the inner content at the bottom */
+}
+
+/* small safeguard for very small screens (keeps existing mobile rules intact) */
+@media (max-width: 800px) {
+  .map-container {
+    width: calc(100% + 60px); /* mobile override (already used elsewhere) */
+    margin: 0 -30px -20px -30px;
+  }
 }
 
 .map-frame {
@@ -405,7 +510,7 @@
     0 20px 40px rgba(101, 67, 33, 0.5),
     0 30px 25px rgba(0, 0, 0, 0.5),
     inset 0 2px 0 rgba(255, 255, 255, 0.2);
-  overflow: hidden;
+  overflow: visible;  /* Changed from 'hidden' to prevent clipping the inner content at the bottom */
 }
 
 .map-corners {
@@ -1017,11 +1122,60 @@
   .map-section {
     /* nudge the map slightly lower on mobile (was -40px) */
     padding-top: calc(var(--header-offset, 120px) - 20px);
+    /* remove horizontal and bottom padding so map may reach edges */
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+  }
+
+  /* Stretch the map to the left/right and bottom edges while keeping the decorative border:
+     - remove the container max-width so it can span full viewport
+     - expand the container width by the original horizontal padding (30px each side),
+       then pull it back using negative margins so the map-frame border sits at the viewport edge
+     - remove the small bottom spacing so the frame reaches the bottom */
+  .map-container {
+    max-width: none;
+    width: calc(100% + 60px); /* original horizontal padding was 30px each side */
+    margin: 0 -30px -20px -30px; /* pull left/right to screen edges, reduce bottom gap */
+    min-height: calc(100dvh - var(--header-offset, 120px));
+  }
+
+  .map-frame {
+    /* Keep the visual border but ensure it uses box-sizing so padding doesn't add overflow */
+    box-sizing: border-box;
+    padding: 12px; /* slightly reduce inner padding on mobile */
+    border-radius: 12px; /* keep decorative corners */
+    width: 100%;
+    height: 100%;
   }
 
   /* reduce map min-height slightly for mobile space */
   #map {
     min-height: 340px;
+  }
+
+  /* Mobile-specific override so the music icon is visible and centered.
+     This removes the large negative left offset from desktop styles and
+     places the music button on its own row centered under the title. */
+  .music-icon {
+    grid-column: 1 / -1;
+    justify-self: center;
+    margin: 6px 0;
+    width: 40px;
+    height: 40px;
+    align-self: center;
+    /* make sure it sits above other header elements */
+    z-index: 250;
+    /* remove pointer blocking from prior rules on mobile */
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  /* small adjustments to prevent header controls from colliding */
+  .create-quest-btn,
+  .user-area {
+    margin-top: 0;
+    margin-bottom: 0;
   }
 }
 
@@ -1045,7 +1199,79 @@
     display: none;
   }
 
+  /* ensure music icon remains visible and slightly smaller on very small screens */
+  .music-icon {
+    width: 34px;
+    height: 34px;
+    margin: 6px 0;
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+
+  /* on very small screens keep the map flush but reduce the negative margin used above */
+  .map-container {
+    width: calc(100% + 40px);
+    margin-left: -20px;
+    margin-right: -20px;
+    margin-bottom: -10px;
+  }
+
   /* hide username if space is too small */
+}
+
+/* Make questbook and bell icons slightly smaller on mobile so they don't dominate the map
+   (force with !important so other rules don't override) */
+@media (max-width: 800px) {
+  .questbook-icon {
+    width: 84px !important;
+    height: 84px !important;
+    bottom: 12px !important;
+    right: 12px !important;
+  }
+
+  .questbook-icon img {
+    width: 56px !important;
+    height: 56px !important;
+  }
+
+  .bell-icon {
+    width: 84px !important;
+    height: 84px !important;
+    bottom: 12px !important;
+    left: 12px !important;
+  }
+
+  .bell-icon img {
+    width: 56px !important;
+    height: 56px !important;
+  }
+}
+
+/* Extra-small screens — force smaller sizes */
+@media (max-width: 480px) {
+  .questbook-icon {
+    width: 80px !important;
+    height: 80px !important;
+    bottom: 10px !important;
+    right: 10px !important;
+  }
+
+  .questbook-icon img {
+    width: 58px !important;
+    height: 58px !important;
+  }
+
+  .bell-icon {
+    width: 80px !important;
+    height: 80px !important;
+    bottom: 10px !important;
+    left: 10px !important;
+  }
+
+  .bell-icon img {
+    width: 58px !important;
+    height: 58px !important;
+  }
 }
 
 .quest-popup-btn {
@@ -1093,44 +1319,127 @@
   filter: none;
 }
 
-/* Optional: style for the radiating pulse circle (Leaflet adds SVG) */
-.leaflet-interactive.bell-pulse-circle {
-  stroke: #e6d5a8 !important;
-  stroke-width: 3 !important;
-  fill: #fff2c9 !important;
-  opacity: 0.9 !important; /* more opaque */
-  pointer-events: none !important;
-  transition: opacity 0.3s;
+/* Bell active / ringing visuals */
+.bell-icon.playing {
+  border-color: #d4a017;
+  transform: scale(1.06);
+  box-shadow: 0 8px 22px rgba(212,160,23,0.18);
+  background: rgba(212,160,23,0.04);
 }
 
+/* make the bell image pop when active */
+.bell-icon.playing img {
+  filter: drop-shadow(0 6px 12px rgba(212,160,23,0.18));
+  transform: translateY(-1px);
+}
+
+/* small pulse ring (subtle) while active */
+.bell-icon.playing::after {
+  content: '';
+  position: absolute;
+  width: 110%;
+  height: 110%;
+  border-radius: 50%;
+  top: -5%;
+  left: -5%;
+  box-shadow: 0 0 0 2px rgba(212,160,23,0.06);
+  animation: bell-pulse 1000ms ease-out 1;
+  pointer-events: none;
+  z-index: 999;
+}
+
+@keyframes bell-pulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  60% { transform: scale(1.06); opacity: 0.22; }
+  100% { transform: scale(1.12); opacity: 0; }
+}
+
+/* ensure mobile size rules still apply and the playing state scales correctly */
+@media (max-width: 800px) {
+  .bell-icon.playing { transform: scale(1.03); box-shadow: 0 6px 16px rgba(212,160,23,0.14); }
+}
+
+@media (max-width: 480px) {
+  .bell-icon.playing { transform: scale(1.02); }
+}
+
+/* Toast - compact & mobile-friendly */
 .fantasy-toast {
   position: fixed;
+  bottom: 18px;
   left: 50%;
-  bottom: 60px;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, #ffeac8 80%, #d8ba8a 100%);
-  color: #2F1B14;
-  border: 3px solid #90774c;
-  border-radius: 18px;
-  font-family: 'Cinzel Decorative', serif;
-  font-size: 1.15rem;
-  font-weight: 600;
-  padding: 12px 32px 12px 24px;
-  box-shadow: 0 8px 32px rgba(144,119,76,0.18), 0 2px 0 #fff2c9 inset;
-  z-index: 3000;
-  display: flex;
+  background: rgba(47, 27, 20, 0.95);
+  color: #fff8ea;
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  z-index: 1400;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  animation: toastPopIn 0.22s cubic-bezier(.7,.2,.3,1);
-  pointer-events: none;
+  gap: 8px;
+  max-width: calc(100% - 32px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
 }
 
+/* small decorative bell indicator inside toast */
 .toast-bell {
-  font-size: 1.3em;
-  margin-right: 2px;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffd38a, #d4a017);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25) inset;
+  display: inline-block;
 }
 
-@keyframes toastPopIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.96);}
-  to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1);}
+/* Mobile tweaks to reduce padding and prevent awkward wrapping/padding on small screens */
+@media (max-width: 480px) {
+  .fantasy-toast {
+    bottom: 12px;
+    padding: 6px 10px;
+    font-size: 13px;
+    gap: 6px;
+    border-radius: 8px;
+    max-width: calc(100% - 20px);
+  }
+
+  .toast-bell {
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+  }
+}
+
+/* Desktop: reduce horizontal gutters so the map frame fills more of the viewport
+   without changing any mobile rules (mobile still handled by max-width:800px media queries) */
+@media (min-width: 801px) {
+  /* Pull the page padding in a bit so the map border sits closer to the viewport edges */
+  .map-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* Narrow the outer container margins so the framed map grows horizontally */
+  .map-container {
+    width: calc(100% - 32px); /* match the smaller horizontal padding */
+    margin: 0 16px;
+    box-sizing: border-box;
+  }
+
+  /* Slightly reduce inner frame padding so the visible map area increases while keeping the decorative border */
+  .map-frame {
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  /* Encourage the actual map to occupy more vertical space on desktop */
+  #map {
+    min-height: calc(100dvh - var(--header-offset, 120px) - 24px);
+  }
 }
