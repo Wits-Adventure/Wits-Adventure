@@ -140,10 +140,6 @@
     px !important;
   }
 
-  /* remove any prior mobile-specific music-icon overrides */
-  .music-icon {
-    /* no grid placement on mobile anymore; map-positioning is used */
-  }
 }
 
 @media (max-width: 450px) {
@@ -486,7 +482,8 @@
     0 20px 40px rgba(101, 67, 33, 0.5),
     0 30px 25px rgba(0, 0, 0, 0.5),
     inset 0 2px 0 rgba(255, 255, 255, 0.2);
-  overflow: visible;  /* Changed from 'hidden' to prevent clipping the inner content at the bottom */
+  overflow: hidden; /* Keep this to clip any excess */
+  min-height: 400px; /* NEW: Match #map's min-height to prevent frame from shrinking too small */
 }
 
 /* small safeguard for very small screens (keeps existing mobile rules intact) */
@@ -494,23 +491,16 @@
   .map-container {
     width: calc(100% + 60px); /* mobile override (already used elsewhere) */
     margin: 0 -30px -20px -30px;
+    
   }
-}
 
-.map-frame {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  background: linear-gradient(145deg, #D2B48C, #DEB887);
-  border: 8px solid #654321;
-  border-radius: 20px;
-  padding: 15px;
-  box-shadow:
-    0 0 0 3px #b48e65,
-    0 20px 40px rgba(101, 67, 33, 0.5),
-    0 30px 25px rgba(0, 0, 0, 0.5),
-    inset 0 2px 0 rgba(255, 255, 255, 0.2);
-  overflow: visible;  /* Changed from 'hidden' to prevent clipping the inner content at the bottom */
+  .map-frame {
+    /* ...existing code... */
+    overflow: hidden; /* Ensure overflow is hidden on mobile too */
+    min-height: 340px; /* NEW: Match the adjusted #map min-height for mobile */
+  }
+
+  /* ...existing code... */
 }
 
 .map-corners {
@@ -563,6 +553,7 @@
   filter: sepia(0.55) saturate(1) contrast(1) brightness(1);
   /* Ensure minimum height */
   min-height: 400px;
+  max-height: 100%;  /* Added to prevent #map from exceeding its parent's height, reducing overflow risk */
 }
 
 /* Fix Leaflet container issues */
