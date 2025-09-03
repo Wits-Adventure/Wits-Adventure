@@ -5,39 +5,27 @@ import { collection, getDocs, getDoc, updateDoc, doc } from "firebase/firestore"
 
 
 export async function getProfileData() {
-  const user = auth.currentUser; // Accessing the authenticated user
-  if (!user) {
-    throw new Error("User is not authenticated");
-  }
+  const user = auth.currentUser;
+  if (!user) throw new Error("User is not authenticated");
 
   const userDocRef = doc(db, "Users", user.uid);
   const userDoc = await getDoc(userDocRef);
 
-  if (!userDoc.exists()) {
-    throw new Error("User document does not exist in Firestore");
-  }
+  if (!userDoc.exists()) throw new Error("User document does not exist in Firestore");
 
   const userData = userDoc.data();
   return {
     uid: user.uid,
     Name: userData.Name,
     LeaderBoardPoints: userData.LeaderBoardPoints,
-    CompletedQuests: userData.CompletedQuests.length,
+    CompletedQuests: userData.CompletedQuests || [],
+    acceptedQuests: userData.acceptedQuests || [],
     Level: userData.Level,
     Bio: userData.Bio,
     profilePicture: userData.ProfilePictureUrl,
-
-    /*
-    To be added later, using defaults for now
-    Badge: userData.Badge
-    Rank: userData.Rank? Have to figure out how we'll get the user's rank
-    */
-
-
-
-  }
-
-
+    Experience: userData.Experience ?? 0,
+    SpendablePoints: userData.SpendablePoints ?? 0,
+  };
 }
 
 export async function addProfileFields() {
