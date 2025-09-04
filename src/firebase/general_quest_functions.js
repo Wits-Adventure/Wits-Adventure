@@ -115,16 +115,24 @@ export async function submitQuestAttempt(questId, userId, file, userName) {
     await uploadBytes(storageRef, file);
     const imageUrl = await getDownloadURL(storageRef);
 
-    // 2. Add submission to quest document
+    // 2. Get current submissions
     const questRef = doc(db, "Quests", questId);
-    await updateDoc(questRef, {
-        submissions: arrayUnion({
-            userId,
-            Name: userName,
-            imageUrl,
-            submittedAt: Date.now()
-        })
+    const questSnap = await getDoc(questRef);
+    let submissions = questSnap.exists() ? questSnap.data().submissions || [] : [];
+
+    // 3. Remove previous submission by this user
+    submissions = submissions.filter(sub => sub.userId !== userId);
+
+    // 4. Add new submission
+    submissions.push({
+        userId,
+        Name: userName,
+        imageUrl,
+        submittedAt: Date.now()
     });
+
+    // 5. Update quest document
+    await updateDoc(questRef, { submissions });
 }
 
 // Fetch submissions for a quest by ID
@@ -240,4 +248,15 @@ export async function approveSubmissionAndCloseQuest(questId, approvedUserId) {
 
     // 5. Delete the quest document
     await deleteDoc(questRef);
+}
+
+export async function removeSubmissionByUserId(questId, userId) {
+    const questRef = doc(db, "Quests", questId);
+    const questSnap = await getDoc(questRef);
+    if (!questSnap.exists()) return;
+
+    const data = questSnap.data();
+    const submissions = (data.submissions || []).filter(sub => sub.userId !== userId);
+
+    await updateDoc(questRef, { submissions });
 }

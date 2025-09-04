@@ -2,28 +2,31 @@ import React, { useState, useRef, useEffect } from 'react';
 import '../css/CreateQuestForm.css'; // reuse styling
 import { useAuth } from '../context/AuthContext';
 import { getUserData } from '../firebase/firebase';
-import { submitQuestAttempt } from '../firebase/general_quest_functions';
+import { submitQuestAttempt, fetchQuestSubmissions, removeSubmissionByUserId } from '../firebase/general_quest_functions';
 
 export default function CompleteQuestForm({ isOpen, onClose, quest }) {
   const { currentUser } = useAuth();
   const [username, setUsername] = useState('');
   const [proofImage, setProofImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [hasSubmission, setHasSubmission] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    const fetchUsername = async () => {
-      if (currentUser) {
+    const fetchUsernameAndSubmission = async () => {
+      if (currentUser && quest) {
         try {
           const userData = await getUserData();
           setUsername(userData?.Name || 'User');
+          const submissions = await fetchQuestSubmissions(quest.id);
+          setHasSubmission(submissions.some(sub => sub.userId === currentUser.uid));
         } catch (error) {
-          console.error("Failed to fetch username:", error);
+          console.error("Failed to fetch username or submissions:", error);
         }
       }
     };
-    fetchUsername();
-  }, [currentUser]);
+    fetchUsernameAndSubmission();
+  }, [currentUser, quest]);
 
   if (!isOpen || !quest) return null;
 
@@ -50,6 +53,20 @@ export default function CompleteQuestForm({ isOpen, onClose, quest }) {
       return;
     }
 
+    // If user is replacing and leaves image blank, delete their submission
+    if (!proofImage && hasSubmission) {
+      try {
+        await removeSubmissionByUserId(quest.id, currentUser.uid);
+        alert('Your previous submission has been deleted.');
+        onClose();
+      } catch (error) {
+        alert('Failed to delete your previous submission.');
+        console.error(error);
+      }
+      return;
+    }
+
+    // If no image and no previous submission, do nothing
     if (!proofImage) {
       alert('Please upload a proof image before submitting.');
       return;

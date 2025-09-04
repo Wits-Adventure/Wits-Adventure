@@ -141,13 +141,14 @@ const Home = () => {
         ? acceptedQuests[quest.id]
         : (quest.acceptedBy && quest.acceptedBy.includes(currentUser?.uid));
       const isOwnQuest = currentUser && quest.creatorId === currentUser.uid;
+      const hasUserSubmission = quest.submissions?.some(sub => sub.userId === currentUser?.uid);
       const buttonHtml = isOwnQuest
         ? `<button id="quest-btn-${quest.id}" class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>`
         : hasAccepted
           ? `
-      <button id="quest-btn-${quest.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonQuest('${quest.id}')">Abandon Quest</button>
-      <button id="turnin-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleTurnInQuest('${quest.id}')">Turn in Quest</button>
-      `
+<button id="quest-btn-${quest.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonQuest('${quest.id}')">Abandon Quest</button>
+<button id="turnin-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleTurnInQuest('${quest.id}')">${hasUserSubmission ? "Replace Submission" : "Turn in Quest"}</button>
+`
           : `<button id="quest-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
 
       questCircle.bindPopup(`

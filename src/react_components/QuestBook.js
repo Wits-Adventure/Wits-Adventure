@@ -118,22 +118,36 @@ const QuestBook = () => {
               </button>
             </div>
 
-            {currentQuests.map((quest) => (
-              <div key={quest.id} className="quest-card">
-                <h2>{quest.name || "Untitled Quest"}</h2>
-                <p>Latitude: {quest.location ? quest.location.latitude.toFixed(6) : "N/A"}</p>
-                <p>Longitude: {quest.location ? quest.location.longitude.toFixed(6) : "N/A"}</p>
-                <span className="reward-tag">
-                  {quest.reward ?? 0} points
-                </span>
-                <button
-                  className="complete-btn"
-                  onClick={() => handleTurnInQuest(quest)}
-                >
-                  Turn in Quest
-                </button>
-              </div>
-            ))}
+            {currentQuests.map((quest) => {
+              // Debug logs for probable causes
+              console.log("Quest:", quest);
+              console.log("User ID:", userId);
+              console.log("Quest submissions:", quest.submissions);
+
+              const hasUserSubmission = quest.submissions?.some(sub => {
+                console.log("Checking submission:", sub);
+                return sub.userId === userId;
+              });
+
+              console.log("hasUserSubmission for quest", quest.id, ":", hasUserSubmission);
+
+              return (
+                <div key={quest.id} className="quest-card">
+                  <h2>{quest.name || "Untitled Quest"}</h2>
+                  <p>Latitude: {quest.location ? quest.location.latitude.toFixed(6) : "N/A"}</p>
+                  <p>Longitude: {quest.location ? quest.location.longitude.toFixed(6) : "N/A"}</p>
+                  <span className="reward-tag">
+                    {quest.reward ?? 0} points
+                  </span>
+                  <button
+                    className="complete-btn"
+                    onClick={() => handleTurnInQuest(quest)}
+                  >
+                    {hasUserSubmission ? "Replace Submission" : "Turn in Quest"}
+                  </button>
+                </div>
+              );
+            })}
 
             {/* Place CompleteQuestForm here */}
             <CompleteQuestForm
