@@ -119,7 +119,7 @@ export default function CompleteQuestForm({ isOpen, onClose, quest }) {
               Cancel
             </button>
             <button type="submit" className="cq-btn">
-              Submit Proof
+              {hasSubmission ? "Update Submission" : "Submit Quest"}
             </button>
           </div>
         </form>

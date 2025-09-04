@@ -2,7 +2,8 @@
 
 .create-quest-portal {
   position: absolute;
-  top: 80px; /* floats near header */
+  top: 80px;
+  /* floats near header */
   left: 50%;
   transform: translateX(-50%);
   z-index: 1200;
@@ -12,11 +13,13 @@
   will-change: opacity, transform;
 }
 
-.create-quest-portal.open { opacity: 1; }
+.create-quest-portal.open {
+  opacity: 1;
+}
 
 /* Form card */
 .create-quest-form {
-  width: 320px;
+  width: 325px;
   background: linear-gradient(145deg, #F4E4BC, #E6D5A8);
   border: 3px solid #654321;
   border-radius: 14px;
@@ -34,6 +37,7 @@
   font-size: 14px;
   margin-bottom: 12px;
 }
+
 .cq-input {
   padding: 8px 10px;
   border: 2px solid #654321;
@@ -51,6 +55,7 @@
   justify-content: flex-end;
   margin-top: 8px;
 }
+
 .cq-btn {
   padding: 8px 12px;
   border-radius: 12px;
@@ -63,12 +68,17 @@
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
 .cq-btn.cq-select {
   background: linear-gradient(145deg, #A67C00, #FFD966);
   color: #432f16;
   border: 2px solid #8B6A00;
 }
-.cq-btn.cq-cancel { background: #ffeadc; color: #654321; }
+
+.cq-btn.cq-cancel {
+  background: #ffeadc;
+  color: #654321;
+}
 
 /* hint */
 .cq-hint {
@@ -92,7 +102,10 @@
   font-family: 'Cinzel', serif;
   color: #654321;
 }
-.follow-instructions { font-size: 14px; }
+
+.follow-instructions {
+  font-size: 14px;
+}
 
 /* Follow marker styles used by divIcon HTML */
 .quest-follow-icon {
@@ -101,23 +114,30 @@
   border-radius: 50%;
   background: radial-gradient(circle at 35% 25%, #fff9d9, #ffd966 10%, #ffcc00 40%, #b8860b 100%);
   border: 2px solid #654321;
-  box-shadow: 0 2px 8px rgba(101,67,33,0.4);
+  box-shadow: 0 2px 8px rgba(101, 67, 33, 0.4);
 }
 
 /* small utility for placed markers if we need tweaks */
-.quest-placed-marker .marker-pin { transform: rotate(-45deg) scale(0.9); }
+.quest-placed-marker .marker-pin {
+  transform: rotate(-45deg) scale(0.9);
+}
 
 /* ensure portal doesn't block map controls when not open */
-.create-quest-portal { pointer-events: auto; }
+.create-quest-portal {
+  pointer-events: auto;
+}
+
 /* disable quest circle interaction while placing a new one */
 .quest-placing .quest-circle {
   pointer-events: none !important;
 }
+
 .quest-emoji-icon {
   background: transparent;
   width: 30px;
   height: 30px;
 }
+
 .quest-emoji-icon .quest-emoji {
   display: flex;
   align-items: center;
@@ -128,12 +148,13 @@
   line-height: 1;
   transform: translateY(1px);
   user-select: none;
-  filter: drop-shadow(0 0 3px rgba(0,0,0,0.55));
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.55));
   /* Force same font as popup text to ensure identical emoji rendering */
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI Symbol", sans-serif;
 }
-.quest-placing .quest-emoji-icon { 
-  pointer-events: none !important; 
+
+.quest-placing .quest-emoji-icon {
+  pointer-events: none !important;
 }
 
 /* Image Upload Section */

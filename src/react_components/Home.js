@@ -11,8 +11,7 @@ import CreateQuestForm from './CreateQuestForm';
 import CompleteQuestForm from './CompleteQuestForm';
 import { getProfileData } from '../firebase/profile_functions';
 import bellImage from '../media/bell.png';
-import musicImage from '../media/music.png';
-import useMusic from './useMusic';
+import musicImage from '../media/music.png'; import { useMusic } from '../context/MusicContext';
 import tutorialImage from '../media/tutorial.png'; // Replace with your actual image path or use an emoji if no image
 
 
@@ -44,7 +43,7 @@ const Home = () => {
     setTimeout(() => setToastMsg(''), 2200);
   };
 
-  const { isMusicPlaying, toggleMusic } = useMusic(showToast);
+  const { isMusicPlaying, toggleMusic } = useMusic();
   // Use useEffect to fetch user data when the authentication state changes
   useEffect(() => {
     const fetchUsername = async () => {
@@ -108,6 +107,11 @@ const Home = () => {
     fetchQuests();
   }, []);
 
+  const handleQuestPopupClose = () => {
+    setShowCompleteForm(false);
+    setActiveQuest(null);
+  };
+
   // Function to add quest area highlights
   const addQuestAreas = useCallback(() => {
     if (!mapInstanceRef.current) return;
@@ -153,7 +157,7 @@ const Home = () => {
         : hasAccepted
           ? `
 <button id="quest-btn-${quest.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonQuest('${quest.id}')">Abandon Quest</button>
-<button id="turnin-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleTurnInQuest('${quest.id}')">${hasUserSubmission ? "Replace Submission" : "Turn in Quest"}</button>
+<button id="turnin-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleTurnInQuest('${quest.id}')">${hasUserSubmission ? "Update Submission" : "Turn in Quest"}</button>
 `
           : `<button id="quest-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
 
@@ -165,6 +169,10 @@ const Home = () => {
           ${buttonHtml}
         </div>
       `);
+
+      questCircle.on('popupclose', () => {
+        handleQuestPopupClose();
+      });
 
       // Emoji marker in the center
       const emojiIcon = window.L.divIcon({

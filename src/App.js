@@ -16,66 +16,69 @@ import Tutorial from './react_components/TutorialPage.js';
 import EtherealStyles from './react_components/EtherealStyles.js';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { MusicProvider } from "./context/MusicContext";
 
 const App = () => {
   return (
-    <Router>
-      <AuthProvider>
-        <>
-          <ToastContainer position="top-center" autoClose={2500} />
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/Homepage" element={<HomePage />} />
-            <Route path="/Login" element={<Login />} />
-            <Route path="/Signup" element={<Signup />} />
-            <Route path="/LeaderBoardAchievements" element={<LeaderBoardAchievements />} />
-            <Route path="/Tutorial" element={<EtherealStyles><Tutorial /></EtherealStyles>} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
+    <MusicProvider>
+      <Router>
+        <AuthProvider>
+          <>
+            <ToastContainer position="top-center" autoClose={2500} />
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/Homepage" element={<HomePage />} />
+              <Route path="/Login" element={<Login />} />
+              <Route path="/Signup" element={<Signup />} />
+              <Route path="/LeaderBoardAchievements" element={<LeaderBoardAchievements />} />
+              <Route path="/Tutorial" element={<EtherealStyles><Tutorial /></EtherealStyles>} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
 
 
-            {/* Protected Routes (Authenticated users only) */}
-            <Route
-              path="/Success"
-              element={
-                <ProtectedRoute>
-                  <Success />
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected Routes (Authenticated users only) */}
+              <Route
+                path="/Success"
+                element={
+                  <ProtectedRoute>
+                    <Success />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Role-Based Protected Routes */}
-            <Route
-              path="/ProfilePage"
-              element={
-                <ProtectedRoute requiredRole="student">
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/questbook" element={
-                <ProtectedRoute requiredRole="student">
-                  <QuestBook />
-                </ProtectedRoute>
-              }
-            />
+              {/* Role-Based Protected Routes */}
+              <Route
+                path="/ProfilePage"
+                element={
+                  <ProtectedRoute requiredRole="student">
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/questbook" element={
+                  <ProtectedRoute requiredRole="student">
+                    <QuestBook />
+                  </ProtectedRoute>
+                }
+              />
 
 
-            <Route
-              path="/Admin_Dashboard"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            {/*Catch all route, for invalid paths */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </>
-      </AuthProvider>
-    </Router>
+              <Route
+                path="/Admin_Dashboard"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              {/*Catch all route, for invalid paths */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </>
+        </AuthProvider>
+      </Router>
+    </MusicProvider>
   );
 };
 
