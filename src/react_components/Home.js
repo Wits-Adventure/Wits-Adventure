@@ -13,7 +13,7 @@ import { getProfileData } from '../firebase/profile_functions';
 import bellImage from '../media/bell.png';
 import musicImage from '../media/music.png';
 import useMusic from './useMusic';
-
+import tutorialImage from '../media/tutorial.png'; // Replace with your actual image path or use an emoji if no image
 
 
 const Home = () => {
@@ -232,7 +232,7 @@ const Home = () => {
 
       // badge markup for special treasure hunts
       const badgeHTML = quest.special
-        ? `<div class="quest-badge">⭐ <span class="badge-text">Treasure Hunt</span></div>`
+        ? `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`
         : '';
 
       // Add popup to quest area (include badge if special)
@@ -718,6 +718,12 @@ const Home = () => {
                 aria-label="Toggle Music"
               >
                 <img src={musicImage} alt="Music" />
+              </button>
+
+              {/* NEW: Tutorial button in top left */}
+              <button className="tutorial-icon" onClick={() => navigate('/tutorial')} aria-label="Tutorial">
+                <img src={tutorialImage} alt="Tutorial" />
+                {/* Fallback: If no image, replace with: <span>❓</span> */}
               </button>
             </div>
           </div>

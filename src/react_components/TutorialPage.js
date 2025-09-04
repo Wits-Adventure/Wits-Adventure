@@ -1,43 +1,128 @@
-import React from "react";
-import "../css/TutorialPage.css";
-  return (
-    <div className="tutorial-page">
-      {/* Left Section */}
-      <div className="tutorial-section">
-        <h1>Quest Type A</h1>
-        <img
-          src="https://via.placeholder.com/400x200"
-          alt="Quest illustration A"
-          className="tutorial-image"
-        />
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec
-          dignissim, nunc eget ullamcorper fermentum, justo risus pretium elit,
-          eget tempus nisl odio a sapien. 
-        </p>
-        <p>
-          Add your quest details here. This scrollable area allows you to
-          showcase the full tutorial with multiple paragraphs and illustrations.
-        </p>
-      </div>
+import React, { useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
+import "../css//TutorialPage.css";
+import LoactionQuest from "../media/LoactionQuest.jpg";
+import bg from "../media/bg.jpg";
+import CreateQuest from "../media/CreateQuest.png";
+import crowned from "../media/crowned.png";
+import journey from "../media/jourrney_0.png";
+import bell from "../media/belltut.png";
 
-      {/* Right Section */}
-      <div className="tutorial-section">
-        <h1>Quest Type B</h1>
-        <img
-          src="https://via.placeholder.com/400x200"
-          alt="Quest illustration B"
-          className="tutorial-image"
-        />
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sit amet
-          viverra justo. Suspendisse potenti. 
-        </p>
-        <p>
-          You can scroll this section independently of the left one, making it
-          easy to compare quests side by side in your fantasy tutorial.
-        </p>
+export default function TutorialPage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // The Ethereal scripts are loaded globally via public/index.html
+  }, []);
+
+  const handleBackHome = () => {
+    if (navigate) navigate("/");
+    else window.location.href = '/';
+  };
+
+  return (
+    <div id="page-wrapper" className="is-preload">
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          body {
+            overflow-y: auto;
+          }
+          body:after {
+            background-image: url(${bg}), url('/assets/ethereal/images/overlay.png');
+            background-repeat: no-repeat, repeat-x;
+            background-size: cover, 128px 128px;
+            background-attachment: fixed;
+            background-color: #e1e6e1;
+          }
+        `
+      }} />
+      <div id="wrapper">
+        <section className="panel banner right">
+          <div className="content color3 span-3-75">
+            <h1 className="major" >Location Quests</h1>
+            <p>
+              Location Quests will take you an adventure to find hidden locations inscribed by your friends and rivals!
+            </p>
+            <p>
+             Take pictures of locations around campus and place them on the map to be discovered by others. Submit and receive
+             submissions - you will receive points upon completing quests, based on it's radius, and the questmaker will receive points in turn
+            </p>
+          </div>
+          <div className="image filtered span-3-75" data-position="75% 75%">
+            <img src={LoactionQuest} alt="Location Quest" />
+          </div>
+        </section>
+
+        <section className="panel banner createq">
+
+          <div className="image filtered span-5-75" data-position="75% 75%">
+            <img src={CreateQuest} alt="Create Quest" />
+          </div>
+        </section>
+
+        <section className="panel banner management">
+          <div className="content crowned span-2-75">
+            <p>
+              Upload submissions to quests by selecting them on the map or through your questbook. 
+            </p>
+            <p>
+             On your profile you'll find your created quests, select one to review submissions. 
+             Upon your confirmation, the quest is closed - the winner receives their reward, and you get some compensation too!
+            </p>
+          </div>
+        </section>
+
+        <section className="panel banner journey">
+          <div className="content span-3-75">
+            <h1 className="major">Journey Quests</h1>
+            <p>
+              Journey Quests are special events where adventurers must solve a series of riddles - combining their wits to find the next piece of the puzzle to win unique rewards. 
+            </p>
+          </div>
+          <div className="image filtered span-5-75" data-position="25% 25%">
+            <img src={crowned} alt="Journey Quest" />
+          </div>
+        </section>
+
+           <section className="panel banner createq">
+          <div className="image filtered span-2-75" data-position="40% 75%">
+            <img src={journey} alt="journey" />
+          </div>
+        </section>
+
+         <section className="panel banner final">
+          <div className="content color3 span-3-75">
+            <p>
+             Journey quests are uniquely denoted by their header - "Journey"
+            </p>
+            <p>
+             Journey Quests can be completed by multiple adventurers, making them ideal for teamwork and group exploration!
+            </p>
+            <p>
+              Upon reaching the next location hinted in the riddle, ring the bell to test your guess. If you were right, the next part of the riddle will be revealed to you
+            </p>
+            <p>
+              (NOTE || Desired journey quest must be equipped in questbook)
+            </p>
+          </div>
+        </section>
+
+        <section className="panel banner createq">
+          <div className="image filtered span-2-75" data-position="40% 75%">
+            <img src={bell} alt="bell" />
+          </div>
+        </section>
+
       </div>
+      <button
+        type="button"
+        className="back-home-btn"
+        onClick={handleBackHome}
+        aria-label="Back to home"
+      >
+        <img src="/return.svg" alt="Back" />
+      </button>
     </div>
   );
+}
 
