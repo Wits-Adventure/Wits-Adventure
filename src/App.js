@@ -12,6 +12,8 @@ import ProfilePage from './react_components/ProfilePage.js';
 import LeaderBoardAchievements from './react_components/LeaderboardAchievements.js'
 import AdminDashboard from './react_components/adminDashboard.js';
 import QuestBook from './react_components/QuestBook.js';
+import Tutorial from './react_components/TutorialPage.js';
+import EtherealStyles from './react_components/EtherealStyles.js';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -28,7 +30,7 @@ const App = () => {
             <Route path="/Login" element={<Login />} />
             <Route path="/Signup" element={<Signup />} />
             <Route path="/LeaderBoardAchievements" element={<LeaderBoardAchievements />} />
-
+            <Route path="/Tutorial" element={<EtherealStyles><Tutorial /></EtherealStyles>} />
             <Route path="/unauthorized" element={<Unauthorized />} />
 
 

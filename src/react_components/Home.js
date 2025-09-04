@@ -13,7 +13,7 @@ import { getProfileData } from '../firebase/profile_functions';
 import bellImage from '../media/bell.png';
 import musicImage from '../media/music.png';
 import useMusic from './useMusic';
-
+import tutorialImage from '../media/tutorial.png'; // Replace with your actual image path or use an emoji if no image
 
 
 const Home = () => {
@@ -32,9 +32,15 @@ const Home = () => {
   const [showCompleteForm, setShowCompleteForm] = useState(false);
   const [activeQuest, setActiveQuest] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
+  const [isBellActive, setIsBellActive] = useState(false); // NEW: state to track bell animation
 
   const showToast = (msg) => {
     setToastMsg(msg);
+    // flash bell for the "The bell tolls" message (or any message you prefer)
+    if (msg && msg.toLowerCase().includes('bell')) {
+      setIsBellActive(true);
+      window.setTimeout(() => setIsBellActive(false), 1400); // brief pulse
+    }
     setTimeout(() => setToastMsg(''), 2200);
   };
 
@@ -227,7 +233,7 @@ const Home = () => {
 
       // badge markup for special treasure hunts
       const badgeHTML = quest.special
-        ? `<div class="quest-badge">⭐ <span class="badge-text">Treasure Hunt</span></div>`
+        ? `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`
         : '';
 
       // Add popup to quest area (include badge if special)
@@ -659,7 +665,7 @@ const Home = () => {
               </button>
               {/* Bell icon */}
               <button
-                className="bell-icon"
+                className={`bell-icon ${isBellActive ? 'playing' : ''}`}
                 onClick={() => {
                   showToast("The bell tolls");
                   if (window.L && mapInstanceRef.current) {
@@ -708,11 +714,17 @@ const Home = () => {
 
               {/* Music icon */}
               <button
-                className="music-icon"
+                className={`music-icon ${isMusicPlaying ? 'playing' : ''}`}
                 onClick={toggleMusic}
                 aria-label="Toggle Music"
               >
                 <img src={musicImage} alt="Music" />
+              </button>
+
+              {/* NEW: Tutorial button in top left */}
+              <button className="tutorial-icon" onClick={() => navigate('/tutorial')} aria-label="Tutorial">
+                <img src={tutorialImage} alt="Tutorial" />
+                {/* Fallback: If no image, replace with: <span>❓</span> */}
               </button>
             </div>
           </div>

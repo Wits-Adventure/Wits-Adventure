@@ -1,0 +1,126 @@
+/* Root container */
+.tutorial-container {
+  display: flex;
+  height: 100vh;
+  background: #f5f0e6; /* light beige background */
+  font-family: "Georgia", serif;
+  color: #4b3c2f; /* warm brown text */
+}
+
+/* Each scrollable section */
+.tutorial-section {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  scrollbar-width: thin;
+  scrollbar-color: #c9b79c #f5f0e6;
+  background: #fdfaf5; /* softer contrast */
+  border-left: 2px solid #e2d3c2;
+  border-right: 2px solid #e2d3c2;
+}
+
+/* Left side parchment effect */
+.left-section {
+  background: linear-gradient(#fdfaf5, #f3e8d7);
+  border-right: 3px solid #c9b79c;
+}
+
+/* Right side parchment effect */
+.right-section {
+  background: linear-gradient(#fdfaf5, #f3e8d7);
+  border-left: 3px solid #c9b79c;
+}
+
+/* Titles */
+.tutorial-section h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #3a2d21;
+  border-bottom: 2px solid #c9b79c;
+  padding-bottom: 0.5rem;
+  text-shadow: 1px 1px 0 #e9decf;
+}
+
+/* Specific: Location Quests header -> warm brown */
+.panel.banner.right .content h1.major {
+  color: #875f3f;
+}
+
+/* Paragraphs */
+.tutorial-section p {
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+}
+
+/* Images */
+.tutorial-section img {
+  max-width: 100%;
+  border: 3px solid #c9b79c;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 8px rgba(75, 60, 47, 0.2);
+}
+
+/* Final panel specific text color (brown) */
+.panel.final .content,
+.content.color3 {
+  color: #775b44;
+  /* slightly bolder body text inside this panel */
+  font-weight: 400;
+}
+
+
+.panel.final .content h1,
+.content.color3 h1 {
+  /* ensure headings are noticeably bolder */
+  font-weight: 300;
+}
+
+/* Scrollbar styling (for Webkit browsers) */
+.tutorial-section::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tutorial-section::-webkit-scrollbar-track {
+  background: #f5f0e6;
+}
+
+.tutorial-section::-webkit-scrollbar-thumb {
+  background-color: #c9b79c;
+  border-radius: 4px;
+}
+
+/* Back to Home button fixed bottom-left (matches profile page) */
+.back-home-btn {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  padding: 8px;
+  background: #f5e9d6;
+  border: 3px solid #90774c;
+  border-radius: 14px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25), inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.back-home-btn img {
+  width: 28px;
+  height: 28px;
+  display: block;
+  object-fit: contain;
+}
+
+.back-home-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28), inset 0 2px 0 rgba(255, 255, 255, 0.45);
+}
