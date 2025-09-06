@@ -56,6 +56,7 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
   const handleAccept = async () => {
     if (!currentSubmission) return;
     await approveSubmissionAndCloseQuest(quest.id, currentSubmission.userId);
+    if (typeof onCloseQuest === 'function') onCloseQuest(quest.id); // <-- Add this line
     if (typeof onClose === 'function') onClose();
   };
 

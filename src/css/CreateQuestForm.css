@@ -258,3 +258,37 @@
   object-fit: cover;
   display: block;
 }
+
+.cq-image-clear-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  color: #654321;
+  cursor: pointer;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.cq-image-clear-btn:hover {
+  background: #ffe0e0;
+}
+
+.toast-proof {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #a8e6ff, #17a0d4);
+  /* example: blue for proof */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) inset;
+  display: inline-block;
+}

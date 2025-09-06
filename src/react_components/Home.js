@@ -32,15 +32,17 @@ const Home = () => {
   const [activeQuest, setActiveQuest] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
   const [isBellActive, setIsBellActive] = useState(false); // NEW: state to track bell animation
+  const [toastIcon, setToastIcon] = useState('bell');
 
-  const showToast = (msg) => {
+  const showToast = (msg, duration = 2200, iconType = 'bell') => {
     setToastMsg(msg);
+    setToastIcon(iconType);
     // flash bell for the "The bell tolls" message (or any message you prefer)
     if (msg && msg.toLowerCase().includes('bell')) {
       setIsBellActive(true);
       window.setTimeout(() => setIsBellActive(false), 1400); // brief pulse
     }
-    setTimeout(() => setToastMsg(''), 2200);
+    setTimeout(() => setToastMsg(''), duration);
   };
 
   const { isMusicPlaying, toggleMusic } = useMusic();
@@ -648,6 +650,7 @@ const Home = () => {
         isOpen={showCompleteForm}
         onClose={() => { setShowCompleteForm(false); setActiveQuest(null); }}
         quest={activeQuest}
+        showToast={showToast}
       />
 
       {/* Render floating form component (controlled by state) */}
@@ -741,7 +744,11 @@ const Home = () => {
 
       {toastMsg && (
         <div className="fantasy-toast">
-          <span className="toast-bell"></span>
+          {toastIcon === 'bell' ? (
+            <span className="toast-bell"></span>
+          ) : (
+            <span className="toast-proof"></span>
+          )}
           {toastMsg}
         </div>
       )}

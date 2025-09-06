@@ -13,19 +13,25 @@ export function MusicProvider({ children }) {
     const audioRef = useRef(null);
 
     useEffect(() => {
-        localStorage.setItem("musicPlaying", isMusicPlaying);
         if (!audioRef.current) {
-            audioRef.current = new Audio(require("../media/Music.mp3")); // replace with your music file
+            audioRef.current = new Audio(require("../media/Music.mp3"));
             audioRef.current.loop = true;
         }
+        localStorage.setItem("musicPlaying", isMusicPlaying);
+
         if (isMusicPlaying) {
-            audioRef.current.play();
+            audioRef.current.play().catch(() => {
+                // If play fails (autoplay restriction), turn off music state
+                setIsMusicPlaying(false);
+            });
         } else {
             audioRef.current.pause();
         }
     }, [isMusicPlaying]);
 
-    const toggleMusic = () => setIsMusicPlaying((prev) => !prev);
+    const toggleMusic = () => {
+        setIsMusicPlaying((prev) => !prev);
+    };
 
     return (
         <MusicContext.Provider value={{ isMusicPlaying, toggleMusic }}>
