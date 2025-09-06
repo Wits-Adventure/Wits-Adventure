@@ -6,7 +6,7 @@ import { submitQuestAttempt, fetchQuestSubmissions, removeSubmissionByUserId } f
 
 // uses same css file as create quest form
 
-export default function CompleteQuestForm({ isOpen, onClose, quest, showToast }) {
+export default function CompleteQuestForm({ isOpen, onClose, quest, showToast, onSubmission }) {
   const { currentUser } = useAuth();
   const [username, setUsername] = useState('');
   const [proofImage, setProofImage] = useState(null);
@@ -15,13 +15,15 @@ export default function CompleteQuestForm({ isOpen, onClose, quest, showToast })
   const [submitting, setSubmitting] = useState(false);
   const [previousImageUrl, setPreviousImageUrl] = useState(null);
   const [imageChanged, setImageChanged] = useState(false);
+  const [imageManuallyCleared, setImageManuallyCleared] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     // Reset image states when opening for a new quest
     setProofImage(null);
     setImagePreview(null);
-    setImageChanged(false); // <-- reset flag
+    setImageChanged(false);
+    setImageManuallyCleared(false); // <-- reset flag
   }, [isOpen, quest]);
 
   useEffect(() => {
@@ -34,11 +36,11 @@ export default function CompleteQuestForm({ isOpen, onClose, quest, showToast })
           const userSubmission = submissions.find(sub => sub.userId === currentUser.uid);
           setHasSubmission(!!userSubmission);
 
-          // Show previous image if exists and no new image uploaded
-          if (userSubmission && !imagePreview) {
+          // Only show previous image if user hasn't manually cleared it
+          if (userSubmission && !imagePreview && !imageManuallyCleared) {
             setImagePreview(userSubmission.imageUrl);
             setProofImage(userSubmission.imageUrl);
-            setPreviousImageUrl(userSubmission.imageUrl); // <-- track previous image
+            setPreviousImageUrl(userSubmission.imageUrl);
           } else {
             setPreviousImageUrl(null);
           }
@@ -49,7 +51,7 @@ export default function CompleteQuestForm({ isOpen, onClose, quest, showToast })
       }
     };
     fetchUsernameAndSubmission();
-  }, [currentUser, quest, imagePreview]);
+  }, [currentUser, quest, imagePreview, imageManuallyCleared]);
 
   if (!isOpen || !quest) return null;
 
@@ -115,6 +117,7 @@ export default function CompleteQuestForm({ isOpen, onClose, quest, showToast })
         username
       );
       showToast && showToast('Your image is under review.', 4000, 'proof');
+      onSubmission && onSubmission(quest.id); // <-- notify parent
       onClose();
     } catch (error) {
       showToast && showToast('Failed to submit your proof. Please try again.', 4000, 'proof');
@@ -145,7 +148,8 @@ export default function CompleteQuestForm({ isOpen, onClose, quest, showToast })
                       e.stopPropagation();
                       setProofImage(null);
                       setImagePreview(null);
-                      setImageChanged(true); // <-- set flag
+                      setImageChanged(true);
+                      setImageManuallyCleared(true); // <-- set flag
                     }}
                     title="Remove image"
                   >

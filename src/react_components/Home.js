@@ -33,6 +33,7 @@ const Home = () => {
   const [toastMsg, setToastMsg] = useState('');
   const [isBellActive, setIsBellActive] = useState(false); // NEW: state to track bell animation
   const [toastIcon, setToastIcon] = useState('bell');
+  const [userSubmissions, setUserSubmissions] = useState({}); // questId: true
 
   const showToast = (msg, duration = 2200, iconType = 'bell') => {
     setToastMsg(msg);
@@ -153,7 +154,9 @@ const Home = () => {
         ? acceptedQuests[quest.id]
         : (quest.acceptedBy && quest.acceptedBy.includes(currentUser?.uid));
       const isOwnQuest = currentUser && quest.creatorId === currentUser.uid;
-      const hasUserSubmission = quest.submissions?.some(sub => sub.userId === currentUser?.uid);
+      const hasUserSubmission = userSubmissions[quest.id] ||
+        quest.submissions?.some(sub => sub.userId === currentUser?.uid);
+
       const buttonHtml = isOwnQuest
         ? `<button id="quest-btn-${quest.id}" class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>`
         : hasAccepted
@@ -599,6 +602,11 @@ const Home = () => {
   }, [location.state, mapInstanceRef.current, questCirclesRef.current, navigate]);
 
 
+  const handleSubmission = (questId) => {
+    setUserSubmissions(prev => ({ ...prev, [questId]: true }));
+    // Optionally, update allQuests or acceptedQuests if needed
+  };
+
   return (
     <section className="home-container">
       <header ref={headerRef} className="header">
@@ -651,6 +659,7 @@ const Home = () => {
         onClose={() => { setShowCompleteForm(false); setActiveQuest(null); }}
         quest={activeQuest}
         showToast={showToast}
+        onSubmission={handleSubmission} // <-- pass handler
       />
 
       {/* Render floating form component (controlled by state) */}
