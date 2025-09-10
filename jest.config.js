@@ -11,6 +11,8 @@ module.exports = {
      'src/react_components/QuestManager.js',
      'src/react_components/QuestBook.js',
      'src/react_components/unauthorized.js',
+     'src/react_components/CreateQuestForm.js',
+     'src/react_components/CompleteQuestForm.js',
     
     '!**/node_modules/**',
     '!src/reportWebVitals.js',

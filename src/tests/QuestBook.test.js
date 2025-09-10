@@ -17,6 +17,20 @@ jest.mock('../firebase/general_quest_functions', () => ({
 jest.mock('../media/logo.jpg', () => 'logo.jpg');
 jest.mock('../media/trophy.png', () => 'trophy.png');
 
+// Mock CompleteQuestForm component
+jest.mock('../react_components/CompleteQuestForm', () => {
+  return function CompleteQuestForm({ isOpen, onClose, quest }) {
+    if (!isOpen) return null;
+    return (
+      <div data-testid="complete-quest-form">
+        <h2>Complete Quest Form</h2>
+        <p>Quest: {quest?.name}</p>
+        <button onClick={onClose}>Close Form</button>
+      </div>
+    );
+  };
+});
+
 describe('QuestBook', () => {
   const mockQuests = [
     {
@@ -59,8 +73,12 @@ describe('QuestBook', () => {
       uid: 'testUser123',
       acceptedQuests: ['1', '2', '3', '4', '5']
     });
-    // Mock quests data
-    getAllQuests.mockResolvedValue(mockQuests);
+    // Mock quests data with submissions
+    const questsWithSubmissions = mockQuests.map(quest => ({
+      ...quest,
+      submissions: []
+    }));
+    getAllQuests.mockResolvedValue(questsWithSubmissions);
   });
 
   test('renders loading state initially', () => {
@@ -106,19 +124,20 @@ describe('QuestBook', () => {
     expect(screen.getByText('Test Quest 1')).toBeInTheDocument();
   });
 
-  test('handles quest completion', async () => {
-    window.alert = jest.fn();
-    
+  test('opens complete quest form when turn in button is clicked', async () => {
     render(<QuestBook />);
     
     await waitFor(() => {
       expect(screen.getByText('Test Quest 1')).toBeInTheDocument();
     });
 
-    const completeButton = screen.getAllByText('Complete Quest')[0];
-    fireEvent.click(completeButton);
+    const turnInButton = screen.getAllByText('Turn in Quest')[0];
+    fireEvent.click(turnInButton);
 
-    expect(window.alert).toHaveBeenCalledWith('Quest "Test Quest 1" marked as complete!');
+    await waitFor(() => {
+      expect(screen.getByTestId('complete-quest-form')).toBeInTheDocument();
+      expect(screen.getByText('Quest: Test Quest 1')).toBeInTheDocument();
+    });
   });
 
   test('handles error when fetching quests', async () => {
@@ -156,6 +175,42 @@ describe('QuestBook', () => {
     
     await waitFor(() => {
       expect(screen.getByText('No quests available.')).toBeInTheDocument();
+    });
+  });
+
+  test('shows replace submission button for quests with user submissions', async () => {
+    const questsWithUserSubmission = mockQuests.map(quest => ({
+      ...quest,
+      submissions: [{ userId: 'testUser123', submissionData: 'test' }]
+    }));
+    getAllQuests.mockResolvedValue(questsWithUserSubmission);
+    
+    render(<QuestBook />);
+    
+    await waitFor(() => {
+      expect(screen.getAllByText('Replace Submission')[0]).toBeInTheDocument();
+    });
+  });
+
+  test('closes complete quest form when close button is clicked', async () => {
+    render(<QuestBook />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Test Quest 1')).toBeInTheDocument();
+    });
+
+    const turnInButton = screen.getAllByText('Turn in Quest')[0];
+    fireEvent.click(turnInButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('complete-quest-form')).toBeInTheDocument();
+    });
+
+    const closeButton = screen.getByText('Close Form');
+    fireEvent.click(closeButton);
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('complete-quest-form')).not.toBeInTheDocument();
     });
   });
 
