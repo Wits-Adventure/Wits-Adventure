@@ -13,6 +13,8 @@ import { getProfileData } from '../firebase/profile_functions';
 import bellImage from '../media/bell.png';
 import musicImage from '../media/music.png';
 import useMusic from './useMusic';
+import { doc, updateDoc, increment } from "firebase/firestore";
+import { db } from "../firebase/firebase"; // adjust path if your firebase.js file lives elsewhere
 
 /**
  * Helper: distance in meters between two lat/lng points.
@@ -658,117 +660,132 @@ const Home = () => {
 
   // ======== NEW: Bell press -> check Journey Quest progress via geolocation ========
   const handleBellPing = () => {
-    showToast("The bell tolls");
+  showToast("The bell tolls");
 
-    // Subtle pulse visualization near campus anchor
-    if (window.L && mapInstanceRef.current) {
-      if (window.__bellPulseCircle) {
-        mapInstanceRef.current.removeLayer(window.__bellPulseCircle);
+  // Subtle pulse visualization near campus anchor
+  if (window.L && mapInstanceRef.current) {
+    if (window.__bellPulseCircle) {
+      mapInstanceRef.current.removeLayer(window.__bellPulseCircle);
+      window.__bellPulseCircle = null;
+    }
+    const coords = [-26.1929, 28.0305];
+    const circle = window.L.circle(coords, {
+      color: "#e6d5a8",
+      fillColor: "#fff2c9",
+      fillOpacity: 0.7,
+      radius: 30,
+      weight: 3,
+      interactive: false,
+      className: "bell-pulse-circle"
+    }).addTo(mapInstanceRef.current);
+    window.__bellPulseCircle = circle;
+
+    let frame = 0;
+    const maxFrames = 80;
+    const startRadius = 30;
+    const endRadius = 220;
+
+    function animate() {
+      frame++;
+      const r = startRadius + ((endRadius - startRadius) * (frame / maxFrames));
+      circle.setRadius(r);
+      circle.setStyle({
+        opacity: 0.9 - frame / maxFrames,
+        fillOpacity: 0.7 - 0.7 * (frame / maxFrames)
+      });
+      if (frame < maxFrames) {
+        requestAnimationFrame(animate);
+      } else {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.removeLayer(circle);
+        }
         window.__bellPulseCircle = null;
       }
-      const coords = [-26.1929, 28.0305];
-      const circle = window.L.circle(coords, {
-        color: "#e6d5a8",
-        fillColor: "#fff2c9",
-        fillOpacity: 0.7,
-        radius: 30,
-        weight: 3,
-        interactive: false,
-        className: "bell-pulse-circle"
-      }).addTo(mapInstanceRef.current);
-      window.__bellPulseCircle = circle;
-
-      let frame = 0;
-      const maxFrames = 80;
-      const startRadius = 30;
-      const endRadius = 220;
-      function animate() {
-        frame++;
-        const r = startRadius + ((endRadius - startRadius) * (frame / maxFrames));
-        circle.setRadius(r);
-        circle.setStyle({
-          opacity: 0.9 - frame / maxFrames,
-          fillOpacity: 0.7 - 0.7 * (frame / maxFrames)
-        });
-        if (frame < maxFrames) {
-          requestAnimationFrame(animate);
-        } else {
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.removeLayer(circle);
-          }
-          window.__bellPulseCircle = null;
-        }
-      }
-      animate();
     }
+    animate();
+  }
 
-    // Now check geolocation against all accepted (non-completed) journey quests
-    if (!('geolocation' in navigator)) {
-      alert('Geolocation is not supported on this device/browser.');
-      return;
-    }
+  // Check geolocation against all accepted, non-completed journey quests
+  if (!('geolocation' in navigator)) {
+    alert('Geolocation is not supported on this device/browser.');
+    return;
+  }
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const userLat = pos.coords.latitude;
-        const userLng = pos.coords.longitude;
+  // Make the callback async to use await
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const userLat = pos.coords.latitude;
+      const userLng = pos.coords.longitude;
 
-        let anyMatched = false;
-        // Iterate over all accepted, non-completed journey quests
-        journeyQuests.forEach((jq) => {
-          const prog = journeyProgress[jq.id];
-          if (!prog || !prog.accepted || prog.completed) return;
+      let anyMatched = false;
 
-          const targetIdx = prog.currentStep; // 1 or 2
-          const target = jq.stops[targetIdx];
-          if (!target) return;
+      // Use for...of loop so we can await Firestore updates
+      for (const jq of journeyQuests) {
+        const prog = journeyProgress[jq.id];
+        if (!prog || !prog.accepted || prog.completed) continue;
 
-          const d = distanceMeters([userLat, userLng], [target.lat, target.lng]);
-          if (d <= (target.radius || 40)) {
-            anyMatched = true;
+        const targetIdx = prog.currentStep; // 1 or 2
+        const target = jq.stops[targetIdx];
+        if (!target) continue;
 
-            // Advance progress
-            setJourneyProgress((prev) => {
-              const nextStep = targetIdx + 1;
-              const completed = nextStep > 2;
-              return {
-                ...prev,
-                [jq.id]: {
-                  accepted: true,
-                  currentStep: completed ? 2 : nextStep,
-                  completed
-                }
-              };
-            });
+        const d = distanceMeters([userLat, userLng], [target.lat, target.lng]);
+        if (d <= (target.radius || 40)) {
+          anyMatched = true;
 
-            if (targetIdx === 1) {
-              // Unlocked final riddle (stop 3)
-              const nextRiddle = jq.stops[2]?.riddle || 'One last stop awaits...';
-              alert(`${jq.emoji} ${jq.name}\n\nGreat! You found Stop 2.\n\nRiddle for Final Stop:\n${nextRiddle}`);
-            } else if (targetIdx === 2) {
-              // Completed!
-              alert(`${jq.emoji} ${jq.name}\n\nCongratulations! You completed the journey and earned ${jq.reward} points.`);
-              showToast('Journey quest completed!');
-              // (Optional) You could write to Firestore here to award points.
+          // Advance progress
+          setJourneyProgress((prev) => {
+            const nextStep = targetIdx + 1;
+            const completed = nextStep > 2;
+            return {
+              ...prev,
+              [jq.id]: {
+                accepted: true,
+                currentStep: completed ? 2 : nextStep,
+                completed
+              }
+            };
+          });
+
+          if (targetIdx === 1) {
+            // Unlocked final riddle (stop 3)
+            const nextRiddle = jq.stops[2]?.riddle || 'One last stop awaits...';
+            alert(`${jq.emoji} ${jq.name}\n\nGreat! You found Stop 2.\n\nRiddle for Final Stop:\n${nextRiddle}`);
+          } else if (targetIdx === 2) {
+            // Completed!
+            alert(`${jq.emoji} ${jq.name}\n\nCongratulations! You completed the journey and earned ${jq.reward} points.`);
+            showToast('Journey quest completed!');
+
+            // Update Firestore LeaderBoardPoints
+            try {
+              const userRef = doc(db, "Users", currentUser.uid); // assumes doc ID = uid
+              await updateDoc(userRef, {
+                LeaderBoardPoints: increment(jq.reward)
+              });
+              console.log(`Awarded ${jq.reward} points to ${currentUser.uid}`);
+            } catch (error) {
+              console.error("Failed to update LeaderBoardPoints:", error);
+              showToast("Error awarding points. Try again later.");
             }
           }
-        });
+        }
+      }
 
-        if (!anyMatched) {
-          alert('You are not within the required radius yet. Move closer and ring the bell again.');
-        }
-      },
-      (err) => {
-        console.error(err);
-        if (err.code === 1) {
-          alert('Location permission denied. Please allow location access to progress Journey Quests.');
-        } else {
-          alert('Unable to get your location. Try again.');
-        }
-      },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-    );
-  };
+      if (!anyMatched) {
+        alert('You are not within the required radius yet. Move closer and ring the bell again.');
+      }
+    },
+    (err) => {
+      console.error(err);
+      if (err.code === 1) {
+        alert('Location permission denied. Please allow location access to progress Journey Quests.');
+      } else {
+        alert('Unable to get your location. Try again.');
+      }
+    },
+    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+  );
+};
+
 
   return (
     <section className="home-container">
