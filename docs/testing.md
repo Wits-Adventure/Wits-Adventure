@@ -66,4 +66,4 @@ npm test
 
 When you run `npm test`, you should see output similar to the following:
 
-![Example test output](../assets/testingExample.jpg)
+![Example test output](./assets/testingExample.jpg)
