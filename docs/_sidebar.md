@@ -1,9 +1,11 @@
 - [🏰 Home](/)
-- [⚡ Using the website](usage.md)
+- [⚡ Usage](usage.md)
 - [⚒ Techstack](techStack.md)
 - [⚖️ Methodologies](methodologies.md)
 - [🖼 Website Planning](WebsitePlanning.md)
-- [📋 Sprint Tasks](sprintTasks.md)
+- [📋 User stories](sprintTasks.md)
 - [🧙‍♂️ Development guides](developmentGuides.md)
+- [🏹 External code and API integration](external.md)
 - [🪤 Schema and explanation](schema.md)
 - [🔮 Testing](testing.md)
+
