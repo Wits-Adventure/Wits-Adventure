@@ -15,3 +15,10 @@ If you want to build the app for production, run:
 ```sh
 npm run build
 ```
+
+### Demo Account
+
+To quickly explore the app, you can log in with this demo account:
+
+- **Username:** <code class="case-sensitive">wits_adventure_student@outlook.com</code>
+- **Password:** <code class="case-sensitive">BlooBase2</code>

@@ -10,9 +10,11 @@
   &nbsp;
   <img src="public/logo192.png" height="40" alt="react logo" />
   &nbsp;
-    <img src="public/techstack/vercel.png" height="40" alt="vercel logo" />
+  <img src="public/techstack/vercel.png" height="40" alt="vercel logo" />
   &nbsp;
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/codecov/codecov-plain.svg" height="40" alt="codecov logo" />
+  &nbsp;
+  <img src="public/techstack/nodeIcon.png" height="40" alt="node logo" />
   &nbsp;
 </p>
 
