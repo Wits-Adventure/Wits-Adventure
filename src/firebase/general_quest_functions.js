@@ -21,12 +21,23 @@ export async function getAllQuests() {
 
 export async function saveQuestToFirestore(questData) {
     try {
+        let imageUrl = '';
+        // Check if an image file was provided to upload
+        if (questData.imageFile) {
+            // 1. Upload image to Firebase Storage
+            const storageRef = ref(storage, `quest_images/${questData.creatorId}_${Date.now()}`);
+            await uploadBytes(storageRef, questData.imageFile);
+            // 2. Get the download URL
+            imageUrl = await getDownloadURL(storageRef);
+        }
+
+        // 3. Save the quest with the URL to Firestore
         const questRef = await addDoc(collection(db, "Quests"), {
             name: questData.name,
             radius: questData.radius,
             reward: questData.reward,
             location: new GeoPoint(questData.lat, questData.lng),
-            imageUrl: questData.imageUrl,
+            imageUrl: imageUrl, // <-- Save the short URL, not the Base64 data
             creatorId: questData.creatorId,
             creatorName: questData.creatorName,
             createdAt: serverTimestamp(),

@@ -203,14 +203,16 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
         reward: radius,
         lat: circleCenterLatLng.lat,
         lng: circleCenterLatLng.lng,
-        imageUrl: imagePreview,
+        imageFile: questImage,
         creatorId: currentUser?.uid || 'unknown',
         creatorName: username || 'User',
         emoji: chosenEmoji,
         color: color
       };
-      await saveQuestToFirestore(questData);
+      // REMOVED await: This now runs in the background
+      saveQuestToFirestore(questData);
 
+      // This will now run immediately
       stopFollowing();
     };
 
