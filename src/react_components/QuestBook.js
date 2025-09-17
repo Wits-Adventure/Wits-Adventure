@@ -82,32 +82,33 @@ const QuestBook = () => {
 
   return (
     <div className="full-page-background">
-      <div className="quest-list">
 
-        {/* TAB NAVIGATION */}
-        <div className="tab-container">
+      {/* HEADER OUTSIDE BORDER */}
+      <div className="questbook-header">
+        <div className="questbook-title">
+          <img src={logo} alt="Logo" className="logo-circle" style={{ width: 48, height: 48 }} />
+          Wits Adventure Quests
+        </div>
+        <div className="questbook-tabs">
           <div
-            className={`tab ${activeTab === 'Quests' ? 'active' : ''}`}
+            className={`questbook-tab ${activeTab === 'Quests' ? 'active' : ''}`}
             onClick={() => setActiveTab('Quests')}
           >
             Quests
           </div>
           <div
-            className={`tab ${activeTab === 'Leaderboard' ? 'active' : ''}`}
+            className={`questbook-tab ${activeTab === 'Leaderboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('Leaderboard')}
           >
             Leaderboard
           </div>
         </div>
+      </div>
 
-        {/* PAGE CONTENT */}
+      {/* BORDERED CONTENT */}
+      <div className="quest-list">
         {activeTab === 'Quests' && (
           <>
-            <h1 className="title">
-              <img src={logo} alt="Logo" className="logo-circle" />
-              Wits Adventure Quests
-            </h1>
-
             <div className="pagination">
               <button onClick={() => handlePageChange('prev')} disabled={currentPage === 1}>
                 <FaArrowLeft />
@@ -117,20 +118,8 @@ const QuestBook = () => {
                 <FaArrowRight />
               </button>
             </div>
-
             {currentQuests.map((quest) => {
-              // Debug logs for probable causes
-              console.log("Quest:", quest);
-              console.log("User ID:", userId);
-              console.log("Quest submissions:", quest.submissions);
-
-              const hasUserSubmission = quest.submissions?.some(sub => {
-                console.log("Checking submission:", sub);
-                return sub.userId === userId;
-              });
-
-              console.log("hasUserSubmission for quest", quest.id, ":", hasUserSubmission);
-
+              const hasUserSubmission = quest.submissions?.some(sub => sub.userId === userId);
               return (
                 <div key={quest.id} className="quest-card">
                   <h2>{quest.name || "Untitled Quest"}</h2>
@@ -148,8 +137,6 @@ const QuestBook = () => {
                 </div>
               );
             })}
-
-            {/* Place CompleteQuestForm here */}
             <CompleteQuestForm
               isOpen={showCompleteForm}
               onClose={() => { setShowCompleteForm(false); setActiveQuest(null); }}
@@ -160,11 +147,12 @@ const QuestBook = () => {
 
         {activeTab === 'Leaderboard' && (
           <div>
-            <h1 className="title"> <img src={trophy} alt="trophy" className="trophy" /> Leaderboard</h1>
+            <h1 className="title">
+              <img src={trophy} alt="trophy" className="trophy" /> Leaderboard
+            </h1>
             <p style={{ textAlign: 'center' }}>Leaderboard content will go here.</p>
           </div>
         )}
-
       </div>
     </div>
   );
