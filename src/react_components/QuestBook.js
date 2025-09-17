@@ -8,6 +8,7 @@ import { getUserData } from '../firebase/firebase';
 import { getAllQuests } from '../firebase/general_quest_functions';
 import CompleteQuestForm from './CompleteQuestForm';
 import { useNavigate } from "react-router-dom";
+import Leaderboard from './Leaderboard.js';
 
 const questsPerPage = 4;
 
@@ -182,12 +183,9 @@ const QuestBook = () => {
         )}
 
         {activeTab === 'Leaderboard' && (
-          <div>
-            <h1 className="title">
-              <img src={trophy} alt="trophy" className="trophy" /> Leaderboard
-            </h1>
-            <p style={{ textAlign: 'center' }}>Leaderboard content will go here.</p>
-          </div>
+
+            <Leaderboard/>
+        
         )}
       </div>
     </div>
