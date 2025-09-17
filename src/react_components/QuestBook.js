@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import '../css/QuestBook.css';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { FaChevronLeft } from 'react-icons/fa'; // Add this for a matching icon
 import logo from '../media/logo.jpg';
 import trophy from '../media/trophy.png';
 import { getUserData } from '../firebase/firebase';
 import { getAllQuests } from '../firebase/general_quest_functions';
 import CompleteQuestForm from './CompleteQuestForm';
+import { useNavigate } from "react-router-dom";
 
 const questsPerPage = 4;
 
 const QuestBook = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [quests, setQuests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -77,6 +80,11 @@ const QuestBook = () => {
     setShowCompleteForm(true);
   };
 
+  // Handler for back button (same as ProfilePage)
+  const handleBackHome = () => {
+    navigate("/");
+  };
+
   if (loading) return <p style={{ textAlign: 'center' }}>Loading quests...</p>;
   if (quests.length === 0) return <p style={{ textAlign: 'center' }}>No quests available.</p>;
 
@@ -106,7 +114,35 @@ const QuestBook = () => {
       </div>
 
       {/* BORDERED CONTENT */}
-      <div className="quest-list">
+      <div className="quest-list" style={{ position: "relative" }}>
+        {/* Back to Home button - fixed at bottom-left inside border */}
+        <button
+          type="button"
+          className="back-home-btn"
+          onClick={handleBackHome}
+          aria-label="Back to home"
+          style={{
+            position: "absolute",
+            bottom: 24,
+            left: 24,
+            zIndex: 10,
+            background: "linear-gradient(135deg, #ffeac8, #d8ba8a)",
+            border: "2px solid #90774c",
+            borderRadius: "18px",
+            padding: "8px 18px",
+            fontFamily: "'Cinzel', serif",
+            fontWeight: 600,
+            fontSize: "1rem",
+            cursor: "pointer",
+            boxShadow: "0 4px 12px rgba(144, 119, 76, 0.13)",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}
+        >
+          <img src="/return.svg" alt="Back" style={{ width: 24, height: 24 }} />
+        </button>
+
         {activeTab === 'Quests' && (
           <>
             <div className="pagination">
