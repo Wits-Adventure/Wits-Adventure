@@ -59,6 +59,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^27.5.1",
     "jest-dom": "^4.0.0",
-    "jest-environment-jsdom": "^27.5.1"
+    "jest-environment-jsdom": "^27.5.1",
+    "node-fetch": "^3.3.2"
   }
 }

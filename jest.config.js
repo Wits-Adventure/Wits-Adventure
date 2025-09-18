@@ -7,12 +7,13 @@ module.exports = {
     'src/firebase/profile_functions.js',
     'src/firebase/general_quest_functions.js',
     'src/react_components/protectedRoute.js',
-    'src/react_components/LeaderboardAchievements.js',
+    'src/react_components/Leaderboard.js',
      'src/react_components/QuestManager.js',
      'src/react_components/QuestBook.js',
      'src/react_components/unauthorized.js',
      'src/react_components/CreateQuestForm.js',
-     'src/react_components/CompleteQuestForm.js',
+     'src/react_components/login.js',
+    
     
     '!**/node_modules/**',
     '!src/reportWebVitals.js',
