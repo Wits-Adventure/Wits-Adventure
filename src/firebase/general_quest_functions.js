@@ -2,22 +2,26 @@ import { db, storage } from './firebase';
 import { collection, addDoc, serverTimestamp, getDocs } from "firebase/firestore";
 import { doc, updateDoc, arrayUnion, getDoc, setDoc, GeoPoint, deleteDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { apiRequest, auth } from './firebase';
 
 // Future functions should follow this pattern: upload to Storage, save the URL in Firestore.
 
 
-// Fetch all quests from Firestore
-export async function getAllQuests() {
+/**
+ * Fetches all quests from the backend API.
+ * @returns {Promise<Array<object>>} An array of quest objects.
+ */
+export const getAllQuests = async () => {
     try {
-        const querySnapshot = await getDocs(collection(db, "Quests"));
-        const questsArray = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        console.log("Quests fetched from Firebase:", questsArray); // debug
+        // 💡 Use apiRequest for a simple GET call
+        const questsArray = await apiRequest('/api/quests');
+        console.log("Quests fetched from backend:", questsArray);
         return questsArray;
     } catch (error) {
         console.error("Error fetching quests:", error);
         return [];
     }
-}
+};
 
 export async function saveQuestToFirestore(questData) {
     try {
@@ -56,68 +60,65 @@ export async function saveQuestToFirestore(questData) {
 }
 
 // Accept a quest: update both quest and user
-export async function acceptQuest(questId, userId) {
-    // Add userId to quest's acceptedBy array
-    const questRef = doc(db, "Quests", questId);
-    await updateDoc(questRef, {
-        acceptedBy: arrayUnion(userId)
-    });
-
-    // Add questId to user's acceptedQuests array (create array if missing)
-    const userRef = doc(db, "Users", userId);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-        await updateDoc(userRef, {
-            acceptedQuests: arrayUnion(questId)
-        });
-    } else {
-        await setDoc(userRef, { acceptedQuests: [questId] }, { merge: true });
+/**
+ * Accepts a quest by updating both the quest and user documents via the backend.
+ * @param {string} questId The ID of the quest to accept.
+ * @returns {Promise<object>} The API response from the backend.
+ */
+export const acceptQuest = async (questId) => {
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error("User is not authenticated. Please log in to accept a quest.");
     }
-}
+    try {
+        // Make a PATCH request to the backend. The backend will use the user's token
+        // to get their UID and handle all the database logic.
+        const response = await apiRequest(`/api/quests/${questId}/accept`, 'PATCH', {});
+        return response;
+    } catch (error) {
+        console.error("Error accepting quest:", error);
+        throw error;
+    }
+};
 
-// Remove quest from all users' acceptedQuests and delete the quest
-export async function closeQuestAndRemoveFromUsers(questId) {
-    // 1. Delete the quest document
-    const questRef = doc(db, "Quests", questId);
-    await deleteDoc(questRef);
+/**
+ * Closes and deletes a quest, triggering backend logic to remove it from all users.
+ * @param {string} questId The ID of the quest to close.
+ * @returns {Promise<object>} The API response from the backend.
+ */
+export const closeQuestAndRemoveFromUsers = async (questId) => {
+    try {
+        // The backend handles all the complex logic of deleting the quest
+        // and updating the user data.
+        const response = await apiRequest(`/api/quests/${questId}`, 'DELETE');
+        return response;
+    } catch (error) {
+        console.error("Error closing quest:", error);
+        throw error; // Re-throw the error for UI feedback
+    }
+};
 
-    // 2. Remove questId from all users' acceptedQuests arrays
-    const usersSnapshot = await getDocs(collection(db, "Users"));
-    const batch = [];
-    usersSnapshot.forEach(userDoc => {
-        const userData = userDoc.data();
-        if (userData.acceptedQuests && userData.acceptedQuests.includes(questId)) {
-            batch.push(
-                updateDoc(doc(db, "Users", userDoc.id), {
-                    acceptedQuests: userData.acceptedQuests.filter(qid => qid !== questId)
-                })
-            );
-        }
-    });
-    await Promise.all(batch);
-}
-
-export async function abandonQuest(questId, userId) {
-    // Remove userId from quest's acceptedBy array
-    const questRef = doc(db, "Quests", questId);
-    const questSnap = await getDoc(questRef);
-    if (questSnap.exists()) {
-        const acceptedBy = questSnap.data().acceptedBy || [];
-        await updateDoc(questRef, {
-            acceptedBy: acceptedBy.filter(uid => uid !== userId)
-        });
+/**
+ * Abandons a quest for the current user via the backend API.
+ * @param {string} questId The ID of the quest to abandon.
+ * @returns {Promise<object>} The API response from the backend.
+ */
+export const abandonQuest = async (questId) => {
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error("User is not authenticated. Cannot abandon quest.");
     }
 
-    // Remove questId from user's acceptedQuests array
-    const userRef = doc(db, "Users", userId);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-        const acceptedQuests = userSnap.data().acceptedQuests || [];
-        await updateDoc(userRef, {
-            acceptedQuests: acceptedQuests.filter(qid => qid !== questId)
-        });
+    try {
+        // Make a PATCH request. The backend will use the user's token
+        // to get their UID and handle all the database logic.
+        const response = await apiRequest(`/api/quests/${questId}/abandon`, 'PATCH', {});
+        return response;
+    } catch (error) {
+        console.error("Error abandoning quest:", error);
+        throw error;
     }
-}
+};
 
 // Submit an attempt (image) for a quest
 export async function submitQuestAttempt(questId, userId, file, userName) {

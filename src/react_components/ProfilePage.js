@@ -73,13 +73,11 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
           .filter(q => q.creatorId === profileData.uid)
           .map(q => ({
             ...q,
-            location: q.location && typeof q.location.latitude === "number"
-              ? { latitude: q.location.latitude, longitude: q.location.longitude }
-              : q.location && typeof q.location._lat === "number"
-                ? { latitude: q.location._lat, longitude: q.location._long }
-                : Array.isArray(q.location)
-                  ? { latitude: q.location[0], longitude: q.location[1] }
-                  : null
+            location: q.location && typeof q.location._latitude === "number"
+              ? { latitude: q.location._latitude, longitude: q.location._longitude }
+              : q.location && typeof q.location.latitude === "number"
+                ? { latitude: q.location.latitude, longitude: q.location.longitude }
+                : null
           }));
         setCreatedQuests(userCreated);
 
