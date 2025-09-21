@@ -109,7 +109,25 @@ export default function QuestManager({ quest, isOpen, onClose, onAccept, onRejec
   };
 
   const handleViewOnMap = (quest) => {
-    navigate("/", { state: { focusQuest: quest } });
+    const parseFirestoreLatLng = (loc) => {
+      if (!loc || typeof loc !== 'object') return null;
+      if (typeof loc._latitude === 'number' && typeof loc._longitude === 'number') {
+        return { latitude: loc._latitude, longitude: loc._longitude };
+      }
+      if (typeof loc.latitude === 'number' && typeof loc.longitude === 'number') {
+        return { latitude: loc.latitude, longitude: loc.longitude };
+      }
+      return null;
+    };
+
+    const locationNormalized = parseFirestoreLatLng(quest.location) || parseFirestoreLatLng(quest) || null;
+
+    const focusQuest = {
+      ...quest,
+      location: locationNormalized
+    };
+
+    navigate("/", { state: { focusQuest } });
   };
 
   return (

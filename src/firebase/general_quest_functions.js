@@ -2,22 +2,26 @@ import { db, storage } from './firebase';
 import { collection, addDoc, serverTimestamp, getDocs } from "firebase/firestore";
 import { doc, updateDoc, arrayUnion, getDoc, setDoc, GeoPoint, deleteDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { apiRequest, auth } from './firebase';
 
 // Future functions should follow this pattern: upload to Storage, save the URL in Firestore.
 
 
-// Fetch all quests from Firestore
-export async function getAllQuests() {
+/**
+ * Fetches all quests from the backend API.
+ * @returns {Promise<Array<object>>} An array of quest objects.
+ */
+export const getAllQuests = async () => {
     try {
-        const querySnapshot = await getDocs(collection(db, "Quests"));
-        const questsArray = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        console.log("Quests fetched from Firebase:", questsArray); // debug
+        // 💡 Use apiRequest for a simple GET call
+        const questsArray = await apiRequest('/api/quests');
+        console.log("Quests fetched from backend:", questsArray);
         return questsArray;
     } catch (error) {
         console.error("Error fetching quests:", error);
         return [];
     }
-}
+};
 
 export async function saveQuestToFirestore(questData) {
     try {

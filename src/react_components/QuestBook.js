@@ -160,8 +160,8 @@ const QuestBook = () => {
               return (
                 <div key={quest.id} className="quest-card">
                   <h2>{quest.name || "Untitled Quest"}</h2>
-                  <p>Latitude: {quest.location ? quest.location.latitude.toFixed(6) : "N/A"}</p>
-                  <p>Longitude: {quest.location ? quest.location.longitude.toFixed(6) : "N/A"}</p>
+                  <p>Latitude: {typeof quest.location?.latitude === 'number' ? quest.location.latitude.toFixed(6) : "N/A"}</p>
+                  <p>Longitude: {typeof quest.location?.longitude === 'number' ? quest.location.longitude.toFixed(6) : "N/A"}</p>
                   <span className="reward-tag">
                     {quest.reward ?? 0} points
                   </span>
@@ -184,8 +184,8 @@ const QuestBook = () => {
 
         {activeTab === 'Leaderboard' && (
 
-            <Leaderboard/>
-        
+          <Leaderboard />
+
         )}
       </div>
     </div>

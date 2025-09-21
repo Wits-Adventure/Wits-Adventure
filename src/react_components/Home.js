@@ -92,21 +92,24 @@ const Home = () => {
   }, [currentUser]);
 
   useEffect(() => {
+    // Minimal parser for Firestore GeoPoint shape: _latitude and _longitude (numbers)
+    const parseFirestoreLatLng = (loc) => {
+      if (!loc) return null;
+      if (typeof loc._latitude === 'number' && typeof loc._longitude === 'number') {
+        return { latitude: loc._latitude, longitude: loc._longitude };
+      }
+      return null;
+    };
+
     async function fetchQuests() {
       const quests = await getAllQuests();
-      setAllQuests(
-        quests.map(q => ({
-          ...q,
-          location: q.location && typeof q.location.latitude === "number"
-            ? { latitude: q.location.latitude, longitude: q.location.longitude }
-            : q.location && typeof q.location._lat === "number"
-              ? { latitude: q.location._lat, longitude: q.location._long }
-              : Array.isArray(q.location)
-                ? { latitude: q.location[0], longitude: q.location[1] }
-                : null
-        }))
-      );
+      const parsed = quests.map(q => {
+        const loc = q.location; // assume the API returns the Firestore-like object here
+        return { ...q, location: parseFirestoreLatLng(loc) };
+      });
+      setAllQuests(parsed);
     }
+
     fetchQuests();
   }, []);
 
@@ -117,6 +120,7 @@ const Home = () => {
 
   // Function to add quest area highlights
   const addQuestAreas = useCallback(() => {
+    console.log('addQuestAreas called, mapInstance:', !!mapInstanceRef.current, 'allQuests.length:', allQuests.length); // <-- new
     if (!mapInstanceRef.current) return;
 
     // Remove old quest circles/markers
@@ -132,7 +136,9 @@ const Home = () => {
 
     // Add markers for all quests from Firestore
     allQuests.forEach(quest => {
-      if (!quest.location) return;
+      if (!quest.location) {
+        return;
+      }
       const { latitude, longitude } = quest.location;
 
       // Use saved emoji and color, fallback if missing
