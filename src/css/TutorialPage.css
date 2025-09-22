@@ -124,31 +124,3 @@
   transform: translateY(-3px);
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28), inset 0 2px 0 rgba(255, 255, 255, 0.45);
 }
-
-/* Slide fully left to right and back for panel banners */
-@keyframes bannerSliderSlide {
-  0%, 10% {
-    transform: translateX(0);
-  }
-  90%, 100% {
-    transform: translateX(calc(100vw - 100%));
-  }
-}
-
-.banner-slider {
-  display: flex;
-  flex-direction: row;           /* Make banners horizontal */
-  width: max-content;            /* Allow all banners to be in one row */
-  animation: bannerSliderSlide 14s ease-in-out alternate infinite;
-  will-change: transform;
-  /* Optional: set a fixed height if needed */
-  /* height: 500px; */
-}
-
-/* Ensure the wrapper hides overflow */
-#wrapper {
-  overflow: hidden;
-  width: 100vw;
-}
-
-/* Each panel should not take 100% width, so remove any width: 100% from .panel.banner if present */
