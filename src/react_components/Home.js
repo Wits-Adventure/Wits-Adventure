@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback , useMemo} from 'react';
 import '../css/Home.css';
 import logoImage from '../media/LOGO_Alpha.png';
 import questbookImage from '../media/questbook_outline.png';
@@ -13,7 +13,27 @@ import { getProfileData } from '../firebase/profile_functions';
 import bellImage from '../media/bell.png';
 import musicImage from '../media/music.png'; import { useMusic } from '../context/MusicContext';
 import tutorialImage from '../media/tutorial.png'; // Replace with your actual image path or use an emoji if no image
+import { doc, updateDoc, increment } from "firebase/firestore";
+import { db } from "../firebase/firebase"; // adjust path if your firebase.js file lives elsewhere
 
+function distanceMeters(a, b) {
+  try {
+    if (window.L && window.L.latLng) {
+      return window.L.latLng(a[0], a[1]).distanceTo(window.L.latLng(b[0], b[1]));
+    }
+  } catch (_) {}
+  const toRad = (x) => (x * Math.PI) / 180;
+  const R = 6371000;
+  const dLat = toRad(b[0] - a[0]);
+  const dLon = toRad(b[1] - a[1]);
+  const lat1 = toRad(a[0]);
+  const lat2 = toRad(b[0]);
+  const s =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+  return R * c;
+}
 
 const Home = () => {
   const { currentUser } = useAuth();
@@ -34,6 +54,87 @@ const Home = () => {
   const [isBellActive, setIsBellActive] = useState(false); // NEW: state to track bell animation
   const [toastIcon, setToastIcon] = useState('bell');
   const [userSubmissions, setUserSubmissions] = useState({}); // questId: true
+
+
+    // ======== NEW: Journey Quests (hard-coded, scalable) ========
+  /**
+   * Each journey quest has: id, name, emoji, color, reward, and exactly 3 stops.
+   * Only stop[0] is rendered on the map. Accepting reveals riddle for stop[1].
+   * Bell press checks if within radius of the current target stop and advances.
+   */
+  const journeyQuests = useMemo(
+    () => [
+      {
+        id: 'journey-knowledge-quest',
+        name: 'Trail of Knowledge',
+        emoji: '📚',
+        color: '#2e7d32',
+        reward: 150,
+        stops: [
+          {
+            lat: -26.1905275569984,     //Library Lawns
+            lng:  28.02991870656233,
+            radius: 45,
+            riddle:
+              "Begin at the heart where minds convene.\n(You are here. Accept to start!)",
+          },
+          {
+            lat: -26.191164724176563,   //Wartenweiler Library
+            lng: 28.030668225929592,
+            radius: 45,
+            riddle:
+              "I’m stacked with words from floor to sky,\nSeek quiet halls where whispers fly.",
+          },
+          {
+            lat: -26.1895187018387,    //OMSH
+            lng: 28.029333555477365,
+            radius: 45,
+            riddle:
+              "Find the place of gold and blue,\nWhere sport and spirit meet your crew.",
+          },
+        ],
+      },
+      {
+        id: 'journey-artisan-quest',
+        name: 'Artisan’s Path',
+        emoji: '🎨',
+        color: '#8e24aa',
+        reward: 180,
+        stops: [
+          {
+            lat: -26.18825050226691,      //DJ
+            lng: 28.024212535302684,
+            radius: 40,
+            riddle:
+              "Start where steps and stones align,\nAccept to trace the hidden sign.",
+          },
+          {
+            lat: -26.19155561824705,    //Oppenheimer Life Sciences
+            lng: 28.032089513244493,
+            radius: 40,
+            riddle:
+              "Where sculptures rest and murals gleam,\nFind colors born from scholar’s dream.",
+          },
+          {
+            lat: -26.18944199729973,          //Basketball Courts
+            lng: 28.030186646826653,
+            radius: 40,
+            riddle:
+              "Seek a court where echoes bound,\nAnd sneakers sing upon the ground.",
+          },
+        ],
+      },
+    ],
+    []
+  );
+
+  
+  /**
+   * Progress state per journey quest:
+   * { [questId]: { accepted: boolean, currentStep: 1|2 (next target index), completed: boolean } }
+   * After accept: currentStep = 1 (target stop index 1). When currentStep advances past 2 => completed.
+   */
+  const [journeyProgress, setJourneyProgress] = useState({});
 
   const showToast = (msg, duration = 2200, iconType = 'bell') => {
     setToastMsg(msg);
@@ -208,6 +309,53 @@ const Home = () => {
 
       // Store reference for cleanup
       questCirclesRef.current.push(questCircle);
+    });
+
+    // ======== NEW: render only the FIRST STOP for each Journey Quest ========
+    journeyQuests.forEach(jq => {
+      const first = jq.stops[0];
+      const titleEmoji = jq.emoji || (jq.name?.match(/^\p{Extended_Pictographic}/u)?.[0]) || '🧭';
+      const color = jq.color || '#3f51b5';
+
+      const circle = window.L.circle([first.lat, first.lng], {
+        color,
+        fillColor: color,
+        fillOpacity: 0.28,
+        radius: first.radius,
+        weight: 2,
+        journeyId: jq.id
+      }).addTo(mapInstanceRef.current);
+
+      const buttonHtml = `<button id="journey-btn-${jq.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptJourneyQuest('${jq.id}')">Accept Journey</button>`;
+
+      circle.bindPopup(`
+        <div class="quest-popup">
+          <h3>${titleEmoji} ${jq.name}</h3>
+          <p><strong>Reward:</strong> ${jq.reward} points</p>
+          ${buttonHtml}
+        </div>
+      `);
+
+      const emojiIcon = window.L.divIcon({
+        className: 'quest-emoji-icon',
+        html: `<div class="quest-emoji">${titleEmoji}</div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+      const emojiMarker = window.L.marker([first.lat, first.lng], { icon: emojiIcon }).addTo(mapInstanceRef.current);
+      emojiMarker.bindPopup(circle.getPopup());
+      circle._emojiMarker = emojiMarker;
+
+      emojiMarker.on('click', (e) => {
+        if (window.__questPlacing) return;
+        circle.openPopup();
+        if (e.originalEvent) {
+          e.originalEvent.stopPropagation();
+          e.originalEvent.preventDefault();
+        }
+      });
+
+      questCirclesRef.current.push(circle);
     });
 
     // Example quest locations (you can modify these coordinates)
@@ -562,6 +710,28 @@ const Home = () => {
     };
   }, [currentUser, navigate, allQuests, acceptedQuests]);
 
+   // ======== NEW: Accept Journey Quest handler (global for popup button) ========
+  useEffect(() => {
+    window.handleAcceptJourneyQuest = (journeyId) => {
+      if (!currentUser) return navigate('/login');
+      const jq = journeyQuests.find(j => j.id === journeyId);
+      if (!jq) return;
+
+      setJourneyProgress(prev => ({
+        ...prev,
+        [journeyId]: { accepted: true, currentStep: 1, completed: false }
+      }));
+
+      // Riddle for stop 2
+      const nextRiddle = jq.stops[1]?.riddle || 'Find the next landmark!';
+      alert(`${jq.emoji} ${jq.name}\n\nRiddle for Stop 2:\n${nextRiddle}`);
+    };
+
+    return () => {
+      delete window.handleAcceptJourneyQuest;
+    };
+  }, [currentUser, navigate, journeyQuests]);
+
   useEffect(() => {
     if (window.L && mapInstanceRef.current) {
       addQuestAreas();
@@ -606,6 +776,136 @@ const Home = () => {
     }
     // eslint-disable-next-line
   }, [location.state, mapInstanceRef.current, questCirclesRef.current, navigate]);
+
+
+
+  // ======== NEW: Bell press -> check Journey Quest progress via geolocation ========
+  const handleBellPing = () => {
+  showToast("The bell tolls");
+
+  // Subtle pulse visualization near campus anchor
+  if (window.L && mapInstanceRef.current) {
+    if (window.__bellPulseCircle) {
+      mapInstanceRef.current.removeLayer(window.__bellPulseCircle);
+      window.__bellPulseCircle = null;
+    }
+    const coords = [-26.1929, 28.0305];
+    const circle = window.L.circle(coords, {
+      color: "#e6d5a8",
+      fillColor: "#fff2c9",
+      fillOpacity: 0.7,
+      radius: 30,
+      weight: 3,
+      interactive: false,
+      className: "bell-pulse-circle"
+    }).addTo(mapInstanceRef.current);
+    window.__bellPulseCircle = circle;
+
+    let frame = 0;
+    const maxFrames = 80;
+    const startRadius = 30;
+    const endRadius = 220;
+
+    function animate() {
+      frame++;
+      const r = startRadius + ((endRadius - startRadius) * (frame / maxFrames));
+      circle.setRadius(r);
+      circle.setStyle({
+        opacity: 0.9 - frame / maxFrames,
+        fillOpacity: 0.7 - 0.7 * (frame / maxFrames)
+      });
+      if (frame < maxFrames) {
+        requestAnimationFrame(animate);
+      } else {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.removeLayer(circle);
+        }
+        window.__bellPulseCircle = null;
+      }
+    }
+    animate();
+  }
+
+  // Check geolocation 
+  if (!('geolocation' in navigator)) {
+    alert('Geolocation is not supported on this device/browser.');
+    return;
+  }
+
+  
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const userLat = pos.coords.latitude;
+      const userLng = pos.coords.longitude;
+
+      let anyMatched = false;
+
+      
+      for (const jq of journeyQuests) {
+        const prog = journeyProgress[jq.id];
+        if (!prog || !prog.accepted || prog.completed) continue;
+
+        const targetIdx = prog.currentStep; // 1 or 2
+        const target = jq.stops[targetIdx];
+        if (!target) continue;
+
+        const d = distanceMeters([userLat, userLng], [target.lat, target.lng]);
+        if (d <= (target.radius || 40)) {
+          anyMatched = true;
+
+          
+          setJourneyProgress((prev) => {
+            const nextStep = targetIdx + 1;
+            const completed = nextStep > 2;
+            return {
+              ...prev,
+              [jq.id]: {
+                accepted: true,
+                currentStep: completed ? 2 : nextStep,
+                completed
+              }
+            };
+          });
+
+          if (targetIdx === 1) {
+            // Final riddle 
+            const nextRiddle = jq.stops[2]?.riddle || 'One last stop awaits...';
+            alert(`${jq.emoji} ${jq.name}\n\nGreat! You found Stop 2.\n\nRiddle for Final Stop:\n${nextRiddle}`);
+          } else if (targetIdx === 2) {
+            // Completed
+            alert(`${jq.emoji} ${jq.name}\n\nCongratulations! You completed the journey and earned ${jq.reward} points.`);
+            showToast('Journey quest completed!');
+
+            // Update Firestore LeaderBoardPoints
+            try {
+              const userRef = doc(db, "Users", currentUser.uid); // assumes doc ID = uid
+              await updateDoc(userRef, {
+                LeaderBoardPoints: increment(jq.reward)
+              });
+              console.log(`Awarded ${jq.reward} points to ${currentUser.uid}`);
+            } catch (error) {
+              console.error("Failed to update LeaderBoardPoints:", error);
+              showToast("Error awarding points. Try again later.");
+            }
+          }
+        }
+      }
+
+      if (!anyMatched) {
+        alert('You are not within the required radius yet. Move closer and ring the bell again.');
+      }
+    },
+    (err) => {
+      console.error(err);
+      if (err.code === 1) {
+        alert('Location permission denied. Please allow location access to progress Journey Quests.');
+      } else {
+        alert('Unable to get your location. Try again.');
+      }
+    },
+    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+  );
+};
 
 
   const handleSubmission = (questId) => {
@@ -692,47 +992,7 @@ const Home = () => {
               {/* Bell icon */}
               <button
                 className={`bell-icon ${isBellActive ? 'playing' : ''}`}
-                onClick={() => {
-                  showToast("The bell tolls");
-                  if (window.L && mapInstanceRef.current) {
-                    if (window.__bellPulseCircle) {
-                      mapInstanceRef.current.removeLayer(window.__bellPulseCircle);
-                      window.__bellPulseCircle = null;
-                    }
-                    const coords = [-26.1929, 28.0305];
-                    const circle = window.L.circle(coords, {
-                      color: "#e6d5a8",
-                      fillColor: "#fff2c9",
-                      fillOpacity: 0.7, // more opaque
-                      radius: 30,
-                      weight: 3,
-                      interactive: false,
-                      className: "bell-pulse-circle"
-                    }).addTo(mapInstanceRef.current);
-                    window.__bellPulseCircle = circle;
-
-                    let frame = 0;
-                    const maxFrames = 80; // slower animation
-                    const startRadius = 30;
-                    const endRadius = 220;
-                    function animate() {
-                      frame++;
-                      const r = startRadius + ((endRadius - startRadius) * (frame / maxFrames));
-                      circle.setRadius(r);
-                      circle.setStyle({
-                        opacity: 0.9 - frame / maxFrames, // more opaque
-                        fillOpacity: 0.7 - 0.7 * (frame / maxFrames) // more opaque
-                      });
-                      if (frame < maxFrames) {
-                        requestAnimationFrame(animate);
-                      } else {
-                        mapInstanceRef.current.removeLayer(circle);
-                        window.__bellPulseCircle = null;
-                      }
-                    }
-                    animate();
-                  }
-                }}
+                onClick={handleBellPing}
                 aria-label="Bell"
               >
                 <img src={bellImage} alt="Bell" />
