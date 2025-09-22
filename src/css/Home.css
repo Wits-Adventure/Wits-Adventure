@@ -474,7 +474,7 @@
   height: 100%;
   position: relative;
   background: linear-gradient(145deg, #D2B48C, #DEB887);
-  border: 8px solid #654321;
+  /* Remove border, use pseudo-element for animated border */
   border-radius: 20px;
   padding: 15px;
   box-shadow:
@@ -486,6 +486,71 @@
   min-height: 400px; /* NEW: Match #map's min-height to prevent frame from shrinking too small */
 }
 
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.map-frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 20px;
+  padding: 4px;
+  box-sizing: border-box;
+  background: conic-gradient(from var(--angle), #b48e65, #d4a017, #ff4545, #00ff99, #006aff, #ff0095, #b48e65);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: spin 3s linear infinite;
+}
+
+/* Remove the animated rainbow gradient border around the map frame */
+.map-frame::before,
+.map-frame::after {
+  content: none !important;
+  animation: none !important;
+  background: none !important;
+  filter: none !important;
+}
+
+.map-frame::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 20px;
+  padding: 4px;
+  box-sizing: border-box;
+  background: conic-gradient(from var(--angle), #b48e65, #d4a017, #ff4545, #00ff99, #006aff, #ff0095, #b48e65);
+  filter: blur(1.5rem);
+  opacity: 0.4;
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    --angle: 0deg;
+  }
+  to {
+    --angle: 360deg;
+  }
+}
 /* small safeguard for very small screens (keeps existing mobile rules intact) */
 @media (max-width: 800px) {
   .map-container {
