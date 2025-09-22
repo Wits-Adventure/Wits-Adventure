@@ -13,6 +13,7 @@ module.exports = {
      'src/react_components/unauthorized.js',
      'src/react_components/CreateQuestForm.js',
      'src/react_components/login.js',
+     'src/react_components/signup.js',
     
     
     '!**/node_modules/**',
