@@ -91,39 +91,41 @@
 }
 
 /* Hide the header's music button (the map has its own). This keeps layout clean. */
-.header > .music-icon {
+.header>.music-icon {
   display: none;
 }
 
 /* Position the music button inside the map area (top-right) */
 .map-frame .music-icon,
-#map > .music-icon {
+#map>.music-icon {
   position: absolute;
   top: 18px;
   right: 18px;
   width: 60px;
   height: 60px;
-  z-index: 1200; /* sit above map controls */
+  z-index: 1200;
+  /* sit above map controls */
   border: 2px solid #fff2d8;
   border-radius: 50%;
   background-color: rgba(255, 235, 214, 0.02);
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
 /* make the icon image scale nicely inside the map button */
 .map-frame .music-icon img,
-#map > .music-icon img {
+#map>.music-icon img {
   width: 70%;
   height: 70%;
 }
 
 /* Mobile adjustments: smaller and slightly inset on small screens */
 @media (max-width: 800px) {
+
   .map-frame .music-icon,
-  #map > .music-icon {
+  #map>.music-icon {
     top: 12px;
     right: 20px;
     width: 60px;
@@ -131,20 +133,20 @@
   }
 
   /* Ensure header's music remains hidden on mobile too */
-  .header > .music-icon {
+  .header>.music-icon {
     display: none;
   }
 
   .leaflet-control-zoom {
-    margin-left: 18
-    px !important;
+    margin-left: 18 px !important;
   }
 
 }
 
 @media (max-width: 450px) {
+
   .map-frame .music-icon,
-  #map > .music-icon {
+  #map>.music-icon {
     top: 10px;
     right: 18px;
     width: 58px;
@@ -458,14 +460,18 @@
 }
 
 .map-container {
-  width: calc(100% - 60px); /* account for the page's 30px horizontal padding each side */
-  max-width: none;          /* remove fixed cap so it grows with viewport */
-  margin: 0 30px;           /* keep the visual horizontal padding */
+  width: calc(100% - 60px);
+  /* account for the page's 30px horizontal padding each side */
+  max-width: none;
+  /* remove fixed cap so it grows with viewport */
+  margin: 0 30px;
+  /* keep the visual horizontal padding */
   flex: 1;
   height: 100%;
   position: relative;
   min-height: 0;
-  box-sizing: border-box;   /* ensure padding/border don't create overflow */
+  box-sizing: border-box;
+  /* ensure padding/border don't create overflow */
 }
 
 /* ensure map-frame still uses full container */
@@ -482,8 +488,10 @@
     0 20px 40px rgba(101, 67, 33, 0.5),
     0 30px 25px rgba(0, 0, 0, 0.5),
     inset 0 2px 0 rgba(255, 255, 255, 0.2);
-  overflow: hidden; /* Keep this to clip any excess */
-  min-height: 400px; /* NEW: Match #map's min-height to prevent frame from shrinking too small */
+  overflow: hidden;
+  /* Keep this to clip any excess */
+  min-height: 400px;
+  /* NEW: Match #map's min-height to prevent frame from shrinking too small */
 }
 
 @property --angle {
@@ -506,10 +514,10 @@
   box-sizing: border-box;
   background: conic-gradient(from var(--angle), #b48e65, #d4a017, #ff4545, #00ff99, #006aff, #ff0095, #b48e65);
   -webkit-mask:
-    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   mask:
-    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -547,22 +555,27 @@
   from {
     --angle: 0deg;
   }
+
   to {
     --angle: 360deg;
   }
 }
+
 /* small safeguard for very small screens (keeps existing mobile rules intact) */
 @media (max-width: 800px) {
   .map-container {
-    width: calc(100% + 60px); /* mobile override (already used elsewhere) */
+    width: calc(100% + 60px);
+    /* mobile override (already used elsewhere) */
     margin: 0 -30px -20px -30px;
-    
+
   }
 
   .map-frame {
     /* ...existing code... */
-    overflow: hidden; /* Ensure overflow is hidden on mobile too */
-    min-height: 340px; /* NEW: Match the adjusted #map min-height for mobile */
+    overflow: hidden;
+    /* Ensure overflow is hidden on mobile too */
+    min-height: 340px;
+    /* NEW: Match the adjusted #map min-height for mobile */
   }
 
   /* ...existing code... */
@@ -618,7 +631,8 @@
   filter: sepia(0.55) saturate(1) contrast(1) brightness(1);
   /* Ensure minimum height */
   min-height: 400px;
-  max-height: 100%;  /* Added to prevent #map from exceeding its parent's height, reducing overflow risk */
+  max-height: 100%;
+  /* Added to prevent #map from exceeding its parent's height, reducing overflow risk */
 }
 
 /* Fix Leaflet container issues */
@@ -1191,16 +1205,20 @@
      - remove the small bottom spacing so the frame reaches the bottom */
   .map-container {
     max-width: none;
-    width: calc(100% + 60px); /* original horizontal padding was 30px each side */
-    margin: 0 -30px -20px -30px; /* pull left/right to screen edges, reduce bottom gap */
+    width: calc(100% + 60px);
+    /* original horizontal padding was 30px each side */
+    margin: 0 -30px -20px -30px;
+    /* pull left/right to screen edges, reduce bottom gap */
     min-height: calc(100dvh - var(--header-offset, 120px));
   }
 
   .map-frame {
     /* Keep the visual border but ensure it uses box-sizing so padding doesn't add overflow */
     box-sizing: border-box;
-    padding: 12px; /* slightly reduce inner padding on mobile */
-    border-radius: 12px; /* keep decorative corners */
+    padding: 12px;
+    /* slightly reduce inner padding on mobile */
+    border-radius: 12px;
+    /* keep decorative corners */
     width: 100%;
     height: 100%;
   }
@@ -1364,6 +1382,41 @@
   z-index: 1000;
 }
 
+.castle-icon {
+  position: absolute;
+  bottom: 120px;
+  left: 25px;
+  background: rgba(139, 115, 85, 0.8);
+  border: 2px solid #8B4513;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  /* Perfect centering approach */
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  line-height: 1;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+.castle-icon span {
+  display: inline-block;
+  transform: translateY(-1px);
+  /* adjust + or - */
+}
+
+.castle-icon:hover {
+  transform: scale(1.1) translateY(-2px);
+  background: rgba(160, 149, 107, 0.9);
+  box-shadow: 0 6px 16px rgba(139, 69, 19, 0.4);
+}
+
 .bell-icon:hover {
   transform: scale(1.1) translateY(-3px);
 }
@@ -1379,13 +1432,13 @@
 .bell-icon.playing {
   border-color: #d4a017;
   transform: scale(1.06);
-  box-shadow: 0 8px 22px rgba(212,160,23,0.18);
-  background: rgba(212,160,23,0.04);
+  box-shadow: 0 8px 22px rgba(212, 160, 23, 0.18);
+  background: rgba(212, 160, 23, 0.04);
 }
 
 /* make the bell image pop when active */
 .bell-icon.playing img {
-  filter: drop-shadow(0 6px 12px rgba(212,160,23,0.18));
+  filter: drop-shadow(0 6px 12px rgba(212, 160, 23, 0.18));
   transform: translateY(-1px);
 }
 
@@ -1398,25 +1451,55 @@
   border-radius: 50%;
   top: -5%;
   left: -5%;
-  box-shadow: 0 0 0 2px rgba(212,160,23,0.06);
+  box-shadow: 0 0 0 2px rgba(212, 160, 23, 0.06);
   animation: bell-pulse 1000ms ease-out 1;
   pointer-events: none;
   z-index: 999;
 }
 
 @keyframes bell-pulse {
-  0% { transform: scale(0.9); opacity: 0.6; }
-  60% { transform: scale(1.06); opacity: 0.22; }
-  100% { transform: scale(1.12); opacity: 0; }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+
+  60% {
+    transform: scale(1.06);
+    opacity: 0.22;
+  }
+
+  100% {
+    transform: scale(1.12);
+    opacity: 0;
+  }
 }
 
 /* ensure mobile size rules still apply and the playing state scales correctly */
 @media (max-width: 800px) {
-  .bell-icon.playing { transform: scale(1.03); box-shadow: 0 6px 16px rgba(212,160,23,0.14); }
+  .bell-icon.playing {
+    transform: scale(1.03);
+    box-shadow: 0 6px 16px rgba(212, 160, 23, 0.14);
+  }
+
+  .castle-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    bottom: 105px;
+  }
 }
 
 @media (max-width: 480px) {
-  .bell-icon.playing { transform: scale(1.02); }
+  .bell-icon.playing {
+    transform: scale(1.02);
+  }
+
+  .castle-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 22px;
+    bottom: 95px;
+  }
 }
 
 /* Toast - compact & mobile-friendly */
@@ -1431,7 +1514,7 @@
   font-size: 14px;
   line-height: 1;
   border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
   z-index: 1400;
   display: inline-flex;
   align-items: center;
@@ -1450,7 +1533,7 @@
   min-width: 16px;
   border-radius: 50%;
   background: linear-gradient(180deg, #ffd38a, #d4a017);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.25) inset;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) inset;
   display: inline-block;
 }
 
@@ -1475,6 +1558,7 @@
 /* Desktop: reduce horizontal gutters so the map frame fills more of the viewport
    without changing any mobile rules (mobile still handled by max-width:800px media queries) */
 @media (min-width: 801px) {
+
   /* Pull the page padding in a bit so the map border sits closer to the viewport edges */
   .map-section {
     padding-left: 16px;
@@ -1483,7 +1567,8 @@
 
   /* Narrow the outer container margins so the framed map grows horizontally */
   .map-container {
-    width: calc(100% - 32px); /* match the smaller horizontal padding */
+    width: calc(100% - 32px);
+    /* match the smaller horizontal padding */
     margin: 0 16px;
     box-sizing: border-box;
   }
