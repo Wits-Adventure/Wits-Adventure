@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback , useMemo} from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import '../css/Home.css';
 import logoImage from '../media/LOGO_Alpha.png';
 import questbookImage from '../media/questbook_outline.png';
@@ -21,7 +21,7 @@ function distanceMeters(a, b) {
     if (window.L && window.L.latLng) {
       return window.L.latLng(a[0], a[1]).distanceTo(window.L.latLng(b[0], b[1]));
     }
-  } catch (_) {}
+  } catch (_) { }
   const toRad = (x) => (x * Math.PI) / 180;
   const R = 6371000;
   const dLat = toRad(b[0] - a[0]);
@@ -56,7 +56,7 @@ const Home = () => {
   const [userSubmissions, setUserSubmissions] = useState({}); // questId: true
 
 
-    // ======== NEW: Journey Quests (hard-coded, scalable) ========
+  // ======== NEW: Journey Quests (hard-coded, scalable) ========
   /**
    * Each journey quest has: id, name, emoji, color, reward, and exactly 3 stops.
    * Only stop[0] is rendered on the map. Accepting reveals riddle for stop[1].
@@ -68,12 +68,11 @@ const Home = () => {
         id: 'journey-knowledge-quest',
         name: 'Trail of Knowledge',
         emoji: '📚',
-        color: '#2e7d32',
         reward: 150,
         stops: [
           {
             lat: -26.1905275569984,     //Library Lawns
-            lng:  28.02991870656233,
+            lng: 28.02991870656233,
             radius: 45,
             riddle:
               "Begin at the heart where minds convene.\n(You are here. Accept to start!)",
@@ -98,7 +97,6 @@ const Home = () => {
         id: 'journey-artisan-quest',
         name: 'Artisan’s Path',
         emoji: '🎨',
-        color: '#8e24aa',
         reward: 180,
         stops: [
           {
@@ -128,7 +126,7 @@ const Home = () => {
     []
   );
 
-  
+
   /**
    * Progress state per journey quest:
    * { [questId]: { accepted: boolean, currentStep: 1|2 (next target index), completed: boolean } }
@@ -315,22 +313,26 @@ const Home = () => {
     journeyQuests.forEach(jq => {
       const first = jq.stops[0];
       const titleEmoji = jq.emoji || (jq.name?.match(/^\p{Extended_Pictographic}/u)?.[0]) || '🧭';
-      const color = jq.color || '#3f51b5';
+      const color = '#8B4513'; // Brown like hardcoded quests
 
       const circle = window.L.circle([first.lat, first.lng], {
         color,
-        fillColor: color,
-        fillOpacity: 0.28,
+        fillColor: '#D2691E', // Brown fill like hardcoded quests
+        fillOpacity: 0.3,
         radius: first.radius,
         weight: 2,
         journeyId: jq.id
       }).addTo(mapInstanceRef.current);
 
-      const buttonHtml = `<button id="journey-btn-${jq.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptJourneyQuest('${jq.id}')">Accept Journey</button>`;
+      // Add badge markup for journey quests like hardcoded special quests
+      const badgeHTML = `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
+      const buttonHtml = `<button id="journey-btn-${jq.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptJourneyQuest('${jq.id}')">Accept Quest</button>`;
 
       circle.bindPopup(`
         <div class="quest-popup">
+          ${badgeHTML}
           <h3>${titleEmoji} ${jq.name}</h3>
+          <p>${first.riddle}</p>
           <p><strong>Reward:</strong> ${jq.reward} points</p>
           ${buttonHtml}
         </div>
@@ -356,112 +358,6 @@ const Home = () => {
       });
 
       questCirclesRef.current.push(circle);
-    });
-
-    // Example quest locations (you can modify these coordinates)
-    const questLocations = [
-      {
-        lat: -26.1935,
-        lng: 28.0298,
-        radius: 50,
-        title: '🗡️ Combat Training',
-        description: 'Test your combat skills in this training area.',
-        image: '/combat.jpg',
-        special: true
-      },
-      {
-        lat: -26.1920,
-        lng: 28.0315,
-        radius: 75,
-        title: '📜 Ancient Scroll',
-        description: 'Discover the secrets hidden in ancient texts.',
-        image: '/scroll.jpg',
-        special: true
-      },
-      {
-        lat: -26.1945,
-        lng: 28.0290,
-        radius: 60,
-        title: '🪄 Magic Studies',
-        description: 'Learn the mystical arts of magic and spellcasting.',
-        image: '/magic.jpg',
-        special: true
-      }
-    ];
-
-    questLocations.forEach(quest => {
-      const questCircle = window.L.circle([quest.lat, quest.lng], {
-        color: '#8B4513',
-        fillColor: '#D2691E',
-        fillOpacity: 0.3,
-        radius: quest.radius,
-        weight: 2
-      }).addTo(mapInstanceRef.current);
-
-      // badge markup for special treasure hunts
-      const badgeHTML = quest.special
-        ? `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`
-        : '';
-
-      // Add popup to quest area (include badge if special)
-      questCircle.bindPopup(`
-          <div class="quest-popup">
-            ${badgeHTML}
-            <h3>${quest.title}</h3>
-            <div class="quest-image-container">
-              <img src="${quest.image}" alt="Quest Image" class="quest-popup-image" />
-            </div>
-            <p>${quest.description}</p>
-            <p><strong>Reward:</strong> ${quest.radius} points</p>
-            <button class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest()">Accept Quest</button>
-          </div>
-        `);
-
-      // Extract emoji for center marker
-      const titleEmojiMatch = quest.title.match(/^\p{Extended_Pictographic}/u);
-      const titleEmoji = titleEmojiMatch ? titleEmojiMatch[0] : '🌟';
-
-      questCircle._emoji = titleEmoji;
-
-      const emojiIcon = window.L.divIcon({
-        className: 'quest-emoji-icon',
-        html: `<div class="quest-emoji">${titleEmoji}</div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
-      const emojiMarker = window.L.marker([quest.lat, quest.lng], { icon: emojiIcon }).addTo(mapInstanceRef.current);
-      emojiMarker.bindPopup(questCircle.getPopup());
-      questCircle._emojiMarker = emojiMarker;
-
-      // Overlap click handling for emoji marker
-      emojiMarker.on('click', (e) => {
-        if (window.__questPlacing) return;
-        questCircle.openPopup();
-        if (e.originalEvent) {
-          e.originalEvent.stopPropagation();
-          e.originalEvent.preventDefault();
-        }
-      });
-
-      // Overlap handling for quest circle
-      questCircle.on('click', (e) => {
-        const clickLatLng = e.latlng;
-        if (!questCirclesRef?.current) return;
-        const overlapping = questCirclesRef.current.filter(c =>
-          c.getLatLng().distanceTo(clickLatLng) <= c.getRadius()
-        );
-        if (overlapping.length) {
-          const smallest = overlapping.reduce((a, b) => a.getRadius() < b.getRadius() ? a : b);
-          smallest.openPopup();
-          if (e.originalEvent) {
-            e.originalEvent.stopPropagation();
-            e.originalEvent.preventDefault();
-          }
-        }
-      });
-
-      // Store reference for cleanup
-      questCirclesRef.current.push(questCircle);
     });
   }, [allQuests, mapInstanceRef, questCirclesRef, currentUser, acceptedQuests]);
 
@@ -710,7 +606,7 @@ const Home = () => {
     };
   }, [currentUser, navigate, allQuests, acceptedQuests]);
 
-   // ======== NEW: Accept Journey Quest handler (global for popup button) ========
+  // ======== NEW: Accept Journey Quest handler (global for popup button) ========
   useEffect(() => {
     window.handleAcceptJourneyQuest = (journeyId) => {
       if (!currentUser) return navigate('/login');
@@ -781,131 +677,131 @@ const Home = () => {
 
   // ======== NEW: Bell press -> check Journey Quest progress via geolocation ========
   const handleBellPing = () => {
-  showToast("The bell tolls");
+    showToast("The bell tolls");
 
-  // Subtle pulse visualization near campus anchor
-  if (window.L && mapInstanceRef.current) {
-    if (window.__bellPulseCircle) {
-      mapInstanceRef.current.removeLayer(window.__bellPulseCircle);
-      window.__bellPulseCircle = null;
-    }
-    const coords = [-26.1929, 28.0305];
-    const circle = window.L.circle(coords, {
-      color: "#e6d5a8",
-      fillColor: "#fff2c9",
-      fillOpacity: 0.7,
-      radius: 30,
-      weight: 3,
-      interactive: false,
-      className: "bell-pulse-circle"
-    }).addTo(mapInstanceRef.current);
-    window.__bellPulseCircle = circle;
-
-    let frame = 0;
-    const maxFrames = 80;
-    const startRadius = 30;
-    const endRadius = 220;
-
-    function animate() {
-      frame++;
-      const r = startRadius + ((endRadius - startRadius) * (frame / maxFrames));
-      circle.setRadius(r);
-      circle.setStyle({
-        opacity: 0.9 - frame / maxFrames,
-        fillOpacity: 0.7 - 0.7 * (frame / maxFrames)
-      });
-      if (frame < maxFrames) {
-        requestAnimationFrame(animate);
-      } else {
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.removeLayer(circle);
-        }
+    // Subtle pulse visualization near campus anchor
+    if (window.L && mapInstanceRef.current) {
+      if (window.__bellPulseCircle) {
+        mapInstanceRef.current.removeLayer(window.__bellPulseCircle);
         window.__bellPulseCircle = null;
       }
+      const coords = [-26.1929, 28.0305];
+      const circle = window.L.circle(coords, {
+        color: "#e6d5a8",
+        fillColor: "#fff2c9",
+        fillOpacity: 0.7,
+        radius: 30,
+        weight: 3,
+        interactive: false,
+        className: "bell-pulse-circle"
+      }).addTo(mapInstanceRef.current);
+      window.__bellPulseCircle = circle;
+
+      let frame = 0;
+      const maxFrames = 80;
+      const startRadius = 30;
+      const endRadius = 220;
+
+      function animate() {
+        frame++;
+        const r = startRadius + ((endRadius - startRadius) * (frame / maxFrames));
+        circle.setRadius(r);
+        circle.setStyle({
+          opacity: 0.9 - frame / maxFrames,
+          fillOpacity: 0.7 - 0.7 * (frame / maxFrames)
+        });
+        if (frame < maxFrames) {
+          requestAnimationFrame(animate);
+        } else {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.removeLayer(circle);
+          }
+          window.__bellPulseCircle = null;
+        }
+      }
+      animate();
     }
-    animate();
-  }
 
-  // Check geolocation 
-  if (!('geolocation' in navigator)) {
-    alert('Geolocation is not supported on this device/browser.');
-    return;
-  }
+    // Check geolocation 
+    if (!('geolocation' in navigator)) {
+      alert('Geolocation is not supported on this device/browser.');
+      return;
+    }
 
-  
-  navigator.geolocation.getCurrentPosition(
-    async (pos) => {
-      const userLat = pos.coords.latitude;
-      const userLng = pos.coords.longitude;
 
-      let anyMatched = false;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const userLat = pos.coords.latitude;
+        const userLng = pos.coords.longitude;
 
-      
-      for (const jq of journeyQuests) {
-        const prog = journeyProgress[jq.id];
-        if (!prog || !prog.accepted || prog.completed) continue;
+        let anyMatched = false;
 
-        const targetIdx = prog.currentStep; // 1 or 2
-        const target = jq.stops[targetIdx];
-        if (!target) continue;
 
-        const d = distanceMeters([userLat, userLng], [target.lat, target.lng]);
-        if (d <= (target.radius || 40)) {
-          anyMatched = true;
+        for (const jq of journeyQuests) {
+          const prog = journeyProgress[jq.id];
+          if (!prog || !prog.accepted || prog.completed) continue;
 
-          
-          setJourneyProgress((prev) => {
-            const nextStep = targetIdx + 1;
-            const completed = nextStep > 2;
-            return {
-              ...prev,
-              [jq.id]: {
-                accepted: true,
-                currentStep: completed ? 2 : nextStep,
-                completed
+          const targetIdx = prog.currentStep; // 1 or 2
+          const target = jq.stops[targetIdx];
+          if (!target) continue;
+
+          const d = distanceMeters([userLat, userLng], [target.lat, target.lng]);
+          if (d <= (target.radius || 40)) {
+            anyMatched = true;
+
+
+            setJourneyProgress((prev) => {
+              const nextStep = targetIdx + 1;
+              const completed = nextStep > 2;
+              return {
+                ...prev,
+                [jq.id]: {
+                  accepted: true,
+                  currentStep: completed ? 2 : nextStep,
+                  completed
+                }
+              };
+            });
+
+            if (targetIdx === 1) {
+              // Final riddle 
+              const nextRiddle = jq.stops[2]?.riddle || 'One last stop awaits...';
+              alert(`${jq.emoji} ${jq.name}\n\nGreat! You found Stop 2.\n\nRiddle for Final Stop:\n${nextRiddle}`);
+            } else if (targetIdx === 2) {
+              // Completed
+              alert(`${jq.emoji} ${jq.name}\n\nCongratulations! You completed the journey and earned ${jq.reward} points.`);
+              showToast('Journey quest completed!');
+
+              // Update Firestore LeaderBoardPoints
+              try {
+                const userRef = doc(db, "Users", currentUser.uid); // assumes doc ID = uid
+                await updateDoc(userRef, {
+                  LeaderBoardPoints: increment(jq.reward)
+                });
+                console.log(`Awarded ${jq.reward} points to ${currentUser.uid}`);
+              } catch (error) {
+                console.error("Failed to update LeaderBoardPoints:", error);
+                showToast("Error awarding points. Try again later.");
               }
-            };
-          });
-
-          if (targetIdx === 1) {
-            // Final riddle 
-            const nextRiddle = jq.stops[2]?.riddle || 'One last stop awaits...';
-            alert(`${jq.emoji} ${jq.name}\n\nGreat! You found Stop 2.\n\nRiddle for Final Stop:\n${nextRiddle}`);
-          } else if (targetIdx === 2) {
-            // Completed
-            alert(`${jq.emoji} ${jq.name}\n\nCongratulations! You completed the journey and earned ${jq.reward} points.`);
-            showToast('Journey quest completed!');
-
-            // Update Firestore LeaderBoardPoints
-            try {
-              const userRef = doc(db, "Users", currentUser.uid); // assumes doc ID = uid
-              await updateDoc(userRef, {
-                LeaderBoardPoints: increment(jq.reward)
-              });
-              console.log(`Awarded ${jq.reward} points to ${currentUser.uid}`);
-            } catch (error) {
-              console.error("Failed to update LeaderBoardPoints:", error);
-              showToast("Error awarding points. Try again later.");
             }
           }
         }
-      }
 
-      if (!anyMatched) {
-        alert('You are not within the required radius yet. Move closer and ring the bell again.');
-      }
-    },
-    (err) => {
-      console.error(err);
-      if (err.code === 1) {
-        alert('Location permission denied. Please allow location access to progress Journey Quests.');
-      } else {
-        alert('Unable to get your location. Try again.');
-      }
-    },
-    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-  );
-};
+        if (!anyMatched) {
+          alert('You are not within the required radius yet. Move closer and ring the bell again.');
+        }
+      },
+      (err) => {
+        console.error(err);
+        if (err.code === 1) {
+          alert('Location permission denied. Please allow location access to progress Journey Quests.');
+        } else {
+          alert('Unable to get your location. Try again.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    );
+  };
 
 
   const handleSubmission = (questId) => {
