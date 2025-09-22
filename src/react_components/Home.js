@@ -396,7 +396,9 @@ const Home = () => {
             .bindPopup(`<div class="fantasy-popup">
                           <h3>🏰 Wits University</h3>
                           <p>Your adventure begins here!</p>
-                        </div>`)
+                        </div>`, {
+              offset: [0, -30] // Move popup 50 pixels up from the marker
+            })
             .openPopup();
 
           // Add quest area highlights
@@ -885,6 +887,31 @@ const Home = () => {
               <button className="questbook-icon" onClick={handleQuestbookClick}>
                 <img src={questbookImage} alt="Questbook" />
               </button>
+              {/* Castle icon - Center on Wits */}
+              <button
+                className="castle-icon"
+                onClick={() => {
+                  if (mapInstanceRef.current) {
+                    mapInstanceRef.current.setView([-26.1929, 28.0305], 17, { animate: true });
+
+                    // Find and open the Wits University popup
+                    mapInstanceRef.current.eachLayer((layer) => {
+                      if (layer.getPopup && layer.getPopup()) {
+                        const popupContent = layer.getPopup().getContent();
+                        if (popupContent && popupContent.includes('🏰 Wits University')) {
+                          setTimeout(() => {
+                            layer.openPopup();
+                          }, 500); // Small delay to let the map animation complete
+                        }
+                      }
+                    });
+                  }
+                }}
+                aria-label="Center on Wits"
+              >
+                🏰
+              </button>
+
               {/* Bell icon */}
               <button
                 className={`bell-icon ${isBellActive ? 'playing' : ''}`}
