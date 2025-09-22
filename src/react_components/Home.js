@@ -909,7 +909,7 @@ const Home = () => {
                 }}
                 aria-label="Center on Wits"
               >
-                🏰
+                <span>🏰</span>
               </button>
 
               {/* Bell icon */}
