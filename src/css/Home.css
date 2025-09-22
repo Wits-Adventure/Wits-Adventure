@@ -516,6 +516,15 @@
   animation: spin 3s linear infinite;
 }
 
+/* Remove the animated rainbow gradient border around the map frame */
+.map-frame::before,
+.map-frame::after {
+  content: none !important;
+  animation: none !important;
+  background: none !important;
+  filter: none !important;
+}
+
 .map-frame::before {
   content: '';
   position: absolute;
