@@ -55,6 +55,7 @@ const Home = () => {
   const [isBellActive, setIsBellActive] = useState(false); // NEW: state to track bell animation
   const [toastIcon, setToastIcon] = useState('bell');
   const [userSubmissions, setUserSubmissions] = useState({}); // questId: true
+  const [bellCooldown, setBellCooldown] = useState(false); // NEW: bell cooldown state
 
 
   // ======== NEW: Journey Quests (hard-coded, scalable) ========
@@ -103,21 +104,21 @@ const Home = () => {
           {
             lat: -26.18825050226691,      //DJ
             lng: 28.024212535302684,
-            radius: 40,
+            radius: 45,
             riddle:
               "Start where steps and stones align,\nAccept to trace the hidden sign.",
           },
           {
             lat: -26.19155561824705,    //Oppenheimer Life Sciences
             lng: 28.032089513244493,
-            radius: 40,
+            radius: 45,
             riddle:
               "Where sculptures rest and murals gleam,\nFind colors born from scholar’s dream.",
           },
           {
             lat: -26.18944199729973,          //Basketball Courts
             lng: 28.030186646826653,
-            radius: 40,
+            radius: 45,
             riddle:
               "Seek a court where echoes bound,\nAnd sneakers sing upon the ground.",
           },
@@ -138,11 +139,6 @@ const Home = () => {
   const showToast = (msg, duration = 2200, iconType = 'bell') => {
     setToastMsg(msg);
     setToastIcon(iconType);
-    // flash bell for the "The bell tolls" message (or any message you prefer)
-    if (msg && msg.toLowerCase().includes('bell')) {
-      setIsBellActive(true);
-      window.setTimeout(() => setIsBellActive(false), 1400); // brief pulse
-    }
     setTimeout(() => setToastMsg(''), duration);
   };
 
@@ -325,9 +321,14 @@ const Home = () => {
         journeyId: jq.id
       }).addTo(mapInstanceRef.current);
 
+      // Check if this journey quest is accepted
+      const isAccepted = journeyProgress[jq.id]?.accepted && !journeyProgress[jq.id]?.completed;
+
       // Add badge markup for journey quests like hardcoded special quests
       const badgeHTML = `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
-      const buttonHtml = `<button id="journey-btn-${jq.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptJourneyQuest('${jq.id}')">Accept Quest</button>`;
+      const buttonHtml = isAccepted
+        ? `<button id="journey-btn-${jq.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonJourneyQuest('${jq.id}')">Abandon Quest</button>`
+        : `<button id="journey-btn-${jq.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptJourneyQuest('${jq.id}')">Accept Quest</button>`;
 
       circle.bindPopup(`
         <div class="quest-popup">
@@ -617,25 +618,44 @@ const Home = () => {
     };
   }, [currentUser, navigate, allQuests, acceptedQuests]);
 
-  // ======== NEW: Accept Journey Quest handler (global for popup button) ========
+  // ======== NEW: Accept/Abandon Journey Quest handlers (global for popup buttons) ========
   useEffect(() => {
     window.handleAcceptJourneyQuest = (journeyId) => {
       if (!currentUser) return navigate('/login');
       const jq = journeyQuests.find(j => j.id === journeyId);
       if (!jq) return;
 
-      setJourneyProgress(prev => ({
-        ...prev,
-        [journeyId]: { accepted: true, currentStep: 1, completed: false }
-      }));
+      // Abandon any other active journey quests (only one allowed at a time)
+      setJourneyProgress(prev => {
+        const newProgress = {};
+        // Reset all other journey quests to not accepted
+        Object.keys(prev).forEach(id => {
+          if (id !== journeyId) {
+            newProgress[id] = { accepted: false, currentStep: 1, completed: false };
+          }
+        });
+        // Set the selected journey quest as accepted
+        newProgress[journeyId] = { accepted: true, currentStep: 1, completed: false };
+        return newProgress;
+      });
 
       // Riddle for stop 2
       const nextRiddle = jq.stops[1]?.riddle || 'Find the next landmark!';
       alert(`${jq.emoji} ${jq.name}\n\nRiddle for Stop 2:\n${nextRiddle}`);
     };
 
+    window.handleAbandonJourneyQuest = (journeyId) => {
+      if (!currentUser) return navigate('/login');
+
+      setJourneyProgress(prev => ({
+        ...prev,
+        [journeyId]: { accepted: false, currentStep: 1, completed: false }
+      }));
+    };
+
     return () => {
       delete window.handleAcceptJourneyQuest;
+      delete window.handleAbandonJourneyQuest;
     };
   }, [currentUser, navigate, journeyQuests]);
 
@@ -660,23 +680,69 @@ const Home = () => {
         !isNaN(latitude) &&
         !isNaN(longitude)
       ) {
-        setTimeout(() => {
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.invalidateSize();
-            mapInstanceRef.current.setView([latitude, longitude], 18, { animate: true });
-
-            // Optionally, open the popup for that quest
-            const questId = location.state.focusQuest.id;
-            const questCircle = questCirclesRef.current.find(
-              c => c.options && c.options.questId === questId
-            );
-            if (questCircle) {
-              questCircle.openPopup();
-            }
+        // Wait for map and quest areas to be fully initialized
+        const focusOnQuest = () => {
+          if (!mapInstanceRef.current) {
+            setTimeout(focusOnQuest, 100);
+            return;
           }
+
+          try {
+            // Invalidate size to ensure map is properly rendered
+            mapInstanceRef.current.invalidateSize();
+
+            // Set view with longer animation for smoother transition
+            mapInstanceRef.current.setView([latitude, longitude], 18, {
+              animate: true,
+              duration: 0.8
+            });
+
+            // Wait for map movement to complete before opening popup
+            setTimeout(() => {
+              const questId = location.state.focusQuest.id;
+
+              // Find quest circle by questId
+              let questCircle = questCirclesRef.current.find(
+                c => c.options && c.options.questId === questId
+              );
+
+              // If not found by questId, try journeyId for journey quests
+              if (!questCircle) {
+                questCircle = questCirclesRef.current.find(
+                  c => c.options && c.options.journeyId === questId
+                );
+              }
+
+              if (questCircle && questCircle.openPopup) {
+                try {
+                  questCircle.openPopup();
+                } catch (error) {
+                  console.warn("Failed to open popup:", error);
+                  // Fallback: try opening after another short delay
+                  setTimeout(() => {
+                    if (questCircle && questCircle.openPopup) {
+                      try {
+                        questCircle.openPopup();
+                      } catch (e) {
+                        console.warn("Popup fallback also failed:", e);
+                      }
+                    }
+                  }, 300);
+                }
+              } else {
+                console.warn("Quest circle not found for quest:", questId);
+              }
+            }, 1000); // Wait longer for map animation to complete
+          } catch (error) {
+            console.error("Error focusing on quest:", error);
+          }
+
           // Clear the focusQuest state so it doesn't persist on refresh
           navigate(".", { replace: true, state: {} });
-        }, 200);
+        };
+
+        // Start the focus process after a short delay
+        setTimeout(focusOnQuest, 300);
       } else {
         console.warn("Invalid quest location:", location.state.focusQuest.location);
       }
@@ -688,54 +754,19 @@ const Home = () => {
 
   // ======== NEW: Bell press -> check Journey Quest progress via geolocation ========
   const handleBellPing = () => {
-    showToast("The bell tolls");
-
-    // Subtle pulse visualization near campus anchor
-    if (window.L && mapInstanceRef.current) {
-      if (window.__bellPulseCircle) {
-        mapInstanceRef.current.removeLayer(window.__bellPulseCircle);
-        window.__bellPulseCircle = null;
-      }
-      const coords = [-26.1929, 28.0305];
-      const circle = window.L.circle(coords, {
-        color: "#e6d5a8",
-        fillColor: "#fff2c9",
-        fillOpacity: 0.7,
-        radius: 30,
-        weight: 3,
-        interactive: false,
-        className: "bell-pulse-circle"
-      }).addTo(mapInstanceRef.current);
-      window.__bellPulseCircle = circle;
-
-      let frame = 0;
-      const maxFrames = 80;
-      const startRadius = 30;
-      const endRadius = 220;
-
-      function animate() {
-        frame++;
-        const r = startRadius + ((endRadius - startRadius) * (frame / maxFrames));
-        circle.setRadius(r);
-        circle.setStyle({
-          opacity: 0.9 - frame / maxFrames,
-          fillOpacity: 0.7 - 0.7 * (frame / maxFrames)
-        });
-        if (frame < maxFrames) {
-          requestAnimationFrame(animate);
-        } else {
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.removeLayer(circle);
-          }
-          window.__bellPulseCircle = null;
-        }
-      }
-      animate();
+    // Check if bell is on cooldown
+    if (bellCooldown) {
+      showToast('Bell is on cooldown. Please wait a moment.', 2000);
+      return;
     }
+
+    // Set cooldown
+    setBellCooldown(true);
+    setTimeout(() => setBellCooldown(false), 4000); // 4 second cooldown
 
     // Check geolocation 
     if (!('geolocation' in navigator)) {
-      alert('Geolocation is not supported on this device/browser.');
+      showToast('Geolocation is not supported on this device/browser.');
       return;
     }
 
@@ -744,6 +775,63 @@ const Home = () => {
       async (pos) => {
         const userLat = pos.coords.latitude;
         const userLng = pos.coords.longitude;
+        const accuracy = pos.coords.accuracy;
+
+        // Check if the GPS accuracy is good enough (within 20 meters)
+        if (accuracy > 20) {
+          showToast(`GPS accuracy is ${Math.round(accuracy)}m. For best results, go outside or near a window.`, 4000);
+          // Still continue with the location we have
+        }
+
+        console.log(`User location: ${userLat}, ${userLng} (accuracy: ${Math.round(accuracy)}m)`);
+
+        // Subtle pulse visualization from user's location
+        if (window.L && mapInstanceRef.current) {
+          if (window.__bellPulseCircle) {
+            mapInstanceRef.current.removeLayer(window.__bellPulseCircle);
+            window.__bellPulseCircle = null;
+          }
+          const coords = [userLat, userLng];
+          const circle = window.L.circle(coords, {
+            color: "#FFD700", // Bright gold color
+            fillColor: "#FFFF99",
+            fillOpacity: 0.8,
+            radius: 0,
+            weight: 4,
+            interactive: false,
+            className: "bell-pulse-circle"
+          }).addTo(mapInstanceRef.current);
+          window.__bellPulseCircle = circle;
+
+          let frame = 0;
+          const maxFrames = 80;
+          const startRadius = 0
+          const endRadius = 45
+
+          function animate() {
+            frame++;
+            const r = startRadius + ((endRadius - startRadius) * (frame / maxFrames));
+            circle.setRadius(r);
+            circle.setStyle({
+              opacity: 0.9 - frame / maxFrames,
+              fillOpacity: 0.7 - 0.7 * (frame / maxFrames)
+            });
+            if (frame < maxFrames) {
+              requestAnimationFrame(animate);
+            } else {
+              if (mapInstanceRef.current) {
+                mapInstanceRef.current.removeLayer(circle);
+              }
+              window.__bellPulseCircle = null;
+            }
+          }
+          animate();
+        }
+
+        // Center the map on user's location
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setView([userLat, userLng], 18, { animate: true });
+        }
 
         let anyMatched = false;
 
@@ -757,6 +845,8 @@ const Home = () => {
           if (!target) continue;
 
           const d = distanceMeters([userLat, userLng], [target.lat, target.lng]);
+          console.log(`Journey Quest ${jq.name}: Distance to target = ${Math.round(d)}m, Required = ${target.radius}m`);
+
           if (d <= (target.radius || 40)) {
             anyMatched = true;
 
@@ -799,18 +889,24 @@ const Home = () => {
         }
 
         if (!anyMatched) {
-          alert('You are not within the required radius yet. Move closer and ring the bell again.');
+          showToast('The bell rings, but theres no response...', 5000);
         }
       },
       (err) => {
         console.error(err);
         if (err.code === 1) {
-          alert('Location permission denied. Please allow location access to progress Journey Quests.');
+          showToast('Location permission denied. Please allow location access to progress Journey Quests.');
         } else {
-          alert('Unable to get your location. Try again.');
+          showToast('Unable to get your location. Try again.');
         }
       },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      {
+        enableHighAccuracy: true,
+        timeout: 25000,
+        maximumAge: 0,
+        // Force GPS to get the most accurate reading possible
+        desiredAccuracy: 10 // Request accuracy within 10 meters
+      }
     );
   };
 
@@ -923,7 +1019,7 @@ const Home = () => {
 
               {/* Bell icon */}
               <button
-                className={`bell-icon ${isBellActive ? 'playing' : ''}`}
+                className={`bell-icon ${isBellActive ? 'playing' : ''} ${bellCooldown ? 'cooldown' : ''}`}
                 onClick={handleBellPing}
                 aria-label="Bell"
               >
