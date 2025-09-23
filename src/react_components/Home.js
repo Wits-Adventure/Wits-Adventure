@@ -766,6 +766,15 @@ const Home = () => {
       async (pos) => {
         const userLat = pos.coords.latitude;
         const userLng = pos.coords.longitude;
+        const accuracy = pos.coords.accuracy;
+
+        // Check if the GPS accuracy is good enough (within 20 meters)
+        if (accuracy > 20) {
+          showToast(`GPS accuracy is ${Math.round(accuracy)}m. For best results, go outside or near a window.`, 4000);
+          // Still continue with the location we have
+        }
+
+        console.log(`User location: ${userLat}, ${userLng} (accuracy: ${Math.round(accuracy)}m)`);
 
         // Subtle pulse visualization from user's location
         if (window.L && mapInstanceRef.current) {
@@ -815,6 +824,9 @@ const Home = () => {
           mapInstanceRef.current.setView([userLat, userLng], 18, { animate: true });
         }
 
+        // Wait longer for GPS to stabilize and get more accurate readings
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
         let anyMatched = false;
 
 
@@ -827,6 +839,8 @@ const Home = () => {
           if (!target) continue;
 
           const d = distanceMeters([userLat, userLng], [target.lat, target.lng]);
+          console.log(`Journey Quest ${jq.name}: Distance to target = ${Math.round(d)}m, Required = ${target.radius}m`);
+
           if (d <= (target.radius || 40)) {
             anyMatched = true;
 
@@ -880,7 +894,13 @@ const Home = () => {
           showToast('Unable to get your location. Try again.');
         }
       },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      {
+        enableHighAccuracy: true,
+        timeout: 25000,
+        maximumAge: 0,
+        // Force GPS to get the most accurate reading possible
+        desiredAccuracy: 10 // Request accuracy within 10 meters
+      }
     );
   };
 
