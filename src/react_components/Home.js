@@ -15,6 +15,7 @@ import musicImage from '../media/music.png'; import { useMusic } from '../contex
 import tutorialImage from '../media/tutorial.png'; // Replace with your actual image path or use an emoji if no image
 import { doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "../firebase/firebase"; // adjust path if your firebase.js file lives elsewhere
+import castleImage from '../media/castle.png'; // NEW: castle icon image
 
 function distanceMeters(a, b) {
   try {
@@ -359,7 +360,15 @@ const Home = () => {
 
       questCirclesRef.current.push(circle);
     });
-  }, [allQuests, mapInstanceRef, questCirclesRef, currentUser, acceptedQuests]);
+  }, [
+    allQuests,
+    mapInstanceRef,
+    questCirclesRef,
+    currentUser,
+    acceptedQuests,
+    userSubmissions,   // added
+    journeyQuests      // added
+  ]);
 
   // Map and header effects remain the same
   useEffect(() => {
@@ -901,7 +910,7 @@ const Home = () => {
                         if (popupContent && popupContent.includes('🏰 Wits University')) {
                           setTimeout(() => {
                             layer.openPopup();
-                          }, 500); // Small delay to let the map animation complete
+                          }, 500);
                         }
                       }
                     });
@@ -909,7 +918,7 @@ const Home = () => {
                 }}
                 aria-label="Center on Wits"
               >
-                <span>🏰</span>
+                <img src={castleImage} alt="Center on Wits" />
               </button>
 
               {/* Bell icon */}
