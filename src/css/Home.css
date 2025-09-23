@@ -1436,6 +1436,18 @@
   background: rgba(212, 160, 23, 0.04);
 }
 
+/* Bell cooldown state */
+.bell-icon.cooldown {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.7);
+  pointer-events: none;
+}
+
+.bell-icon.cooldown img {
+  opacity: 0.5;
+}
+
 /* make the bell image pop when active */
 .bell-icon.playing img {
   filter: drop-shadow(0 6px 12px rgba(212, 160, 23, 0.18));
