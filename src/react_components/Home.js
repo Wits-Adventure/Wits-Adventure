@@ -137,11 +137,6 @@ const Home = () => {
   const showToast = (msg, duration = 2200, iconType = 'bell') => {
     setToastMsg(msg);
     setToastIcon(iconType);
-    // flash bell for the "The bell tolls" message (or any message you prefer)
-    if (msg && msg.toLowerCase().includes('bell')) {
-      setIsBellActive(true);
-      window.setTimeout(() => setIsBellActive(false), 1400); // brief pulse
-    }
     setTimeout(() => setToastMsg(''), duration);
   };
 
@@ -679,8 +674,6 @@ const Home = () => {
 
   // ======== NEW: Bell press -> check Journey Quest progress via geolocation ========
   const handleBellPing = () => {
-    showToast("The bell tolls");
-
     // Subtle pulse visualization near campus anchor
     if (window.L && mapInstanceRef.current) {
       if (window.__bellPulseCircle) {
@@ -726,7 +719,7 @@ const Home = () => {
 
     // Check geolocation 
     if (!('geolocation' in navigator)) {
-      alert('Geolocation is not supported on this device/browser.');
+      showToast('Geolocation is not supported on this device/browser.');
       return;
     }
 
@@ -735,6 +728,11 @@ const Home = () => {
       async (pos) => {
         const userLat = pos.coords.latitude;
         const userLng = pos.coords.longitude;
+
+        // Center the map on user's location
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setView([userLat, userLng], 18, { animate: true });
+        }
 
         let anyMatched = false;
 
@@ -790,15 +788,15 @@ const Home = () => {
         }
 
         if (!anyMatched) {
-          alert('You are not within the required radius yet. Move closer and ring the bell again.');
+          showToast('You are not within the required radius yet. Move closer and ring the bell again.', 5000);
         }
       },
       (err) => {
         console.error(err);
         if (err.code === 1) {
-          alert('Location permission denied. Please allow location access to progress Journey Quests.');
+          showToast('Location permission denied. Please allow location access to progress Journey Quests.');
         } else {
-          alert('Unable to get your location. Try again.');
+          showToast('Unable to get your location. Try again.');
         }
       },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
