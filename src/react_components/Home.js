@@ -824,9 +824,6 @@ const Home = () => {
           mapInstanceRef.current.setView([userLat, userLng], 18, { animate: true });
         }
 
-        // Wait longer for GPS to stabilize and get more accurate readings
-        await new Promise(resolve => setTimeout(resolve, 3000));
-
         let anyMatched = false;
 
 
