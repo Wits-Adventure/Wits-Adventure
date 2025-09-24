@@ -16,6 +16,12 @@ module.exports = {
      'src/react_components/signup.js',
       'src/react_components/CompleteQuestForm.js',
       'src/react_components/Home.js',
+      'src/react_components/TutorialPage.js',
+      'src/react_components/success.js',
+      'src/react_components/ProfilePage.js',
+
+
+
 
    
     
