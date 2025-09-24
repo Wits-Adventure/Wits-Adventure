@@ -360,6 +360,98 @@ describe('QuestManager', () => {
     });
   });
 
+  test('handles quest with location for view on map', () => {
+    const questWithLocation = {
+      ...mockQuest,
+      location: { _latitude: -26.1935, _longitude: 28.0298 }
+    };
+    render(<QuestManager quest={questWithLocation} isOpen={true} />);
+    
+    fireEvent.click(screen.getByText('View On Map'));
+    
+    expect(mockNavigate).toHaveBeenCalledWith('/', {
+      state: {
+        focusQuest: {
+          ...questWithLocation,
+          location: { latitude: -26.1935, longitude: 28.0298 }
+        }
+      }
+    });
+  });
+
+  test('handles quest with standard location format', () => {
+    const questWithStandardLocation = {
+      ...mockQuest,
+      location: { latitude: -26.1935, longitude: 28.0298 }
+    };
+    render(<QuestManager quest={questWithStandardLocation} isOpen={true} />);
+    
+    fireEvent.click(screen.getByText('View On Map'));
+    
+    expect(mockNavigate).toHaveBeenCalledWith('/', {
+      state: {
+        focusQuest: questWithStandardLocation
+      }
+    });
+  });
+
+  test('handles quest with no location', () => {
+    const questWithoutLocation = {
+      ...mockQuest,
+      location: null
+    };
+    render(<QuestManager quest={questWithoutLocation} isOpen={true} />);
+    
+    fireEvent.click(screen.getByText('View On Map'));
+    
+    expect(mockNavigate).toHaveBeenCalledWith('/', {
+      state: {
+        focusQuest: {
+          ...questWithoutLocation,
+          location: null
+        }
+      }
+    });
+  });
+
+  test('clamps current image index when submissions change', async () => {
+    const { rerender } = render(<QuestManager quest={mockQuest} isOpen={true} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('1 / 2')).toBeInTheDocument();
+    });
+    
+    // Navigate to second image
+    fireEvent.click(screen.getByLabelText('Next submission'));
+    expect(screen.getByText('2 / 2')).toBeInTheDocument();
+    
+    // Change submissions to single item
+    fetchQuestSubmissions.mockResolvedValue([mockSubmissions[0]]);
+    rerender(<QuestManager quest={mockQuest} isOpen={true} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('1 / 1')).toBeInTheDocument();
+    });
+  });
+
+  test('resets state when modal closes and reopens', async () => {
+    const { rerender } = render(<QuestManager quest={mockQuest} isOpen={true} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Adventure Seeker')).toBeInTheDocument();
+    });
+    
+    // Close modal
+    rerender(<QuestManager quest={mockQuest} isOpen={false} />);
+    
+    // Reopen modal
+    rerender(<QuestManager quest={mockQuest} isOpen={true} />);
+    
+    await waitFor(() => {
+      expect(fetchQuestSubmissions).toHaveBeenCalledTimes(2);
+    });
+  });
+
   test('shows image placeholder when image fails to load', async () => {
     render(<QuestManager quest={mockQuest} isOpen={true} />);
     

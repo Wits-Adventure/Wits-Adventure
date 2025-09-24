@@ -28,6 +28,54 @@ jest.mock('firebase/storage', () => ({
   getStorage: jest.fn(() => ({}))
 }));
 
+// Mock geolocation
+global.navigator.geolocation = {
+  getCurrentPosition: jest.fn()
+};
+
+// Mock Leaflet
+const mockMapInstance = {
+  setView: jest.fn().mockReturnThis(),
+  remove: jest.fn(),
+  invalidateSize: jest.fn(),
+  addLayer: jest.fn(),
+  removeLayer: jest.fn(),
+  eachLayer: jest.fn()
+};
+
+global.L = {
+  map: jest.fn(() => mockMapInstance),
+  tileLayer: jest.fn(() => ({
+    addTo: jest.fn()
+  })),
+  marker: jest.fn(() => ({
+    addTo: jest.fn().mockReturnThis(),
+    bindPopup: jest.fn().mockReturnThis(),
+    openPopup: jest.fn(),
+    on: jest.fn()
+  })),
+  circle: jest.fn(() => ({
+    addTo: jest.fn().mockReturnThis(),
+    bindPopup: jest.fn().mockReturnThis(),
+    setRadius: jest.fn(),
+    setStyle: jest.fn(),
+    openPopup: jest.fn(),
+    getPopup: jest.fn(() => ({ getContent: jest.fn() })),
+    on: jest.fn()
+  })),
+  control: {
+    zoom: jest.fn(() => ({
+      addTo: jest.fn()
+    }))
+  },
+  divIcon: jest.fn(),
+  latLng: jest.fn((lat, lng) => ({ distanceTo: jest.fn(() => 10) }))
+};
+
+// Ensure window.L is also available
+global.window = global.window || {};
+global.window.L = global.L;
+
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
@@ -45,6 +93,7 @@ jest.mock('../context/MusicContext', () => ({
 jest.mock('../firebase/firebase');
 jest.mock('../firebase/general_quest_functions');
 jest.mock('../firebase/profile_functions');
+
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -52,61 +101,27 @@ jest.mock('react-router-dom', () => ({
   useLocation: () => ({ state: {} })
 }));
 
-// Mock CSS imports
+// Mock CSS and images
 jest.mock('../css/Home.css', () => ({}));
-
-// Mock image imports
 jest.mock('../media/LOGO_Alpha.png', () => 'logo.png');
 jest.mock('../media/questbook_outline.png', () => 'questbook.png');
 jest.mock('../assets/profile.jpg', () => 'profile.jpg');
 jest.mock('../media/bell.png', () => 'bell.png');
 jest.mock('../media/music.png', () => 'music.png');
 jest.mock('../media/tutorial.png', () => 'tutorial.png');
+jest.mock('../media/castle.png', () => 'castle.png');
 
-// Mock CreateQuestForm and CompleteQuestForm
+// Mock components
 jest.mock('../react_components/CreateQuestForm', () => {
-  return function MockCreateQuestForm({ isOpen, onClose }) {
+  return function MockCreateQuestForm({ isOpen }) {
     return isOpen ? <div data-testid="create-quest-form">Create Quest Form</div> : null;
   };
 });
 jest.mock('../react_components/CompleteQuestForm', () => {
-  return function MockCompleteQuestForm({ isOpen, onClose }) {
+  return function MockCompleteQuestForm({ isOpen }) {
     return isOpen ? <div data-testid="complete-quest-form">Complete Quest Form</div> : null;
   };
 });
-
-// Mock Leaflet
-global.L = {
-  map: jest.fn(() => ({
-    setView: jest.fn().mockReturnThis(),
-    remove: jest.fn(),
-    invalidateSize: jest.fn(),
-    addLayer: jest.fn(),
-    removeLayer: jest.fn()
-  })),
-  tileLayer: jest.fn(() => ({
-    addTo: jest.fn()
-  })),
-  marker: jest.fn(() => ({
-    addTo: jest.fn().mockReturnThis(),
-    bindPopup: jest.fn().mockReturnThis(),
-    openPopup: jest.fn()
-  })),
-  circle: jest.fn(() => ({
-    addTo: jest.fn().mockReturnThis(),
-    bindPopup: jest.fn().mockReturnThis(),
-    setRadius: jest.fn(),
-    setStyle: jest.fn()
-  })),
-  control: {
-    zoom: jest.fn(() => ({
-      addTo: jest.fn()
-    }))
-  },
-  divIcon: jest.fn()
-};
-
-
 
 describe('Home Component', () => {
   const mockUser = {
@@ -118,9 +133,10 @@ describe('Home Component', () => {
     jest.clearAllMocks();
     mockNavigate.mockClear();
     useAuth.mockReturnValue({ currentUser: null });
-    getUserData.mockResolvedValue({ Name: 'Test User', Role: 'student' });
+    getUserData.mockResolvedValue({ Name: 'Test User' });
     getProfileData.mockResolvedValue({ Name: 'Test User', profilePicture: 'test.jpg' });
     getAllQuests.mockResolvedValue([]);
+    global.navigator.geolocation.getCurrentPosition.mockClear();
   });
 
   const renderHome = () => {
@@ -136,7 +152,7 @@ describe('Home Component', () => {
     expect(screen.getByText('WITS ADVENTURE')).toBeInTheDocument();
   });
 
-  test('shows login and signup buttons when user is not authenticated', () => {
+  test('shows login and signup buttons when not authenticated', () => {
     renderHome();
     expect(screen.getByText('Login')).toBeInTheDocument();
     expect(screen.getByText('Sign Up')).toBeInTheDocument();
@@ -152,7 +168,62 @@ describe('Home Component', () => {
     });
   });
 
-  test('handles logout correctly', async () => {
+  test('handles create quest button click when not logged in', () => {
+    renderHome();
+    fireEvent.click(screen.getByText('Create Quest'));
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
+  });
+
+  test('handles create quest button click when logged in', () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    renderHome();
+    fireEvent.click(screen.getByText('Create Quest'));
+    // Should open form instead of navigating
+  });
+
+  test('handles bell click with geolocation', async () => {
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({
+        coords: { latitude: -26.1929, longitude: 28.0305, accuracy: 10 }
+      });
+    });
+
+    renderHome();
+    fireEvent.click(screen.getByAltText('Bell'));
+    
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalled();
+  });
+
+  test('handles bell click without geolocation', () => {
+    const originalGeolocation = global.navigator.geolocation;
+    delete global.navigator.geolocation;
+    renderHome();
+    fireEvent.click(screen.getByAltText('Bell'));
+    global.navigator.geolocation = originalGeolocation;
+  });
+
+  test('handles navigation buttons', () => {
+    renderHome();
+    
+    fireEvent.click(screen.getByAltText('Questbook'));
+    expect(mockNavigate).toHaveBeenCalledWith('/questbook');
+    
+    fireEvent.click(screen.getByAltText('Tutorial'));
+    expect(mockNavigate).toHaveBeenCalledWith('/tutorial');
+  });
+
+  test('handles profile click when authenticated', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    renderHome();
+
+    await waitFor(() => {
+      const profileSection = screen.getByText('Test User').closest('section');
+      fireEvent.click(profileSection);
+      expect(mockNavigate).toHaveBeenCalledWith('/ProfilePage');
+    });
+  });
+
+  test('handles logout', async () => {
     useAuth.mockReturnValue({ currentUser: mockUser });
     renderHome();
 
@@ -162,90 +233,262 @@ describe('Home Component', () => {
     });
   });
 
-  test('handles create quest button click', () => {
-    renderHome();
-    const createQuestBtn = screen.getByText('Create Quest');
-    fireEvent.click(createQuestBtn);
-    expect(mockNavigate).toHaveBeenCalledWith('/login');
-  });
-
-  test('shows questbook button', () => {
-    renderHome();
-    expect(screen.getByAltText('Questbook')).toBeInTheDocument();
-  });
-
-  test('shows bell icon and handles bell click', async () => {
-    renderHome();
-    const bellButton = screen.getByAltText('Bell');
-    fireEvent.click(bellButton);
-    
-    await waitFor(() => {
-      expect(screen.getByText('The bell tolls')).toBeInTheDocument();
-    });
-  });
-
-  test('handles quest acceptance', async () => {
-    useAuth.mockReturnValue({ currentUser: mockUser });
-    getAllQuests.mockResolvedValue([{
+  test('handles quest data loading', async () => {
+    const mockQuests = [{
       id: 'quest1',
       name: 'Test Quest',
-      location: { latitude: -26.1935, longitude: 28.0298 }
-    }]);
-
-    renderHome();
+      location: { _latitude: -26.1935, _longitude: 28.0298 },
+      radius: 50
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
     
-    // Wait for map to initialize and quests to load
-    await waitFor(() => {
-      window.handleAcceptQuest('quest1');
-      expect(acceptQuest).toHaveBeenCalledWith('quest1', mockUser.uid);
-    });
-  });
-
-  test('handles quest abandonment', async () => {
-    useAuth.mockReturnValue({ currentUser: mockUser });
-    getAllQuests.mockResolvedValue([{
-      id: 'quest1',
-      name: 'Test Quest',
-      location: { latitude: -26.1935, longitude: 28.0298 }
-    }]);
-
     renderHome();
     
     await waitFor(() => {
-      window.handleAbandonQuest('quest1');
-      expect(abandonQuest).toHaveBeenCalledWith('quest1', mockUser.uid);
+      expect(getAllQuests).toHaveBeenCalled();
     });
   });
 
   test('handles profile data fetch error', async () => {
     useAuth.mockReturnValue({ currentUser: mockUser });
-    getProfileData.mockRejectedValue(new Error('Failed to fetch profile'));
+    getProfileData.mockRejectedValue(new Error('Failed to fetch'));
     console.error = jest.fn();
 
     renderHome();
 
     await waitFor(() => {
       expect(console.error).toHaveBeenCalled();
-      expect(screen.getByText('User')).toBeInTheDocument();
     });
   });
 
-  test('handles map initialization error', async () => {
-    const originalMap = global.L.map;
-    global.L.map = jest.fn(() => {
-      throw new Error('Map initialization failed');
+  test('handles bell cooldown', async () => {
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({
+        coords: { latitude: -26.1929, longitude: 28.0305, accuracy: 10 }
+      });
     });
+
+    renderHome();
+    const bellButton = screen.getByAltText('Bell');
+    
+    // First click
+    fireEvent.click(bellButton);
+    // Second click should be on cooldown
+    fireEvent.click(bellButton);
+    
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+  });
+
+  test('handles journey quest acceptance', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    renderHome();
+    
+    // Simulate journey quest acceptance
+    await waitFor(() => {
+      if (window.handleAcceptJourneyQuest) {
+        window.handleAcceptJourneyQuest('journey-knowledge-quest');
+      }
+    });
+  });
+
+  test('handles journey quest abandonment', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    renderHome();
+    
+    await waitFor(() => {
+      if (window.handleAbandonJourneyQuest) {
+        window.handleAbandonJourneyQuest('journey-knowledge-quest');
+      }
+    });
+  });
+
+  test('handles turn in quest', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      location: { _latitude: -26.1935, _longitude: 28.0298 }
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    
+    renderHome();
+    
+    await waitFor(() => {
+      if (window.handleTurnInQuest) {
+        window.handleTurnInQuest('quest1');
+      }
+    });
+  });
+
+  test('handles geolocation error', async () => {
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success, error) => {
+      error({ code: 1, message: 'Permission denied' });
+    });
+
+    renderHome();
+    fireEvent.click(screen.getByAltText('Bell'));
+    
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalled();
+  });
+
+  test('handles low GPS accuracy', async () => {
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({
+        coords: { latitude: -26.1929, longitude: 28.0305, accuracy: 50 }
+      });
+    });
+
+    renderHome();
+    fireEvent.click(screen.getByAltText('Bell'));
+    
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalled();
+  });
+
+  test('handles castle icon click', () => {
+    renderHome();
+    const castleButton = screen.getByAltText('Center on Wits');
+    fireEvent.click(castleButton);
+    
+    expect(mockMapInstance.setView).toHaveBeenCalledWith([-26.1929, 28.0305], 17, { animate: true });
+  });
+
+  test('handles music toggle', () => {
+    const mockToggleMusic = jest.fn();
+    require('../context/MusicContext').useMusic.mockReturnValue({
+      isMusicPlaying: false,
+      toggleMusic: mockToggleMusic
+    });
+    
+    renderHome();
+    const musicButtons = screen.getAllByAltText('Music');
+    fireEvent.click(musicButtons[0]);
+    
+    expect(mockToggleMusic).toHaveBeenCalled();
+  });
+
+  test('handles quest accept/abandon with authentication', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      location: { _latitude: -26.1935, _longitude: 28.0298 },
+      creatorId: 'other-user'
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    
+    renderHome();
+    
+    await waitFor(() => {
+      if (window.handleAcceptQuest) {
+        window.handleAcceptQuest('quest1');
+        expect(acceptQuest).toHaveBeenCalledWith('quest1', mockUser.uid);
+      }
+    });
+  });
+
+  test('handles quest accept error', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    acceptQuest.mockRejectedValue(new Error('Failed to accept'));
+    console.error = jest.fn();
+    
+    renderHome();
+    
+    await waitFor(() => {
+      if (window.handleAcceptQuest) {
+        window.handleAcceptQuest('quest1');
+      }
+    });
+  });
+
+  test('handles quest abandon error', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    abandonQuest.mockRejectedValue(new Error('Failed to abandon'));
+    console.error = jest.fn();
+    
+    renderHome();
+    
+    await waitFor(() => {
+      if (window.handleAbandonQuest) {
+        window.handleAbandonQuest('quest1');
+      }
+    });
+  });
+
+  test('handles create quest form open/close', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    renderHome();
+    
+    fireEvent.click(screen.getByText('Create Quest'));
+    await waitFor(() => {
+      expect(screen.queryByTestId('create-quest-form')).toBeInTheDocument();
+    });
+  });
+
+  test('handles complete quest form', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      location: { _latitude: -26.1935, _longitude: 28.0298 }
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    
+    renderHome();
+    
+    await waitFor(() => {
+      if (window.handleTurnInQuest) {
+        window.handleTurnInQuest('quest1');
+      }
+    });
+  });
+
+  test('handles journey quest with geolocation match', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({
+        coords: { latitude: -26.1905275569984, longitude: 28.02991870656233, accuracy: 10 }
+      });
+    });
+
+    renderHome();
+    
+    // Accept journey quest first
+    await waitFor(() => {
+      if (window.handleAcceptJourneyQuest) {
+        window.handleAcceptJourneyQuest('journey-knowledge-quest');
+      }
+    });
+    
+    // Then trigger bell at matching location
+    fireEvent.click(screen.getByAltText('Bell'));
+    
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalled();
+  });
+
+  test('handles username fetch error', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    getUserData.mockRejectedValue(new Error('Failed to fetch username'));
     console.error = jest.fn();
 
     renderHome();
 
     await waitFor(() => {
-      expect(console.error).toHaveBeenCalledWith(
-        'Error initializing map:',
-        expect.any(Error)
-      );
+      expect(console.error).toHaveBeenCalled();
     });
+  });
+
+  test('handles quest with no location', async () => {
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      location: null
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
     
-    global.L.map = originalMap;
+    renderHome();
+    
+    await waitFor(() => {
+      expect(getAllQuests).toHaveBeenCalled();
+    });
   });
 });

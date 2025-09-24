@@ -1,12 +1,14 @@
-// Home.test.js
-import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { BrowserRouter, MemoryRouter } from 'react-router-dom';
-import Home from './Home';
-import { useAuth } from '../context/AuthContext';
-import { useMusic } from '../context/MusicContext';
-import { getUserData, logout } from '../firebase/firebase';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import '../css/Home.css';
+import logoImage from '../media/LOGO_Alpha.png';
+import questbookImage from '../media/questbook_outline.png';
+import profilePic from '../assets/profile.jpg'; // added: use same default pfp as ProfilePage
+import { useNavigate, useLocation } from 'react-router-dom';
+import { logout, getUserData } from '../firebase/firebase'; // Import getUserData
+import { useAuth } from '../context/AuthContext'; // Import useAuth hook
 import { getAllQuests, acceptQuest, abandonQuest } from '../firebase/general_quest_functions';
+import CreateQuestForm from './CreateQuestForm';
+import CompleteQuestForm from './CompleteQuestForm';
 import { getProfileData } from '../firebase/profile_functions';
 import bellImage from '../media/bell.png';
 import musicImage from '../media/music.png'; import { useMusic } from '../context/MusicContext';
@@ -279,23 +281,29 @@ const Home = () => {
         handleQuestPopupClose();
       });
 
-      expect(screen.getByText('WITS ADVENTURE')).toBeInTheDocument();
-      expect(screen.getByText('Test User')).toBeInTheDocument();
-      expect(screen.getByText('Logout')).toBeInTheDocument();
-      expect(screen.getByText('Create Quest')).toBeInTheDocument();
-    });
+      // Emoji marker in the center
+      const emojiIcon = window.L.divIcon({
+        className: 'quest-emoji-icon',
+        html: `<div class="quest-emoji">${titleEmoji}</div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+      const emojiMarker = window.L.marker([latitude, longitude], { icon: emojiIcon }).addTo(mapInstanceRef.current);
+      emojiMarker.bindPopup(questCircle.getPopup());
+      questCircle._emojiMarker = emojiMarker;
 
-    test('renders authentication buttons when not authenticated', async () => {
-      mockUseAuth.currentUser = null;
-      useAuth.mockReturnValue(mockUseAuth);
-
-      await act(async () => {
-        renderHome();
+      // Click handling for emoji marker
+      emojiMarker.on('click', (e) => {
+        if (window.__questPlacing) return;
+        questCircle.openPopup();
+        if (e.originalEvent) {
+          e.originalEvent.stopPropagation();
+          e.originalEvent.preventDefault();
+        }
       });
 
-      expect(screen.getByText('Sign Up')).toBeInTheDocument();
-      expect(screen.getByText('Login')).toBeInTheDocument();
-      expect(screen.queryByText('Logout')).not.toBeInTheDocument();
+      // Store reference for cleanup
+      questCirclesRef.current.push(questCircle);
     });
 
     // ======== NEW: render only the FIRST STOP for each Journey Quest ========
@@ -541,64 +549,60 @@ const Home = () => {
         btn.onclick = () => window.handleAcceptQuest(questId);
       }
 
-      await act(async () => {
-        await global.window.handleAcceptQuest('quest-1');
-      });
+      try {
+        await abandonQuest(questId, currentUser.uid);
+      } catch (error) {
+        setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
+        if (btn) {
+          btn.textContent = "Abandon Quest";
+          btn.className = "quest-popup-btn abandon-quest-btn";
+          btn.onclick = () => window.handleAbandonQuest(questId);
+        }
+        alert('Failed to abandon quest.');
+        console.error(error);
+      }
+    };
 
-      expect(mockAcceptQuest).toHaveBeenCalledWith('quest-1', 'test-user-id');
-    });
+    return () => {
+      delete window.handleAcceptQuest;
+      delete window.handleAbandonQuest;
+    };
+  }, [currentUser, navigate]);
+*/
 
-    test('handles quest abandonment', async () => {
-      await act(async () => {
-        renderHome();
-      });
+  const handleCreateQuestClick = () => {
+    if (!currentUser) return navigate('/login');
+    setShowCreateForm(true);
+  };
 
-      await waitFor(() => {
-        expect(global.window.handleAbandonQuest).toBeDefined();
-      });
+  // Accept/Abandon normal quests
+  useEffect(() => {
+    window.handleAcceptQuest = async (questId) => {
+      if (!currentUser) return navigate('/login');
+      const quest = allQuests.find(q => q.id === questId);
+      if (!quest) return;
 
-      await act(async () => {
-        await global.window.handleAbandonQuest('quest-1');
-      });
+      setActiveQuest(quest);
 
-      expect(mockAbandonQuest).toHaveBeenCalledWith('quest-1', 'test-user-id');
-    });
+      setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
 
-    test('handles quest acceptance error', async () => {
-      mockAcceptQuest.mockRejectedValue(new Error('Accept failed'));
-      global.alert = jest.fn();
+      try { await acceptQuest(questId, currentUser.uid); }
+      catch (error) {
+        setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
+        alert('Failed to accept quest.');
+        console.error(error);
+      }
+    };
 
-      await act(async () => {
-        renderHome();
-      });
-
-      await waitFor(() => {
-        expect(global.window.handleAcceptQuest).toBeDefined();
-      });
-
-      await act(async () => {
-        await global.window.handleAcceptQuest('quest-1');
-      });
-
-      expect(global.alert).toHaveBeenCalledWith('Failed to accept quest.');
-    });
-
-    test('opens quest turn-in form', async () => {
-      await act(async () => {
-        renderHome();
-      });
-
-      await waitFor(() => {
-        expect(global.window.handleTurnInQuest).toBeDefined();
-      });
-
-      act(() => {
-        global.window.handleTurnInQuest('quest-1');
-      });
-
-      expect(screen.getByTestId('complete-quest-form')).toBeInTheDocument();
-    });
-  });
+    window.handleAbandonQuest = async (questId) => {
+      setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
+      try { await abandonQuest(questId, currentUser.uid); }
+      catch (error) {
+        setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
+        alert('Failed to abandon quest.');
+        console.error(error);
+      }
+    };
 
     window.handleTurnInQuest = (questId) => {
       const quest = allQuests.find(q => q.id === questId);
