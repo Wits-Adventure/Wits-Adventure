@@ -893,6 +893,16 @@
   letter-spacing: 1px;
 }
 
+/* Quest description under the title (same style family as popup text) */
+.quest-popup .quest-desc {
+  font-family: 'Cinzel', serif;
+  color: #8B4513;
+  font-size: 0.85rem;
+  margin: 6px 0 8px;
+  text-align: center;
+  white-space: pre-wrap; /* keep line breaks from textarea */
+}
+
 /* Fantasy Popup (for Wits University marker) */
 .fantasy-popup h3 {
   font-family: 'Cinzel Decorative', serif !important;
@@ -1061,9 +1071,14 @@
   letter-spacing: 1px;
 }
 
-.quest-popup p {
-  font-size: 0.8rem;
-  margin: 6px 0;
+/* Quest description under the title (same style family as popup text) */
+.quest-popup .quest-desc {
+  font-family: 'Cinzel', serif;
+  color: #8B4513;
+  font-size: 0.85rem;
+  margin: 6px 0 8px;
+  text-align: center;
+  white-space: pre-wrap; /* keep line breaks from textarea */
 }
 
 .quest-image-container {

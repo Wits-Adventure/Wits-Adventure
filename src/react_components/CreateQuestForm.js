@@ -6,6 +6,7 @@ import { saveQuestToFirestore } from '../firebase/general_quest_functions';
 
 export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, questCirclesRef }) {
   const [name, setName] = useState('');
+  const [description, setDescription] = useState(''); // NEW: description state
   const [radius, setRadius] = useState(45);
   const [questImage, setQuestImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -169,6 +170,7 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
       const popupHtml = `
         <div class="quest-popup">
           <h3>${safeName}</h3>
+          <p class="quest-desc">${escapeHtml((description && description.trim()) ? description : 'Placeholder Description')}</p>
           <div class="quest-image-container">
             <img src="${imagePreview}" alt="Quest Image" class="quest-popup-image" />
           </div>
@@ -199,6 +201,7 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
       // Save quest to Firestore
       const questData = {
         name: baseName || 'Unnamed Quest',
+        description, // NEW
         radius: radius,
         reward: radius,
         lat: circleCenterLatLng.lat,
@@ -233,6 +236,7 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
   const handleCancel = () => {
     if (following) stopFollowing();
     setName('');
+    setDescription(''); // NEW
     setRadius(45);
     setQuestImage(null);
     setImagePreview(null);
@@ -285,6 +289,18 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
               placeholder="Enter quest name"
               maxLength={60}
               autoFocus
+            />
+          </label>
+
+          <label className="cq-label">
+            Description
+            <textarea
+              className="cq-input cq-textarea" // match title input styles
+              draggable={false}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Briefly describe the quest..."
+              rows={3}
             />
           </label>
 

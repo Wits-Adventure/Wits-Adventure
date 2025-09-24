@@ -36,6 +36,14 @@ function distanceMeters(a, b) {
   return R * c;
 }
 
+// Add: simple HTML escaper for safe popup rendering
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
 const Home = () => {
   const { currentUser } = useAuth();
   const [username, setUsername] = useState('');
@@ -268,9 +276,13 @@ const Home = () => {
 `
           : `<button id="quest-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
 
+      // NEW: description (always render; fallback to placeholder if missing)
+      const descHtml = `<p class="quest-desc">${escapeHtml(quest.description || 'Placeholder Description')}</p>`;
+
       questCircle.bindPopup(`
         <div class="quest-popup">
           <h3>${titleEmoji} ${quest.name}</h3>
+          ${descHtml}
           ${quest.imageUrl ? `<div class="quest-image-container"><img src="${quest.imageUrl}" alt="Quest Image" class="quest-popup-image" /></div>` : ''}
           <p><strong>Reward:</strong> ${quest.reward ?? quest.radius} points</p>
           ${buttonHtml}
@@ -334,6 +346,7 @@ const Home = () => {
         <div class="quest-popup">
           ${badgeHTML}
           <h3>${titleEmoji} ${jq.name}</h3>
+          <p class="quest-desc">Placeholder Description</p>
           <p>${first.riddle}</p>
           <p><strong>Reward:</strong> ${jq.reward} points</p>
           ${buttonHtml}

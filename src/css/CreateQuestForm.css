@@ -48,6 +48,18 @@
   font-size: 14px;
 }
 
+/* Make Description textarea non-resizable and hide the grip */
+.cq-textarea {
+  resize: none !important;
+  overflow: auto;
+  -webkit-user-drag: none;
+  -webkit-appearance: none;
+}
+
+/* Explicitly hide the corner grip on Chromium/WebKit and old Edge */
+.cq-textarea::-webkit-resizer { display: none; }
+.cq-textarea::-ms-resizer { display: none; }
+
 /* Actions */
 .cq-actions {
   display: flex;
