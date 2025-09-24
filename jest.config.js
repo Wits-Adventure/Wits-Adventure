@@ -14,6 +14,9 @@ module.exports = {
      'src/react_components/CreateQuestForm.js',
      'src/react_components/login.js',
      'src/react_components/signup.js',
+      'src/react_components/CompleteQuestForm.js',
+      'src/react_components/Home.js',
+   
     
     
     '!**/node_modules/**',

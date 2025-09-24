@@ -2,7 +2,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-
 import Login from '../react_components/login';
 
 // Mock the firebase module
