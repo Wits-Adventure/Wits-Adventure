@@ -8,186 +8,275 @@ import { useMusic } from '../context/MusicContext';
 import { getUserData, logout } from '../firebase/firebase';
 import { getAllQuests, acceptQuest, abandonQuest } from '../firebase/general_quest_functions';
 import { getProfileData } from '../firebase/profile_functions';
-import { doc, updateDoc, increment } from 'firebase/firestore';
+import bellImage from '../media/bell.png';
+import musicImage from '../media/music.png'; import { useMusic } from '../context/MusicContext';
+import tutorialImage from '../media/tutorial.png'; // Replace with your actual image path or use an emoji if no image
+import { doc, updateDoc, increment } from "firebase/firestore";
+import { db } from "../firebase/firebase"; // adjust path if your firebase.js file lives elsewhere
+import castleImage from '../media/castle.png'; // NEW: castle icon image
 
-// Mock all external dependencies
-jest.mock('../context/AuthContext');
-jest.mock('../context/MusicContext');
-jest.mock('../firebase/firebase');
-jest.mock('../firebase/general_quest_functions');
-jest.mock('../firebase/profile_functions');
-jest.mock('firebase/firestore');
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => jest.fn(),
-  useLocation: () => ({ state: null })
-}));
+function distanceMeters(a, b) {
+  try {
+    if (window.L && window.L.latLng) {
+      return window.L.latLng(a[0], a[1]).distanceTo(window.L.latLng(b[0], b[1]));
+    }
+  } catch (_) { }
+  const toRad = (x) => (x * Math.PI) / 180;
+  const R = 6371000;
+  const dLat = toRad(b[0] - a[0]);
+  const dLon = toRad(b[1] - a[1]);
+  const lat1 = toRad(a[0]);
+  const lat2 = toRad(b[0]);
+  const s =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+  return R * c;
+}
 
-// Mock images
-jest.mock('../media/LOGO_Alpha.png', () => 'logo.png');
-jest.mock('../media/questbook_outline.png', () => 'questbook.png');
-jest.mock('../assets/profile.jpg', () => 'profile.jpg');
-jest.mock('../media/bell.png', () => 'bell.png');
-jest.mock('../media/music.png', () => 'music.png');
-jest.mock('../media/tutorial.png', () => 'tutorial.png');
+const Home = () => {
+  const { currentUser } = useAuth();
+  const [username, setUsername] = useState('');
+  const [profilePicture, setProfilePicture] = useState(profilePic); // <-- new state for profile picture
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const headerRef = useRef(null);
+  const questCirclesRef = useRef([]); // Add this to track quest circles
+  const navigate = useNavigate();
+  const location = useLocation(); // Add this near the top of Home()
+  const [showCreateForm, setShowCreateForm] = useState(false); // NEW
+  const [allQuests, setAllQuests] = useState([]);
+  const [acceptedQuests, setAcceptedQuests] = useState({}); // NEW: state to track accepted quests
+  const [showCompleteForm, setShowCompleteForm] = useState(false);
+  const [activeQuest, setActiveQuest] = useState(null);
+  const [toastMsg, setToastMsg] = useState('');
+  const [isBellActive, setIsBellActive] = useState(false); // NEW: state to track bell animation
+  const [toastIcon, setToastIcon] = useState('bell');
+  const [userSubmissions, setUserSubmissions] = useState({}); // questId: true
+  const [bellCooldown, setBellCooldown] = useState(false); // NEW: bell cooldown state
 
-// Mock CSS import
-jest.mock('../css/Home.css', () => ({}));
 
-// Mock CreateQuestForm and CompleteQuestForm
-jest.mock('./CreateQuestForm', () => {
-  return function MockCreateQuestForm({ isOpen, onClose }) {
-    return isOpen ? (
-      <div data-testid="create-quest-form">
-        <button onClick={onClose}>Close Form</button>
-      </div>
-    ) : null;
-  };
-});
-
-jest.mock('./CompleteQuestForm', () => {
-  return function MockCompleteQuestForm({ isOpen, onClose, quest, onSubmission }) {
-    return isOpen ? (
-      <div data-testid="complete-quest-form">
-        <div>Quest: {quest?.name}</div>
-        <button onClick={onClose}>Close Form</button>
-        <button onClick={() => onSubmission && onSubmission(quest?.id)}>Submit</button>
-      </div>
-    ) : null;
-  };
-});
-
-describe('Home Component', () => {
-  let mockNavigate;
-  let mockUseAuth;
-  let mockUseMusic;
-  let mockGetUserData;
-  let mockGetProfileData;
-  let mockGetAllQuests;
-  let mockAcceptQuest;
-  let mockAbandonQuest;
-  let mockLogout;
-  let mockUpdateDoc;
-  let mockIncrement;
-  let mockGeolocation;
-
-  beforeEach(() => {
-    // Reset all mocks
-    jest.clearAllMocks();
-
-    // Setup navigation mock
-    mockNavigate = jest.fn();
-    require('react-router-dom').useNavigate.mockReturnValue(mockNavigate);
-
-    // Setup authentication mock
-    mockUseAuth = {
-      currentUser: { uid: 'test-user-id', email: 'test@example.com' }
-    };
-    useAuth.mockReturnValue(mockUseAuth);
-
-    // Setup music context mock
-    mockUseMusic = {
-      isMusicPlaying: false,
-      toggleMusic: jest.fn()
-    };
-    useMusic.mockReturnValue(mockUseMusic);
-
-    // Setup Firebase mocks
-    mockGetUserData = getUserData.mockResolvedValue({ Name: 'Test User' });
-    mockGetProfileData = getProfileData.mockResolvedValue({ 
-      Name: 'Test User', 
-      profilePicture: 'custom-profile.jpg' 
-    });
-    mockGetAllQuests = getAllQuests.mockResolvedValue([]);
-    mockAcceptQuest = acceptQuest.mockResolvedValue();
-    mockAbandonQuest = abandonQuest.mockResolvedValue();
-    mockLogout = logout.mockImplementation(() => {});
-
-    // Setup Firestore mocks
-    mockUpdateDoc = updateDoc.mockResolvedValue();
-    mockIncrement = increment.mockReturnValue('mock-increment');
-    doc.mockReturnValue('mock-doc-ref');
-
-    // Mock Leaflet
-    global.L = {
-      map: jest.fn(() => ({
-        setView: jest.fn(() => ({ setView: jest.fn() })),
-        remove: jest.fn(),
-        invalidateSize: jest.fn(),
-        removeLayer: jest.fn(),
-        eachLayer: jest.fn(),
-        addTo: jest.fn()
-      })),
-      tileLayer: jest.fn(() => ({
-        addTo: jest.fn()
-      })),
-      control: {
-        zoom: jest.fn(() => ({
-          addTo: jest.fn()
-        }))
+  // ======== NEW: Journey Quests (hard-coded, scalable) ========
+  /**
+   * Each journey quest has: id, name, emoji, color, reward, and exactly 3 stops.
+   * Only stop[0] is rendered on the map. Accepting reveals riddle for stop[1].
+   * Bell press checks if within radius of the current target stop and advances.
+   */
+  const journeyQuests = useMemo(
+    () => [
+      {
+        id: 'journey-knowledge-quest',
+        name: 'Trail of Knowledge',
+        emoji: '📚',
+        reward: 150,
+        stops: [
+          {
+            lat: -26.1905275569984,     //Library Lawns
+            lng: 28.02991870656233,
+            radius: 45,
+            riddle:
+              "Begin at the heart where minds convene.\n(You are here. Accept to start!)",
+          },
+          {
+            lat: -26.191164724176563,   //Wartenweiler Library
+            lng: 28.030668225929592,
+            radius: 45,
+            riddle:
+              "I’m stacked with words from floor to sky,\nSeek quiet halls where whispers fly.",
+          },
+          {
+            lat: -26.1895187018387,    //OMSH
+            lng: 28.029333555477365,
+            radius: 45,
+            riddle:
+              "Find the place of gold and blue,\nWhere sport and spirit meet your crew.",
+          },
+        ],
       },
-      divIcon: jest.fn(() => ({})),
-      marker: jest.fn(() => ({
-        addTo: jest.fn(),
-        bindPopup: jest.fn(() => ({ openPopup: jest.fn() })),
-        openPopup: jest.fn(),
-        on: jest.fn()
-      })),
-      circle: jest.fn(() => ({
-        addTo: jest.fn(),
-        bindPopup: jest.fn(),
-        openPopup: jest.fn(),
-        on: jest.fn(),
-        getPopup: jest.fn(() => ({ getContent: jest.fn(() => '🏰 Wits University') })),
-        setRadius: jest.fn(),
-        setStyle: jest.fn(),
-        options: {}
-      })),
-      latLng: jest.fn(() => ({
-        distanceTo: jest.fn(() => 100)
-      }))
-    };
+      {
+        id: 'journey-artisan-quest',
+        name: 'Artisan’s Path',
+        emoji: '🎨',
+        reward: 180,
+        stops: [
+          {
+            lat: -26.18825050226691,      //DJ
+            lng: 28.024212535302684,
+            radius: 45,
+            riddle:
+              "Start where steps and stones align,\nAccept to trace the hidden sign.",
+          },
+          {
+            lat: -26.19155561824705,    //Oppenheimer Life Sciences
+            lng: 28.032089513244493,
+            radius: 45,
+            riddle:
+              "Where sculptures rest and murals gleam,\nFind colors born from scholar’s dream.",
+          },
+          {
+            lat: -26.18944199729973,          //Basketball Courts
+            lng: 28.030186646826653,
+            radius: 45,
+            riddle:
+              "Seek a court where echoes bound,\nAnd sneakers sing upon the ground.",
+          },
+        ],
+      },
+    ],
+    []
+  );
 
-    // Mock window properties
-    global.window.L = global.L;
-    delete global.window.__questPlacing;
-    delete global.window.__bellPulseCircle;
 
-    // Mock geolocation
-    mockGeolocation = {
-      getCurrentPosition: jest.fn()
-    };
-    Object.defineProperty(global.navigator, 'geolocation', {
-      value: mockGeolocation,
-      configurable: true
-    });
+  /**
+   * Progress state per journey quest:
+   * { [questId]: { accepted: boolean, currentStep: 1|2 (next target index), completed: boolean } }
+   * After accept: currentStep = 1 (target stop index 1). When currentStep advances past 2 => completed.
+   */
+  const [journeyProgress, setJourneyProgress] = useState({});
 
-    // Mock requestAnimationFrame
-    global.requestAnimationFrame = jest.fn(cb => setTimeout(cb, 0));
-  });
-
-  afterEach(() => {
-    // Clean up global mocks
-    delete global.L;
-    delete global.window.L;
-    delete global.window.handleAcceptQuest;
-    delete global.window.handleAbandonQuest;
-    delete global.window.handleTurnInQuest;
-    delete global.window.handleAcceptJourneyQuest;
-  });
-
-  const renderHome = (initialEntries = ['/']) => {
-    return render(
-      <MemoryRouter initialEntries={initialEntries}>
-        <Home />
-      </MemoryRouter>
-    );
+  const showToast = (msg, duration = 2200, iconType = 'bell') => {
+    setToastMsg(msg);
+    setToastIcon(iconType);
+    setTimeout(() => setToastMsg(''), duration);
   };
 
-  describe('Rendering', () => {
-    test('renders main components when authenticated', async () => {
-      await act(async () => {
-        renderHome();
+  const { isMusicPlaying, toggleMusic } = useMusic();
+  // Use useEffect to fetch user data when the authentication state changes
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (currentUser) {
+        try {
+          const userData = await getUserData(); // Assuming this fetches the Name
+          if (userData && userData.Name) {
+            setUsername(userData.Name);
+          } else {
+            setUsername('User'); // Fallback name
+          }
+        } catch (error) {
+          console.error("Failed to fetch username:", error);
+          setUsername('User'); // Fallback on error
+        }
+      } else {
+        setUsername(''); // Clear username if no user is logged in
+      }
+    };
+
+    fetchUsername();
+  }, [currentUser]); // Dependency array: run this effect when currentUser changes
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (currentUser) {
+        try {
+          const profileData = await getProfileData();
+          setUsername(profileData.Name || 'User');
+          setProfilePicture(profileData.profilePicture || profilePic); // <-- set profile picture
+        } catch (error) {
+          console.error("Failed to fetch profile:", error);
+          setUsername('User');
+          setProfilePicture(profilePic);
+        }
+      } else {
+        setUsername('');
+        setProfilePicture(profilePic);
+      }
+    };
+
+    fetchProfile();
+  }, [currentUser]);
+
+  useEffect(() => {
+    // Minimal parser for Firestore GeoPoint shape: _latitude and _longitude (numbers)
+    const parseFirestoreLatLng = (loc) => {
+      if (!loc) return null;
+      if (typeof loc._latitude === 'number' && typeof loc._longitude === 'number') {
+        return { latitude: loc._latitude, longitude: loc._longitude };
+      }
+      return null;
+    };
+
+    async function fetchQuests() {
+      const quests = await getAllQuests();
+      const parsed = quests.map(q => {
+        const loc = q.location; // assume the API returns the Firestore-like object here
+        return { ...q, location: parseFirestoreLatLng(loc) };
+      });
+      setAllQuests(parsed);
+    }
+
+    fetchQuests();
+  }, []);
+
+  const handleQuestPopupClose = () => {
+    setShowCompleteForm(false);
+    setActiveQuest(null);
+  };
+
+  // Function to add quest area highlights
+  const addQuestAreas = useCallback(() => {
+    console.log('addQuestAreas called, mapInstance:', !!mapInstanceRef.current, 'allQuests.length:', allQuests.length); // <-- new
+    if (!mapInstanceRef.current) return;
+
+    // Remove old quest circles/markers
+    if (questCirclesRef.current && questCirclesRef.current.length > 0) {
+      questCirclesRef.current.forEach(circle => {
+        mapInstanceRef.current.removeLayer(circle);
+        if (circle._emojiMarker) {
+          mapInstanceRef.current.removeLayer(circle._emojiMarker);
+        }
+      });
+      questCirclesRef.current = [];
+    }
+
+    // Add markers for all quests from Firestore
+    allQuests.forEach(quest => {
+      if (!quest.location) {
+        return;
+      }
+      const { latitude, longitude } = quest.location;
+
+      // Use saved emoji and color, fallback if missing
+      const titleEmoji = quest.emoji || (quest.name?.match(/^\p{Extended_Pictographic}/u)?.[0]) || '🌟';
+      const color = quest.color || '#8B4513';
+
+      // Draw the quest radius as a circle
+      const questCircle = window.L.circle([latitude, longitude], {
+        color: color,
+        fillColor: color,
+        fillOpacity: 0.3,
+        radius: quest.radius || 50,
+        weight: 2,
+        questId: quest.id // <-- add this line
+      }).addTo(mapInstanceRef.current);
+
+      // Custom popup
+      const hasAccepted = acceptedQuests[quest.id] !== undefined
+        ? acceptedQuests[quest.id]
+        : (quest.acceptedBy && quest.acceptedBy.includes(currentUser?.uid));
+      const isOwnQuest = currentUser && quest.creatorId === currentUser.uid;
+      const hasUserSubmission = userSubmissions[quest.id] ||
+        quest.submissions?.some(sub => sub.userId === currentUser?.uid);
+
+      const buttonHtml = isOwnQuest
+        ? `<button id="quest-btn-${quest.id}" class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>`
+        : hasAccepted
+          ? `
+<button id="quest-btn-${quest.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonQuest('${quest.id}')">Abandon Quest</button>
+<button id="turnin-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleTurnInQuest('${quest.id}')">${hasUserSubmission ? "Update Submission" : "Turn in Quest"}</button>
+`
+          : `<button id="quest-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
+
+      questCircle.bindPopup(`
+        <div class="quest-popup">
+          <h3>${titleEmoji} ${quest.name}</h3>
+          ${quest.imageUrl ? `<div class="quest-image-container"><img src="${quest.imageUrl}" alt="Quest Image" class="quest-popup-image" /></div>` : ''}
+          <p><strong>Reward:</strong> ${quest.reward ?? quest.radius} points</p>
+          ${buttonHtml}
+        </div>
+      `);
+
+      questCircle.on('popupclose', () => {
+        handleQuestPopupClose();
       });
 
       expect(screen.getByText('WITS ADVENTURE')).toBeInTheDocument();
@@ -209,208 +298,248 @@ describe('Home Component', () => {
       expect(screen.queryByText('Logout')).not.toBeInTheDocument();
     });
 
-    test('renders map controls', async () => {
-      await act(async () => {
-        renderHome();
+    // ======== NEW: render only the FIRST STOP for each Journey Quest ========
+    journeyQuests.forEach(jq => {
+      const first = jq.stops[0];
+      const titleEmoji = jq.emoji || (jq.name?.match(/^\p{Extended_Pictographic}/u)?.[0]) || '🧭';
+      const color = '#8B4513'; // Brown like hardcoded quests
+
+      const circle = window.L.circle([first.lat, first.lng], {
+        color,
+        fillColor: '#D2691E', // Brown fill like hardcoded quests
+        fillOpacity: 0.3,
+        radius: first.radius,
+        weight: 2,
+        journeyId: jq.id
+      }).addTo(mapInstanceRef.current);
+
+      // Check if this journey quest is accepted
+      const isAccepted = journeyProgress[jq.id]?.accepted && !journeyProgress[jq.id]?.completed;
+
+      // Add badge markup for journey quests like hardcoded special quests
+      const badgeHTML = `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
+      const buttonHtml = isAccepted
+        ? `<button id="journey-btn-${jq.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonJourneyQuest('${jq.id}')">Abandon Quest</button>`
+        : `<button id="journey-btn-${jq.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptJourneyQuest('${jq.id}')">Accept Quest</button>`;
+
+      circle.bindPopup(`
+        <div class="quest-popup">
+          ${badgeHTML}
+          <h3>${titleEmoji} ${jq.name}</h3>
+          <p>${first.riddle}</p>
+          <p><strong>Reward:</strong> ${jq.reward} points</p>
+          ${buttonHtml}
+        </div>
+      `);
+
+      const emojiIcon = window.L.divIcon({
+        className: 'quest-emoji-icon',
+        html: `<div class="quest-emoji">${titleEmoji}</div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
       });
+      const emojiMarker = window.L.marker([first.lat, first.lng], { icon: emojiIcon }).addTo(mapInstanceRef.current);
+      emojiMarker.bindPopup(circle.getPopup());
+      circle._emojiMarker = emojiMarker;
 
-      expect(screen.getByLabelText('Toggle Music')).toBeInTheDocument();
-      expect(screen.getByLabelText('Center on Wits')).toBeInTheDocument();
-      expect(screen.getByLabelText('Bell')).toBeInTheDocument();
-      expect(screen.getByLabelText('Tutorial')).toBeInTheDocument();
-    });
-  });
-
-  describe('User Data Loading', () => {
-    test('loads user data on mount', async () => {
-      await act(async () => {
-        renderHome();
-      });
-
-      await waitFor(() => {
-        expect(mockGetProfileData).toHaveBeenCalled();
-        expect(screen.getByText('Test User')).toBeInTheDocument();
-      });
-    });
-
-    test('handles user data loading error', async () => {
-      mockGetProfileData.mockRejectedValue(new Error('Profile fetch failed'));
-
-      await act(async () => {
-        renderHome();
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('User')).toBeInTheDocument();
-      });
-    });
-
-    test('loads custom profile picture', async () => {
-      await act(async () => {
-        renderHome();
-      });
-
-      await waitFor(() => {
-        const profileImg = screen.getByAltText("Test User's avatar");
-        expect(profileImg).toHaveAttribute('src', 'custom-profile.jpg');
-      });
-    });
-  });
-
-  describe('Quest Loading', () => {
-    test('loads quests from Firebase', async () => {
-      const mockQuests = [
-        {
-          id: 'quest-1',
-          name: 'Test Quest',
-          location: { _latitude: -26.1929, _longitude: 28.0305 },
-          reward: 100,
-          radius: 50
+      emojiMarker.on('click', (e) => {
+        if (window.__questPlacing) return;
+        circle.openPopup();
+        if (e.originalEvent) {
+          e.originalEvent.stopPropagation();
+          e.originalEvent.preventDefault();
         }
-      ];
-      mockGetAllQuests.mockResolvedValue(mockQuests);
-
-      await act(async () => {
-        renderHome();
       });
 
-      await waitFor(() => {
-        expect(mockGetAllQuests).toHaveBeenCalled();
-      });
+      questCirclesRef.current.push(circle);
     });
+  }, [
+    allQuests,
+    mapInstanceRef,
+    questCirclesRef,
+    currentUser,
+    acceptedQuests,
+    userSubmissions,   // added
+    journeyQuests      // added
+  ]);
 
-    test('handles quest loading with invalid location data', async () => {
-      const mockQuests = [
-        {
-          id: 'quest-1',
-          name: 'Invalid Quest',
-          location: null,
-          reward: 100
+  // Map and header effects remain the same
+  useEffect(() => {
+    const initializeMap = () => {
+      if (mapRef.current && !mapInstanceRef.current && window.L) {
+        try {
+          mapInstanceRef.current = window.L.map(mapRef.current, {
+            zoomControl: false,
+            attributionControl: false
+          }).setView([-26.1929, 28.0305], 17);
+
+          window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: ''
+          }).addTo(mapInstanceRef.current);
+
+          const customZoomControl = window.L.control.zoom({
+            position: 'topleft'
+          });
+          customZoomControl.addTo(mapInstanceRef.current);
+
+          const customIcon = window.L.divIcon({
+            className: 'fantasy-marker',
+            html: `<div class="fantasy-marker-content">
+                     <div class="marker-pin"></div>
+                     <div class="marker-pulse"></div>
+                   </div>`,
+            iconSize: [30, 40],
+            iconAnchor: [15, 40]
+          });
+
+          window.L.marker([-26.1929, 28.0305], { icon: customIcon })
+            .addTo(mapInstanceRef.current)
+            .bindPopup(`<div class="fantasy-popup">
+                          <h3>🏰 Wits University</h3>
+                          <p>Your adventure begins here!</p>
+                        </div>`, {
+              offset: [0, -30] // Move popup 50 pixels up from the marker
+            })
+            .openPopup();
+
+          // Add quest area highlights
+          addQuestAreas();
+
+          setTimeout(() => {
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.invalidateSize();
+            }
+          }, 100);
+        } catch (error) {
+          console.error('Error initializing map:', error);
         }
-      ];
-      mockGetAllQuests.mockResolvedValue(mockQuests);
+      }
+    };
 
-      await act(async () => {
-        renderHome();
-      });
 
-      await waitFor(() => {
-        expect(mockGetAllQuests).toHaveBeenCalled();
-      });
-    });
-  });
 
-  describe('Navigation', () => {
-    test('navigates to login page', async () => {
-      mockUseAuth.currentUser = null;
-      useAuth.mockReturnValue(mockUseAuth);
-
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByText('Login'));
-      expect(mockNavigate).toHaveBeenCalledWith('/login');
-    });
-
-    test('navigates to signup page', async () => {
-      mockUseAuth.currentUser = null;
-      useAuth.mockReturnValue(mockUseAuth);
-
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByText('Sign Up'));
-      expect(mockNavigate).toHaveBeenCalledWith('/signup');
-    });
-
-    test('navigates to profile page when clicking username', async () => {
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByText('Test User'));
-      expect(mockNavigate).toHaveBeenCalledWith('/ProfilePage');
-    });
-
-    test('navigates to tutorial page', async () => {
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByLabelText('Tutorial'));
-      expect(mockNavigate).toHaveBeenCalledWith('/tutorial');
-    });
-
-    test('handles logout', async () => {
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByText('Logout'));
-      expect(mockLogout).toHaveBeenCalled();
-    });
-  });
-
-  describe('Quest Forms', () => {
-    test('opens create quest form when authenticated', async () => {
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByText('Create Quest'));
-      expect(screen.getByTestId('create-quest-form')).toBeInTheDocument();
-    });
-
-    test('redirects to login when creating quest without authentication', async () => {
-      mockUseAuth.currentUser = null;
-      useAuth.mockReturnValue(mockUseAuth);
-
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByText('Create Quest'));
-      expect(mockNavigate).toHaveBeenCalledWith('/login');
-    });
-
-    test('closes create quest form', async () => {
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByText('Create Quest'));
-      expect(screen.getByTestId('create-quest-form')).toBeInTheDocument();
-
-      fireEvent.click(screen.getByText('Close Form'));
-      expect(screen.queryByTestId('create-quest-form')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('Quest Interactions', () => {
-    beforeEach(() => {
-      const mockQuests = [
-        {
-          id: 'quest-1',
-          name: 'Test Quest',
-          location: { _latitude: -26.1929, _longitude: 28.0305 },
-          reward: 100,
-          radius: 50,
-          creatorId: 'other-user'
+    if (window.L) {
+      initializeMap();
+    } else {
+      const checkLeaflet = setInterval(() => {
+        if (window.L) {
+          clearInterval(checkLeaflet);
+          initializeMap();
         }
-      ];
-      mockGetAllQuests.mockResolvedValue(mockQuests);
-    });
+      }, 100);
+      setTimeout(() => clearInterval(checkLeaflet), 5000);
+    }
 
-    test('handles quest acceptance', async () => {
-      await act(async () => {
-        renderHome();
-      });
+    return () => {
+      if (mapInstanceRef.current) {
+        // Clean up quest circles
+        questCirclesRef.current.forEach(circle => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.removeLayer(circle);
+          }
+        });
+        questCirclesRef.current = [];
 
-      await waitFor(() => {
-        expect(global.window.handleAcceptQuest).toBeDefined();
-      });
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [addQuestAreas]);
+
+  useEffect(() => {
+    const updateHeaderOffset = () => {
+      if (headerRef.current) {
+        const h = headerRef.current.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--header-offset', `${h + 20}px`);
+        if (mapInstanceRef.current) {
+          setTimeout(() => mapInstanceRef.current.invalidateSize(), 60);
+        }
+      }
+    };
+    updateHeaderOffset();
+    window.addEventListener('resize', updateHeaderOffset);
+    window.addEventListener('orientationchange', updateHeaderOffset);
+    return () => {
+      window.removeEventListener('resize', updateHeaderOffset);
+      window.removeEventListener('orientationchange', updateHeaderOffset);
+    };
+  }, []);
+
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  const handleSignup = () => {
+    navigate('/signup');
+  };
+  const handleProfileClick = () => {
+    navigate('/ProfilePage');
+  };
+
+  const handleQuestbookClick = () => {
+    navigate('/questbook');
+  };
+  /*
+
+  // NEW: open create form only for logged-in users; otherwise go to login
+  const handleCreateQuestClick = () => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+    setShowCreateForm(true);
+  };
+
+  // Add global function for Accept Quest button
+  useEffect(() => {
+    window.handleAcceptQuest = async (questId) => {
+      if (!currentUser) {
+        navigate('/login');
+        return;
+      }
+      setAcceptedQuests(prev => ({ ...prev, [questId]: true }));
+
+      // Instantly update button UI
+      const btn = document.getElementById(`quest-btn-${questId}`);
+      if (btn) {
+        btn.textContent = "Abandon Quest";
+        btn.className = "quest-popup-btn abandon-quest-btn";
+        btn.onclick = () => window.handleAbandonQuest(questId);
+      }
+
+      try {
+        await acceptQuest(questId, currentUser.uid);
+      } catch (error) {
+        setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
+        if (btn) {
+          btn.textContent = "Accept Quest";
+          btn.className = "quest-popup-btn quest-accept-btn";
+          btn.onclick = () => window.handleAcceptQuest(questId);
+        }
+        alert('Failed to accept quest.');
+        console.error(error);
+      }
+    };
+
+    window.handleAbandonQuest = async (questId) => {
+      if (!currentUser) {
+        navigate('/login');
+        return;
+      }
+      setAcceptedQuests(prev => ({ ...prev, [questId]: false }));
+
+      // Instantly update button UI
+      const btn = document.getElementById(`quest-btn-${questId}`);
+      if (btn) {
+        btn.textContent = "Accept Quest";
+        btn.className = "quest-popup-btn quest-accept-btn";
+        btn.onclick = () => window.handleAcceptQuest(questId);
+      }
 
       await act(async () => {
         await global.window.handleAcceptQuest('quest-1');
@@ -471,405 +600,459 @@ describe('Home Component', () => {
     });
   });
 
-  describe('Journey Quests', () => {
-    test('handles journey quest acceptance', async () => {
-      global.alert = jest.fn();
+    window.handleTurnInQuest = (questId) => {
+      const quest = allQuests.find(q => q.id === questId);
+      if (!quest) return;
+      setActiveQuest(quest);
+      setShowCompleteForm(true);
+    };
 
-      await act(async () => {
-        renderHome();
+    return () => {
+      delete window.handleAcceptQuest;
+      delete window.handleAbandonQuest;
+      delete window.handleTurnInQuest;
+    };
+  }, [currentUser, navigate, allQuests, acceptedQuests]);
+
+  // ======== NEW: Accept/Abandon Journey Quest handlers (global for popup buttons) ========
+  useEffect(() => {
+    window.handleAcceptJourneyQuest = (journeyId) => {
+      if (!currentUser) return navigate('/login');
+      const jq = journeyQuests.find(j => j.id === journeyId);
+      if (!jq) return;
+
+      // Abandon any other active journey quests (only one allowed at a time)
+      setJourneyProgress(prev => {
+        const newProgress = {};
+        // Reset all other journey quests to not accepted
+        Object.keys(prev).forEach(id => {
+          if (id !== journeyId) {
+            newProgress[id] = { accepted: false, currentStep: 1, completed: false };
+          }
+        });
+        // Set the selected journey quest as accepted
+        newProgress[journeyId] = { accepted: true, currentStep: 1, completed: false };
+        return newProgress;
       });
 
-      await waitFor(() => {
-        expect(global.window.handleAcceptJourneyQuest).toBeDefined();
-      });
-
-      act(() => {
-        global.window.handleAcceptJourneyQuest('journey-knowledge-quest');
-      });
-
-      expect(global.alert).toHaveBeenCalledWith(
-        expect.stringContaining('📚 Trail of Knowledge')
-      );
-    });
-
-    test('redirects to login for journey quest when not authenticated', async () => {
-      mockUseAuth.currentUser = null;
-      useAuth.mockReturnValue(mockUseAuth);
-
-      await act(async () => {
-        renderHome();
-      });
-
-      await waitFor(() => {
-        expect(global.window.handleAcceptJourneyQuest).toBeDefined();
-      });
-
-      global.window.handleAcceptJourneyQuest('journey-knowledge-quest');
-      expect(mockNavigate).toHaveBeenCalledWith('/login');
-    });
-  });
-
-  describe('Bell and Geolocation', () => {
-    test('handles bell ping with geolocation success', async () => {
-      const mockPosition = {
-        coords: {
-          latitude: -26.1929,
-          longitude: 28.0305
-        }
-      };
-
-      mockGeolocation.getCurrentPosition.mockImplementation((success) => {
-        success(mockPosition);
-      });
-
-      global.alert = jest.fn();
-
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByLabelText('Bell'));
-
-      await waitFor(() => {
-        expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled();
-      });
-    });
-
-    test('handles bell ping with geolocation error', async () => {
-      const mockError = { code: 1, message: 'Permission denied' };
-      mockGeolocation.getCurrentPosition.mockImplementation((success, error) => {
-        error(mockError);
-      });
-
-      global.alert = jest.fn();
-
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByLabelText('Bell'));
-
-      await waitFor(() => {
-        expect(global.alert).toHaveBeenCalledWith(
-          'Location permission denied. Please allow location access to progress Journey Quests.'
-        );
-      });
-    });
-
-    test('handles unsupported geolocation', async () => {
-      delete navigator.geolocation;
-      global.alert = jest.fn();
-
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByLabelText('Bell'));
-
-      expect(global.alert).toHaveBeenCalledWith(
-        'Geolocation is not supported on this device/browser.'
-      );
-    });
-
-    test('completes journey quest and awards points', async () => {
-      const mockPosition = {
-        coords: { latitude: -26.18944199729973, longitude: 28.030186646826653 }
-      };
-
-      mockGeolocation.getCurrentPosition.mockImplementation((success) => {
-        success(mockPosition);
-      });
-
-      global.alert = jest.fn();
-
-      await act(async () => {
-        renderHome();
-      });
-
-      // Accept a journey quest first
-      act(() => {
-        global.window.handleAcceptJourneyQuest('journey-artisan-quest');
-      });
-
-      // Simulate being at the second stop and completing to final
-      await act(async () => {
-        // Mock journey progress state
-        const component = screen.getByText('WITS ADVENTURE').closest('section');
-        const homeInstance = component?._reactInternalFiber?.memoizedProps;
-        
-        // Simulate bell ping at final location
-        fireEvent.click(screen.getByLabelText('Bell'));
-      });
-
-      await waitFor(() => {
-        expect(mockUpdateDoc).toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('Music Controls', () => {
-    test('toggles music when clicking music button', async () => {
-      await act(async () => {
-        renderHome();
-      });
-
-      const musicButtons = screen.getAllByLabelText('Toggle Music');
-      fireEvent.click(musicButtons[0]);
-
-      expect(mockUseMusic.toggleMusic).toHaveBeenCalled();
-    });
-
-    test('displays music playing state', async () => {
-      mockUseMusic.isMusicPlaying = true;
-      useMusic.mockReturnValue(mockUseMusic);
-
-      await act(async () => {
-        renderHome();
-      });
-
-      const musicButtons = screen.getAllByLabelText('Toggle Music');
-      expect(musicButtons[0]).toHaveClass('playing');
-    });
-  });
-
-  describe('Map Controls', () => {
-    test('centers map on Wits when clicking castle icon', async () => {
-      await act(async () => {
-        renderHome();
-      });
-
-      const castleButton = screen.getByLabelText('Center on Wits');
-      fireEvent.click(castleButton);
-
-      // Map centering is handled by Leaflet, so we just verify the button works
-      expect(castleButton).toBeInTheDocument();
-    });
-
-    test('opens questbook when clicking questbook icon', async () => {
-      await act(async () => {
-        renderHome();
-      });
-
-      const questbookButton = screen.getByRole('button', { name: /questbook/i });
-      fireEvent.click(questbookButton);
-
-      expect(mockNavigate).toHaveBeenCalledWith('/questbook');
-    });
-  });
-
-  describe('Toast Messages', () => {
-    test('shows toast message on bell ping', async () => {
-      const mockPosition = {
-        coords: { latitude: -26.1929, longitude: 28.0305 }
-      };
-
-      mockGeolocation.getCurrentPosition.mockImplementation((success) => {
-        success(mockPosition);
-      });
-
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByLabelText('Bell'));
-
-      await waitFor(() => {
-        expect(screen.getByText('The bell tolls')).toBeInTheDocument();
-      });
-    });
-
-    test('hides toast message after timeout', async () => {
-      jest.useFakeTimers();
-      
-      const mockPosition = {
-        coords: { latitude: -26.1929, longitude: 28.0305 }
-      };
-
-      mockGeolocation.getCurrentPosition.mockImplementation((success) => {
-        success(mockPosition);
-      });
-
-      await act(async () => {
-        renderHome();
-      });
-
-      fireEvent.click(screen.getByLabelText('Bell'));
-
-      await waitFor(() => {
-        expect(screen.getByText('The bell tolls')).toBeInTheDocument();
-      });
-
-      act(() => {
-        jest.advanceTimersByTime(2200);
-      });
-
-      await waitFor(() => {
-        expect(screen.queryByText('The bell tolls')).not.toBeInTheDocument();
-      });
-
-      jest.useRealTimers();
-    });
-  });
-
-  describe('Quest Form Submission', () => {
-    test('handles quest submission', async () => {
-      const mockQuest = {
-        id: 'quest-1',
-        name: 'Test Quest'
-      };
-
-      await act(async () => {
-        renderHome();
-      });
-
-      // Open complete quest form
-      act(() => {
-        global.window.handleTurnInQuest('quest-1');
-      });
-
-      expect(screen.getByTestId('complete-quest-form')).toBeInTheDocument();
-
-      // Submit quest
-      fireEvent.click(screen.getByText('Submit'));
-
-      // Form should still be open, but submission should be tracked
-      expect(screen.getByTestId('complete-quest-form')).toBeInTheDocument();
-    });
-
-    test('closes complete quest form', async () => {
-      await act(async () => {
-        renderHome();
-      });
-
-      // Open complete quest form
-      act(() => {
-        global.window.handleTurnInQuest('quest-1');
-      });
-
-      expect(screen.getByTestId('complete-quest-form')).toBeInTheDocument();
-
-      // Close form
-      fireEvent.click(screen.getByText('Close Form'));
-
-      expect(screen.queryByTestId('complete-quest-form')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('Distance Calculation', () => {
-    test('calculates distance using Leaflet when available', () => {
-      const mockDistanceTo = jest.fn(() => 150);
-      global.L.latLng.mockReturnValue({ distanceTo: mockDistanceTo });
-
-      // Import the distance function (would need to export it from Home.js)
-      // For now, we'll test the logic conceptually
-      const a = [-26.1929, 28.0305];
-      const b = [-26.1930, 28.0306];
-
-      if (global.L && global.L.latLng) {
-        const result = global.L.latLng(a[0], a[1]).distanceTo(global.L.latLng(b[0], b[1]));
-        expect(result).toBe(150);
+      // Riddle for stop 2
+      const nextRiddle = jq.stops[1]?.riddle || 'Find the next landmark!';
+      alert(`${jq.emoji} ${jq.name}\n\nRiddle for Stop 2:\n${nextRiddle}`);
+    };
+
+    window.handleAbandonJourneyQuest = (journeyId) => {
+      if (!currentUser) return navigate('/login');
+
+      setJourneyProgress(prev => ({
+        ...prev,
+        [journeyId]: { accepted: false, currentStep: 1, completed: false }
+      }));
+    };
+
+    return () => {
+      delete window.handleAcceptJourneyQuest;
+      delete window.handleAbandonJourneyQuest;
+    };
+  }, [currentUser, navigate, journeyQuests]);
+
+  useEffect(() => {
+    if (window.L && mapInstanceRef.current) {
+      addQuestAreas();
+    }
+  }, [addQuestAreas]);
+
+  // Focus map on quest if navigated from "View On Map"
+  useEffect(() => {
+    if (
+      mapInstanceRef.current &&
+      location.state &&
+      location.state.focusQuest &&
+      location.state.focusQuest.location
+    ) {
+      const { latitude, longitude } = location.state.focusQuest.location;
+      if (
+        typeof latitude === "number" &&
+        typeof longitude === "number" &&
+        !isNaN(latitude) &&
+        !isNaN(longitude)
+      ) {
+        // Wait for map and quest areas to be fully initialized
+        const focusOnQuest = () => {
+          if (!mapInstanceRef.current) {
+            setTimeout(focusOnQuest, 100);
+            return;
+          }
+
+          try {
+            // Invalidate size to ensure map is properly rendered
+            mapInstanceRef.current.invalidateSize();
+
+            // Set view with longer animation for smoother transition
+            mapInstanceRef.current.setView([latitude, longitude], 18, {
+              animate: true,
+              duration: 0.8
+            });
+
+            // Wait for map movement to complete before opening popup
+            setTimeout(() => {
+              const questId = location.state.focusQuest.id;
+
+              // Find quest circle by questId
+              let questCircle = questCirclesRef.current.find(
+                c => c.options && c.options.questId === questId
+              );
+
+              // If not found by questId, try journeyId for journey quests
+              if (!questCircle) {
+                questCircle = questCirclesRef.current.find(
+                  c => c.options && c.options.journeyId === questId
+                );
+              }
+
+              if (questCircle && questCircle.openPopup) {
+                try {
+                  questCircle.openPopup();
+                } catch (error) {
+                  console.warn("Failed to open popup:", error);
+                  // Fallback: try opening after another short delay
+                  setTimeout(() => {
+                    if (questCircle && questCircle.openPopup) {
+                      try {
+                        questCircle.openPopup();
+                      } catch (e) {
+                        console.warn("Popup fallback also failed:", e);
+                      }
+                    }
+                  }, 300);
+                }
+              } else {
+                console.warn("Quest circle not found for quest:", questId);
+              }
+            }, 1000); // Wait longer for map animation to complete
+          } catch (error) {
+            console.error("Error focusing on quest:", error);
+          }
+
+          // Clear the focusQuest state so it doesn't persist on refresh
+          navigate(".", { replace: true, state: {} });
+        };
+
+        // Start the focus process after a short delay
+        setTimeout(focusOnQuest, 300);
+      } else {
+        console.warn("Invalid quest location:", location.state.focusQuest.location);
       }
+    }
+    // eslint-disable-next-line
+  }, [location.state, mapInstanceRef.current, questCirclesRef.current, navigate]);
 
-      expect(mockDistanceTo).toHaveBeenCalled();
-    });
-  });
 
-  describe('Error Handling', () => {
-    test('handles missing quest data gracefully', async () => {
-      await act(async () => {
-        renderHome();
-      });
 
-      // Try to accept non-existent quest
-      await act(async () => {
-        global.window.handleTurnInQuest('non-existent-quest');
-      });
+  // ======== NEW: Bell press -> check Journey Quest progress via geolocation ========
+  const handleBellPing = () => {
+    // Check if bell is on cooldown
+    if (bellCooldown) {
+      showToast('Bell is on cooldown. Please wait a moment.', 2000);
+      return;
+    }
 
-      // Should not crash or show form
-      expect(screen.queryByTestId('complete-quest-form')).not.toBeInTheDocument();
-    });
+    // Set cooldown
+    setBellCooldown(true);
+    setTimeout(() => setBellCooldown(false), 4000); // 4 second cooldown
 
-    test('handles map initialization failure', async () => {
-      global.L = null;
-      global.window.L = null;
+    // Check geolocation 
+    if (!('geolocation' in navigator)) {
+      showToast('Geolocation is not supported on this device/browser.');
+      return;
+    }
 
-      // Should not crash
-      await act(async () => {
-        renderHome();
-      });
 
-      expect(screen.getByText('WITS ADVENTURE')).toBeInTheDocument();
-    });
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const userLat = pos.coords.latitude;
+        const userLng = pos.coords.longitude;
+        const accuracy = pos.coords.accuracy;
 
-    test('handles Firestore error when awarding points', async () => {
-      mockUpdateDoc.mockRejectedValue(new Error('Firestore error'));
-      
-      const mockPosition = {
-        coords: { latitude: -26.1929, longitude: 28.0305 }
-      };
+        // Check if the GPS accuracy is good enough (within 20 meters)
+        if (accuracy > 20) {
+          showToast(`GPS accuracy is ${Math.round(accuracy)}m. For best results, go outside or near a window.`, 4000);
+          // Still continue with the location we have
+        }
 
-      mockGeolocation.getCurrentPosition.mockImplementation((success) => {
-        success(mockPosition);
-      });
+        console.log(`User location: ${userLat}, ${userLng} (accuracy: ${Math.round(accuracy)}m)`);
 
-      console.error = jest.fn();
+        // Subtle pulse visualization from user's location
+        if (window.L && mapInstanceRef.current) {
+          if (window.__bellPulseCircle) {
+            mapInstanceRef.current.removeLayer(window.__bellPulseCircle);
+            window.__bellPulseCircle = null;
+          }
+          const coords = [userLat, userLng];
+          const circle = window.L.circle(coords, {
+            color: "#FFD700", // Bright gold color
+            fillColor: "#FFFF99",
+            fillOpacity: 0.8,
+            radius: 0,
+            weight: 4,
+            interactive: false,
+            className: "bell-pulse-circle"
+          }).addTo(mapInstanceRef.current);
+          window.__bellPulseCircle = circle;
 
-      await act(async () => {
-        renderHome();
-      });
+          let frame = 0;
+          const maxFrames = 80;
+          const startRadius = 0
+          const endRadius = 45
 
-      fireEvent.click(screen.getByLabelText('Bell'));
+          function animate() {
+            frame++;
+            const r = startRadius + ((endRadius - startRadius) * (frame / maxFrames));
+            circle.setRadius(r);
+            circle.setStyle({
+              opacity: 0.9 - frame / maxFrames,
+              fillOpacity: 0.7 - 0.7 * (frame / maxFrames)
+            });
+            if (frame < maxFrames) {
+              requestAnimationFrame(animate);
+            } else {
+              if (mapInstanceRef.current) {
+                mapInstanceRef.current.removeLayer(circle);
+              }
+              window.__bellPulseCircle = null;
+            }
+          }
+          animate();
+        }
 
-      await waitFor(() => {
-        expect(console.error).toHaveBeenCalledWith(
-          expect.stringContaining('Failed to update LeaderBoardPoints')
-        );
-      });
-    });
-  });
+        // Center the map on user's location
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setView([userLat, userLng], 18, { animate: true });
+        }
 
-  describe('Focus Quest Feature', () => {
-    test('focuses on quest when navigated with state', async () => {
-      const mockLocation = {
-        state: {
-          focusQuest: {
-            id: 'quest-1',
-            location: { latitude: -26.1929, longitude: 28.0305 }
+        let anyMatched = false;
+
+
+        for (const jq of journeyQuests) {
+          const prog = journeyProgress[jq.id];
+          if (!prog || !prog.accepted || prog.completed) continue;
+
+          const targetIdx = prog.currentStep; // 1 or 2
+          const target = jq.stops[targetIdx];
+          if (!target) continue;
+
+          const d = distanceMeters([userLat, userLng], [target.lat, target.lng]);
+          console.log(`Journey Quest ${jq.name}: Distance to target = ${Math.round(d)}m, Required = ${target.radius}m`);
+
+          if (d <= (target.radius || 40)) {
+            anyMatched = true;
+
+
+            setJourneyProgress((prev) => {
+              const nextStep = targetIdx + 1;
+              const completed = nextStep > 2;
+              return {
+                ...prev,
+                [jq.id]: {
+                  accepted: true,
+                  currentStep: completed ? 2 : nextStep,
+                  completed
+                }
+              };
+            });
+
+            if (targetIdx === 1) {
+              // Final riddle 
+              const nextRiddle = jq.stops[2]?.riddle || 'One last stop awaits...';
+              alert(`${jq.emoji} ${jq.name}\n\nGreat! You found Stop 2.\n\nRiddle for Final Stop:\n${nextRiddle}`);
+            } else if (targetIdx === 2) {
+              // Completed
+              alert(`${jq.emoji} ${jq.name}\n\nCongratulations! You completed the journey and earned ${jq.reward} points.`);
+              showToast('Journey quest completed!');
+
+              // Update Firestore LeaderBoardPoints
+              try {
+                const userRef = doc(db, "Users", currentUser.uid); // assumes doc ID = uid
+                await updateDoc(userRef, {
+                  LeaderBoardPoints: increment(jq.reward)
+                });
+                console.log(`Awarded ${jq.reward} points to ${currentUser.uid}`);
+              } catch (error) {
+                console.error("Failed to update LeaderBoardPoints:", error);
+                showToast("Error awarding points. Try again later.");
+              }
+            }
           }
         }
-      };
 
-      require('react-router-dom').useLocation.mockReturnValue(mockLocation);
-
-      await act(async () => {
-        renderHome();
-      });
-
-      // Should attempt to focus map and clear state
-      expect(mockNavigate).toHaveBeenCalledWith('.', { replace: true, state: {} });
-    });
-
-    test('handles invalid quest location in focus state', async () => {
-      const mockLocation = {
-        state: {
-          focusQuest: {
-            id: 'quest-1',
-            location: { latitude: 'invalid', longitude: null }
-          }
+        if (!anyMatched) {
+          showToast('The bell rings, but theres no response...', 5000);
         }
-      };
+      },
+      (err) => {
+        console.error(err);
+        if (err.code === 1) {
+          showToast('Location permission denied. Please allow location access to progress Journey Quests.');
+        } else {
+          showToast('Unable to get your location. Try again.');
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 25000,
+        maximumAge: 0,
+        // Force GPS to get the most accurate reading possible
+        desiredAccuracy: 10 // Request accuracy within 10 meters
+      }
+    );
+  };
 
-      require('react-router-dom').useLocation.mockReturnValue(mockLocation);
-      console.warn = jest.fn();
 
-      await act(async () => {
-        renderHome();
-      });
+  const handleSubmission = (questId) => {
+    setUserSubmissions(prev => ({ ...prev, [questId]: true }));
+    // Optionally, update allQuests or acceptedQuests if needed
+  };
 
-      expect(console.warn).toHaveBeenCalledWith(
-        'Invalid quest location:', 
-        { latitude: 'invalid', longitude: null }
-      );
-    });
-  });
-});
+  return (
+    <section className="home-container">
+      <header ref={headerRef} className="header">
+        <section className="website-name">
+          <img src={logoImage} alt="Logo" className="logo" />
+          <h1>WITS ADVENTURE</h1>
+        </section>
+        {/* The music button */}
+        <button
+          className={`music-icon ${isMusicPlaying ? 'playing' : ''}`}
+          onClick={toggleMusic}
+          aria-label="Toggle Music"
+        >
+          <img src={musicImage} alt="Music" />
+        </button>
+
+        {/* Create Quest button inserted between site name and user-area */}
+        <button
+          className="create-quest-btn"
+          onClick={handleCreateQuestClick} // changed
+          aria-label="Create Quest"
+        >
+          Create Quest
+        </button>
+
+        <section className="user-area">
+          {currentUser ? ( // Conditional rendering based on currentUser
+            <section className="user-profile" onClick={handleProfileClick} style={{ cursor: 'pointer' }}>
+              <section className="profile-icon">
+                <img src={profilePicture} alt={`${username}'s avatar`} className="profile-icon-img" />
+              </section>
+              <span className="username">{username}</span>
+              <button className="logout-btn" onClick={handleLogout}>
+                Logout
+              </button>
+            </section>
+          ) : (
+            <section className="auth-buttons">
+              <button className="signup-btn" onClick={handleSignup}>Sign Up </button>
+              <button className="login-btn" onClick={handleLogin}>
+                Login
+              </button>
+            </section>
+          )}
+        </section>
+      </header>
+
+      <CompleteQuestForm
+        isOpen={showCompleteForm}
+        onClose={() => { setShowCompleteForm(false); setActiveQuest(null); }}
+        quest={activeQuest}
+        showToast={showToast}
+        onSubmission={handleSubmission} // <-- pass handler
+      />
+
+      {/* Render floating form component (controlled by state) */}
+      <CreateQuestForm
+        isOpen={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        mapInstanceRef={mapInstanceRef}
+        questCirclesRef={questCirclesRef}
+      />
+
+      <main className="map-section">
+        <section className="map-container">
+          <div className="map-frame">
+            <div className="map-corners">
+              <section className="corner top-left"></section>
+              <section className="corner top-right"></section>
+              <section className="corner bottom-left"></section>
+              <section className="corner bottom-right"></section>
+            </div>
+            <div ref={mapRef} id="map" style={{ width: '100%', height: '100%' }}>
+              <button className="questbook-icon" onClick={handleQuestbookClick}>
+                <img src={questbookImage} alt="Questbook" />
+              </button>
+              {/* Castle icon - Center on Wits */}
+              <button
+                className="castle-icon"
+                onClick={() => {
+                  if (mapInstanceRef.current) {
+                    mapInstanceRef.current.setView([-26.1929, 28.0305], 17, { animate: true });
+
+                    // Find and open the Wits University popup
+                    mapInstanceRef.current.eachLayer((layer) => {
+                      if (layer.getPopup && layer.getPopup()) {
+                        const popupContent = layer.getPopup().getContent();
+                        if (popupContent && popupContent.includes('🏰 Wits University')) {
+                          setTimeout(() => {
+                            layer.openPopup();
+                          }, 500);
+                        }
+                      }
+                    });
+                  }
+                }}
+                aria-label="Center on Wits"
+              >
+                <img src={castleImage} alt="Center on Wits" />
+              </button>
+
+              {/* Bell icon */}
+              <button
+                className={`bell-icon ${isBellActive ? 'playing' : ''} ${bellCooldown ? 'cooldown' : ''}`}
+                onClick={handleBellPing}
+                aria-label="Bell"
+              >
+                <img src={bellImage} alt="Bell" />
+              </button>
+
+              {/* Music icon */}
+              <button
+                className={`music-icon ${isMusicPlaying ? 'playing' : ''}`}
+                onClick={toggleMusic}
+                aria-label="Toggle Music"
+              >
+                <img src={musicImage} alt="Music" />
+              </button>
+
+              {/* NEW: Tutorial button in top left */}
+              <button className="tutorial-icon" onClick={() => navigate('/tutorial')} aria-label="Tutorial">
+                <img src={tutorialImage} alt="Tutorial" />
+                {/* Fallback: If no image, replace with: <span>❓</span> */}
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {toastMsg && (
+        <div className="fantasy-toast">
+          {toastIcon === 'bell' ? (
+            <span className="toast-bell"></span>
+          ) : (
+            <span className="toast-proof"></span>
+          )}
+          {toastMsg}
+        </div>
+      )}
+    </section>
+  );
+};
+
+export default Home;

@@ -138,7 +138,7 @@
   }
 
   .leaflet-control-zoom {
-    margin-left: 18 px !important;
+    margin-left: 24px !important;
   }
 
 }
@@ -396,6 +396,10 @@
     width: 100%;
     height: 100%;
   }
+
+   .leaflet-control-zoom {
+    margin-left: 18px !important;
+  }
 }
 
 .username {
@@ -616,6 +620,25 @@
 .corner.bottom-right {
   bottom: 10px;
   right: 10px;
+}
+
+@media (max-width: 800px) {
+  .corner.bottom-left {
+    left: 25px;
+  }
+
+  .corner.bottom-right {
+    right: 25px;
+  }
+
+  .corner.top-left {
+    left: 25px;
+  }
+
+  .corner.top-right {
+    right: 25px;
+  }
+
 }
 
 #map {
@@ -1436,6 +1459,18 @@
   background: rgba(212, 160, 23, 0.04);
 }
 
+/* Bell cooldown state */
+.bell-icon.cooldown {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.7);
+  pointer-events: none;
+}
+
+.bell-icon.cooldown img {
+  opacity: 0.5;
+}
+
 /* make the bell image pop when active */
 .bell-icon.playing img {
   filter: drop-shadow(0 6px 12px rgba(212, 160, 23, 0.18));
@@ -1620,7 +1655,7 @@
     width: 70px;
     height: 70px;
     top: 26px;
-    left: 34px;
+    left: 48px;
   }
 
   .tutorial-icon img {
@@ -1634,11 +1669,63 @@
     width: 64px;
     height: 64px;
     top: 27px;
-    left: 30px;
+    left: 38px;
   }
 
   .tutorial-icon img {
     width: 70%;
     height: 70%;
+  }
+
+
+}
+
+/* Override castle button to use transparent background and image only */
+.castle-icon {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.castle-icon img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  display: block;
+  filter: none;
+}
+
+.castle-icon:hover {
+  transform: scale(1.1) translateY(-2px);
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Keep existing positioning tweaks, only size the image on smaller screens */
+@media (max-width: 800px) {
+  .castle-icon img {
+    width: 50px;
+    height: 50px;
+  }
+  .castle-icon {
+    bottom: 105px; /* keep your existing offset */
+  }
+}
+
+@media (max-width: 480px) {
+  .castle-icon img {
+    width: 45px;
+    height: 45px;
+  }
+  .castle-icon {
+    bottom: 95px; /* keep your existing offset */
   }
 }
