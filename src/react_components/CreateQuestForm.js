@@ -273,10 +273,15 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
     else if (e.type === 'dragleave') setDragActive(false);
   };
 
+  // Prevent map/global key handlers (e.g., Space) from interfering with typing
+  const stopKeyPropagation = (e) => {
+    e.stopPropagation();
+  };
+
   if (!isOpen && !following) return null;
 
   return (
-    <div className={`create-quest-portal ${isOpen ? 'open' : ''}`} role="dialog" aria-modal="true">
+    <div className={`create-quest-portal ${isOpen ? 'open' : ''}`} role="dialog" aria-modal="true" onKeyDown={stopKeyPropagation}>
       {!following && (
         <form className="create-quest-form" onSubmit={(e) => e.preventDefault()}>
           <h3>Create Quest</h3>
@@ -286,9 +291,13 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
               className="cq-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onKeyDown={stopKeyPropagation}
+              onKeyUp={stopKeyPropagation}
               placeholder="Enter quest name"
               maxLength={60}
               autoFocus
+              autoComplete="off"
+              spellCheck
             />
           </label>
 
@@ -299,8 +308,12 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
               draggable={false}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              onKeyDown={stopKeyPropagation}
+              onKeyUp={stopKeyPropagation}
               placeholder="Briefly describe the quest..."
               rows={3}
+              autoComplete="off"
+              spellCheck
             />
           </label>
 
