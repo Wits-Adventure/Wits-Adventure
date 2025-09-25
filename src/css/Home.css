@@ -99,8 +99,8 @@
 .map-frame .music-icon,
 #map>.music-icon {
   position: absolute;
-  top: 18px;
-  right: 18px;
+  top: 30px;
+  right: 30px;
   width: 60px;
   height: 60px;
   z-index: 1200;
@@ -399,6 +399,7 @@
 
    .leaflet-control-zoom {
     margin-left: 18px !important;
+    margin-top: 0px !important;
   }
 }
 
@@ -463,128 +464,70 @@
   /* remove fixed height dependency */
 }
 
+/* Map container and frame */
 .map-container {
   width: calc(100% - 60px);
-  /* account for the page's 30px horizontal padding each side */
   max-width: none;
-  /* remove fixed cap so it grows with viewport */
   margin: 0 30px;
-  /* keep the visual horizontal padding */
   flex: 1;
   height: 100%;
-  position: relative;
+  position: relative; /* ensure positioned context for children */
   min-height: 0;
   box-sizing: border-box;
-  /* ensure padding/border don't create overflow */
 }
 
-/* ensure map-frame still uses full container */
+/* Redone frame: overlay-only with layered light beige rings */
 .map-frame {
   width: 100%;
   height: 100%;
   position: relative;
-  background: linear-gradient(145deg, #D2B48C, #DEB887);
-  /* Remove border, use pseudo-element for animated border */
+  background: linear-gradient(145deg, #d6b98c, #e7cda1); /* lighter parchment */
   border-radius: 20px;
-  padding: 15px;
+  padding: 0; /* overlay-only */
   box-shadow:
-    0 0 0 3px #b48e65,
-    0 20px 40px rgba(101, 67, 33, 0.5),
-    0 30px 25px rgba(0, 0, 0, 0.5),
-    inset 0 2px 0 rgba(255, 255, 255, 0.2);
+    /* outer rings */
+    0 0 0 3px #c7a073,
+    0 0 0 8px rgba(244, 228, 188, 0.55),
+    /* ambient drop shadows */
+    0 18px 32px rgba(101, 67, 33, 0.45),
+    0 28px 22px rgba(0, 0, 0, 0.35),
+    /* inner bevel */
+    inset 0 2px 0 rgba(255, 255, 255, 0.25);
   overflow: hidden;
-  /* Keep this to clip any excess */
   min-height: 400px;
-  /* NEW: Match #map's min-height to prevent frame from shrinking too small */
 }
 
-@property --angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
+/* layered light-beige rings (overlay only; no layout impact) */
 .map-frame::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
+  inset: 6px;
+  border-radius: inherit;
   pointer-events: none;
-  border-radius: 20px;
-  padding: 4px;
-  box-sizing: border-box;
-  background: conic-gradient(from var(--angle), #b48e65, #d4a017, #ff4545, #00ff99, #006aff, #ff0095, #b48e65);
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: spin 3s linear infinite;
-}
-
-/* Remove the animated rainbow gradient border around the map frame */
-.map-frame::before,
-.map-frame::after {
-  content: none !important;
-  animation: none !important;
-  background: none !important;
-  filter: none !important;
+  z-index: 5; /* under .map-corners (z:10), above #map (z:1) */
+  border: 2px solid rgba(255, 245, 220, 0.7);           /* soft light ring */
+  box-shadow:
+    inset 0 0 12px rgba(160, 120, 70, 0.15),
+    0 0 0 4px rgba(223, 197, 149, 0.25);                /* faint outer glow */
 }
 
 .map-frame::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
+  inset: 12px;
+  border-radius: inherit;
   pointer-events: none;
-  border-radius: 20px;
-  padding: 4px;
-  box-sizing: border-box;
-  background: conic-gradient(from var(--angle), #b48e65, #d4a017, #ff4545, #00ff99, #006aff, #ff0095, #b48e65);
-  filter: blur(1.5rem);
-  opacity: 0.4;
-  animation: spin 3s linear infinite;
+  z-index: 6; /* slightly above ::after */
+  background: linear-gradient(145deg, rgba(255, 242, 201, 0.14), rgba(200, 157, 92, 0.08));
+  box-shadow:
+    inset 0 0 0 2px rgba(139, 115, 85, 0.18),           /* inner outline */
+    inset 0 10px 24px rgba(0, 0, 0, 0.10);              /* soft vignette */
 }
 
-@keyframes spin {
-  from {
-    --angle: 0deg;
-  }
+/* Remove old pseudo-elements logic for the frame (animated borders, etc.) */
+/* If present earlier, delete any .map-frame::before / ::after rules */
 
-  to {
-    --angle: 360deg;
-  }
-}
-
-/* small safeguard for very small screens (keeps existing mobile rules intact) */
-@media (max-width: 800px) {
-  .map-container {
-    width: calc(100% + 60px);
-    /* mobile override (already used elsewhere) */
-    margin: 0 -30px -20px -30px;
-
-  }
-
-  .map-frame {
-    /* ...existing code... */
-    overflow: hidden;
-    /* Ensure overflow is hidden on mobile too */
-    min-height: 340px;
-    /* NEW: Match the adjusted #map min-height for mobile */
-  }
-
-  /* ...existing code... */
-}
-
+/* Decorative corners remain as an overlay on top of the map */
 .map-corners {
   position: absolute;
   top: 0;
@@ -592,7 +535,7 @@
   right: 0;
   bottom: 0;
   pointer-events: none;
-  z-index: 10;
+  z-index: 10; /* above the map (#map has z-index:1) */
 }
 
 .corner {
@@ -644,18 +587,14 @@
 #map {
   width: 100%;
   height: 100%;
-  min-height: 320px;
-  /* was 400px */
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-  /* Updated filter for light brown buildings */
-  filter: sepia(0.55) saturate(1) contrast(1) brightness(1);
-  /* Ensure minimum height */
+  /* Ensure a consistent single min-height; mobile overrides below still apply */
   min-height: 400px;
+  border-radius: inherit; /* match the frame’s radius so edges align perfectly */
+  overflow: hidden;
+  position: relative; /* keep as relative for in-map buttons */
+  z-index: 1;
+  filter: sepia(0.55) saturate(1) contrast(1) brightness(1);
   max-height: 100%;
-  /* Added to prevent #map from exceeding its parent's height, reducing overflow risk */
 }
 
 /* Fix Leaflet container issues */
@@ -676,7 +615,8 @@
 .leaflet-control-zoom {
   border: none !important;
   box-shadow: none !important;
-  margin-top: 25px !important;
+  margin-top: 42px !important;
+  margin-left: 15px !important;
 }
 
 .leaflet-control-zoom a {
@@ -818,15 +758,15 @@
 /* Questbook Icon */
 .questbook-icon {
   position: absolute;
-  bottom: 15px;
-  right: 15px;
+  bottom: 30px;
+  right: 30px !important;
   background: transparent;
   /* Remove background */
   border: none;
   /* Remove border */
-  width: 100px;
+  width: 80px;
   /* Increased from 80px */
-  height: 100px;
+  height: 80px;
   /* Increased from 80px */
   display: flex;
   align-items: center;
@@ -1405,8 +1345,8 @@
 
 .bell-icon {
   position: absolute;
-  bottom: 15px;
-  left: 15px;
+  bottom: 24px;
+  left: 24px;
   background: transparent;
   border: none;
   width: 100px;
@@ -1618,32 +1558,31 @@
   /* Narrow the outer container margins so the framed map grows horizontally */
   .map-container {
     width: calc(100% - 32px);
-    /* match the smaller horizontal padding */
     margin: 0 16px;
     box-sizing: border-box;
   }
 
   /* Slightly reduce inner frame padding so the visible map area increases while keeping the decorative border */
   .map-frame {
-    padding: 12px;
+    padding: 0;
     border-radius: 18px;
   }
 
-  /* Encourage the actual map to occupy more vertical space on desktop */
   #map {
-    min-height: calc(100dvh - var(--header-offset, 120px) - 24px);
+    /* fill available height; no need to subtract frame padding anymore */
+    min-height: calc(100dvh - var(--header-offset, 120px));
   }
 }
 
 /* NEW: Tutorial Icon - positioned in top left of map */
 .tutorial-icon {
   position: absolute;
-  top: 18px;
-  left: 32px;
+  top: 10px;
+  left: 40px;
   background: transparent;
   border: none;
-  width: 85px;
-  height: 85px;
+  width: 75px;
+  height: 75px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1669,8 +1608,8 @@
   .tutorial-icon {
     width: 70px;
     height: 70px;
-    top: 26px;
-    left: 48px;
+    top: 0px;
+    left: 40px;
   }
 
   .tutorial-icon img {
@@ -1683,8 +1622,8 @@
   .tutorial-icon {
     width: 64px;
     height: 64px;
-    top: 27px;
-    left: 38px;
+    top: 0px;
+    left: 42px;
   }
 
   .tutorial-icon img {
