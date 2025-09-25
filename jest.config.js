@@ -19,6 +19,7 @@ module.exports = {
       'src/react_components/TutorialPage.js',
       'src/react_components/success.js',
       'src/react_components/ProfilePage.js',
+       'src/react_components/EtherealStyles.js',
 
 
 
