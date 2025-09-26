@@ -322,6 +322,11 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
                   type="text"
                   value={editedUsername}
                   onChange={(e) => setEditedUsername(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ') {
+                      e.stopPropagation(); // prevent global handlers from blocking space
+                    }
+                  }}
                   className="modal-input"
                 />
               </div>
@@ -331,6 +336,11 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
                 <textarea
                   value={editedBio}
                   onChange={(e) => setEditedBio(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ') {
+                      e.stopPropagation();
+                    }
+                  }}
                   className="modal-textarea"
                   rows="4"
                 />
