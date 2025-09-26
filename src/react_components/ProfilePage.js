@@ -257,6 +257,10 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
                 <span className="stat-label">Quests In Progress:</span>
                 <span className="stat-value">{user.questsInProgress}</span>
               </div>
+              <div className="stat-item">
+                <span className="stat-label">LeaderBoard Points</span>
+                <span className="stat-value">{user.points}</span>
+              </div>
             </div>
           </div>
         </section>
