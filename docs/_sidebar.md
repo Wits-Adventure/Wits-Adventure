@@ -8,4 +8,5 @@
 - [🏹 External code and API integration](external.md)
 - [🪤 Schema and explanation](schema.md)
 - [🔮 Testing](testing.md)
+- [💫 Feedback integration](feedback.md)
 
