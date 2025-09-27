@@ -32,15 +32,15 @@ const Leaderboard = () => {
           <tr>
             <th>Rank</th>
             <th>Name</th>
-            <th>Points</th>
+            <th className="points-header">Points</th>
           </tr>
         </thead>
         <tbody>
           {sortedUsers.map((user, idx) => (
-            <tr key={user.id}>
+            <tr key={user.id} style={{ animationDelay: `${(sortedUsers.length - idx) * 0.12}s` }}>
               <td>{idx + 1}</td>
               <td>{user.Name}</td>
-              <td>{user.LeaderBoardPoints}</td>
+              <td className="points-cell">{user.LeaderBoardPoints}</td>
             </tr>
           ))}
         </tbody>

@@ -1,14 +1,31 @@
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.leaderboard-table tbody tr {
+  opacity: 0;
+  animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
 .leaderboard-container {
   background: linear-gradient(135deg, #fff6e0 0%, #f5e1c0 100%);
   border: 2px solid #90774c;
   border-radius: 18px;
   padding: 32px 24px;
   margin: 0 auto;
-  max-width: 600px;
+  max-width: 1600px;
   box-shadow: 0 4px 24px rgba(144, 119, 76, 0.13);
   font-family: 'Cinzel', serif;
 }
 
+
+/* Table styles restored */
 .leaderboard-table {
   width: 100%;
   border-collapse: separate;
@@ -27,6 +44,14 @@
   color: #90774c;
   font-weight: 700;
   border-bottom: 2px solid #d8ba8a;
+}
+
+.leaderboard-table th.points-header {
+  color: #228B22;
+}
+.leaderboard-table td.points-cell {
+  color: #228B22;
+  font-weight: bold;
 }
 
 .leaderboard-table tr:nth-child(even) {
