@@ -82,12 +82,45 @@
   z-index: -1;
 }
 
+/* Overlay border placed over the circular profile image */
 .profile-pic-container {
+  position: relative;
   display: flex;
   justify-content: center;
   margin-bottom: 25px;
   position: relative;
   z-index: 2;
+}
+
+.profile-border-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.12);
+  transform-origin: center;
+  width: calc(100% + 30px);
+  height: calc(100% + 30px);
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 4;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.18));
+}
+
+/* Slight adjustments on smaller screens so overlay stays proportional */
+@media (max-width: 768px) {
+  .profile-border-overlay {
+    transform: translate(-50%, -50%) scale(1.2);
+    width: calc(100% + 28px);
+    height: calc(100% + 28px);
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-border-overlay {
+    transform: translate(-50%, -50%) scale(1.2);
+    width: calc(100% + 24px);
+    height: calc(100% + 24px);
+  }
 }
 
 .profile-pic {
@@ -213,15 +246,13 @@
 }
 
 .content-section {
-  background: linear-gradient(135deg, #ffeac8, #d8ba8a);
-  border: 4px solid #90774c;
-  border-radius: 25px;
-  padding: 25px;
+  background: linear-gradient(135deg, #fff6e8, #ead9b0); /* keep light card tone but without brown ring */
+  border: none; /* removed brown border */
+  border-radius: 16px; /* slightly smaller radius for visual separation */
+  padding: 20px;
   box-shadow:
-    0 0 0 3px #90774c,
-    0 20px 40px rgba(144, 119, 76, 0.5),
-    0 30px 25px rgba(0, 0, 0, 0.3),
-    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    0 12px 24px rgba(71,57,37,0.08),
+    inset 0 2px 6px rgba(255,255,255,0.04);
   position: relative;
   flex: 1;
   /* Equal height sections */
@@ -234,15 +265,7 @@
 }
 
 .content-section::before {
-  content: '';
-  position: absolute;
-  top: -6px;
-  left: -6px;
-  right: -6px;
-  bottom: -6px;
-  background: #90774c;
-  border-radius: 30px;
-  z-index: -1;
+  display: none;
 }
 
 .section-title {
@@ -362,7 +385,6 @@
   color: #2F1B14;
   transition: all 0.3s ease;
   box-shadow: inset 0 2px 4px rgba(144, 119, 76, 0.1);
-  resize: vertical;
 }
 
 .modal-input:focus,
@@ -605,9 +627,10 @@
     border-radius: 20px;
   }
 
+  /* Make mobile profile picture larger */
   .profile-pic {
-    width: 120px;
-    height: 120px;
+    width: 180px;
+    height: 180px;
   }
 
   .profile-username {
@@ -657,9 +680,10 @@
     border-radius: 18px;
   }
 
+  /* Increase extra-small screen profile picture size */
   .profile-pic {
-    width: 100px;
-    height: 100px;
+    width: 180px;
+    height: 180px;
   }
 
   .profile-username {
@@ -870,36 +894,87 @@
   /* subtle emoji shadow */
 }
 
-/* Responsive: reduce columns on smaller screens to keep items readable */
+/* Inventory grid: square, image-only tiles for customization items */
+.inventory-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 12px;
+  align-content: start;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  padding: 5px;
+}
+
+.inventory-item {
+  /* ensure perfectly square */
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 0; /* prevent flex overflow issues */
+  border: 3px solid #90774c;
+  border-radius: 18px;
+  overflow: hidden;
+  background-color: transparent; /* no pastel bleed through */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    inset 0 2px 6px rgba(255,255,255,0.03);
+  /* remove text/labels inside - purely decorative */
+  display: block;
+  position: relative;
+  transform-origin: center;
+  transition: transform 240ms cubic-bezier(.2,.9,.2,1), box-shadow 240ms cubic-bezier(.2,.9,.2,1), filter 240ms ease;
+  will-change: transform, box-shadow;
+}
+
+/* Hover animation: match the feel of .emoji-item (lift, stronger shadow, subtle brighten),
+   keep the sheen already present but reduce its intensity for parity. */
+.inventory-item:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.20),
+    0 16px 32px rgba(0, 0, 0, 0.12),
+    inset 0 4px 8px rgba(255,255,255,0.70);
+  filter: saturate(1.04) contrast(1.02);
+  cursor: pointer;
+}
+
+/* keep the sheen but make it slightly faster and more subtle on hover */
+.inventory-item:hover::after {
+  animation: inventory-sheen 650ms linear forwards;
+  opacity: 1;
+}
+
+/* active / pressed feedback */
+.inventory-item:active {
+  transform: translateY(-2px) scale(0.995);
+  transition: transform 120ms ease;
+  box-shadow:
+    0 6px 12px rgba(0,0,0,0.16),
+    inset 0 2px 4px rgba(255,255,255,0.5);
+}
+
+/* keyboard focus like hover (accessibility) */
+.inventory-item:focus-visible {
+  outline: none;
+  transform: translateY(-6px) scale(1.03);
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.22),
+    0 20px 36px rgba(0, 0, 0, 0.10),
+    inset 0 4px 8px rgba(255,255,255,0.70);
+}
+
+/* Responsive column counts to match emoji-grid behavior */
 @media (max-width: 1200px) {
-  .emoji-grid {
-    grid-template-columns: repeat(6, 1fr);
-  }
+  .inventory-grid { grid-template-columns: repeat(6, 1fr); }
 }
-
 @media (max-width: 900px) {
-  .emoji-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+  .inventory-grid { grid-template-columns: repeat(4, 1fr); }
 }
-
 @media (max-width: 480px) {
-  .emoji-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-
-  .emoji-item {
-    height: 80px;
-    /* increased from 56px for mobile */
-    border-radius: 20px;
-    /* maintain rounded look on mobile */
-  }
-
-  .emoji-char {
-    font-size: 30px;
-    /* increased from 22px for mobile */
-  }
+  .inventory-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
 }
 
 /* Optional: nicer thin scrollbar for desktop */
@@ -917,3 +992,284 @@
   border-radius: 8px;
   border: 2px solid rgba(0, 0, 0, 0.04);
 }
+
+/* Background picker modal - fantasy light brown / beige style (matches QuestManager) */
+.bg-picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(47, 27, 20, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2200;
+  backdrop-filter: blur(6px);
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* Compact modal width, less padding, centered layout */
+.bg-picker-modal {
+  width: 100%;
+  max-width: 380px; /* smaller width */
+  background: linear-gradient(135deg, #fff3db, #e9d6b2);
+  border: 3px solid #90774c;
+  border-radius: 14px;
+  padding: 12px; /* reduced padding */
+  box-shadow:
+    0 0 0 2px #90774c,
+    0 20px 32px rgba(71,57,37,0.40),
+    inset 0 2px 0 rgba(255,255,255,0.22);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center; /* center contents */
+}
+
+/* Body becomes compact and centers controls */
+.bg-picker-body {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 6px 4px;
+  box-sizing: border-box;
+}
+
+.bg-picker-controls.compact {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 320px;
+}
+
+/* Smaller swatch and hex input variants for compact mode */
+.bg-color-input.compact {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 64px;
+  height: 44px;
+  border-radius: 10px;
+  border: 3px solid #90774c;
+  padding: 4px;
+  box-shadow:
+    0 6px 12px rgba(0,0,0,0.14),
+    inset 0 1px 4px rgba(255,255,255,0.22);
+}
+
+.bg-color-input.compact::-webkit-color-swatch-wrapper { padding: 0; border-radius: 8px; }
+.bg-color-input.compact::-webkit-color-swatch { border: none; border-radius: 8px; }
+
+.bg-hex-input.compact {
+  width: 120px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 2px solid #90774c;
+  background: #fff7ec;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  color: #2F1B14;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* center actions and tighten spacing */
+.bg-picker-actions.centered {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+  padding-top: 4px;
+}
+
+/* remove the previous helper text rule if present */
+.bg-picker-help { display: none !important; }
+
+/* mobile tweaks for compact modal */
+@media (max-width: 420px) {
+  .bg-picker-modal { max-width: 320px; padding: 10px; }
+  .bg-color-input.compact { width: 56px; height: 40px; }
+  .bg-hex-input.compact { width: 100px; }
+}
+
+/* Card theme variables (controlled by JS when picking card color) */
+:root {
+  --card-bg: linear-gradient(135deg, #FFEAC8 0%, #E9D6B2 100%);
+  --card-border: #90774c;
+  --card-text: #2F1B14;
+  --card-radius: 18px;
+  --card-padding: 16px;
+}
+
+/* Apply theme to main card (left) */
+.profile-card {
+  background: var(--card-bg);
+  border: 3px solid var(--card-border);
+  border-radius: var(--card-radius);
+  color: var(--card-text);
+  padding: var(--card-padding);
+  box-shadow:
+    0 18px 36px rgba(71,57,37,0.14),
+    inset 0 2px 6px rgba(255,255,255,0.06);
+}
+
+/* Apply theme to right-side content sections (inventory, created quests, etc.) */
+.content-section {
+  background: var(--card-bg);
+  border: 3px solid var(--card-border);
+  border-radius: 14px;
+  color: var(--card-text);
+  padding: 12px;
+  box-shadow:
+    0 12px 24px rgba(71,57,37,0.10),
+    inset 0 2px 6px rgba(255,255,255,0.04);
+}
+
+/* Quest/emoji items use the card theme for border and subtle background fallback.
+   Individual quest colors (inline styles) will still override background where applied. */
+.emoji-item {
+  border: 3px solid var(--card-border);
+  color: var(--card-text);
+  background-clip: padding-box;
+  border-radius: 16px;
+  transition: transform 240ms cubic-bezier(.2,.9,.2,1), box-shadow 240ms cubic-bezier(.2,.9,.2,1);
+  box-shadow:
+    0 6px 14px rgba(0,0,0,0.08),
+    inset 0 1px 4px rgba(255,255,255,0.03);
+}
+
+/* Inventory tiles keep their image background but take border / radius from theme */
+.inventory-item {
+  border: 3px solid var(--card-border);
+  border-radius: 18px;
+  overflow: hidden;
+  background-color: transparent;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: transform 240ms cubic-bezier(.2,.9,.2,1), box-shadow 240ms cubic-bezier(.2,.9,.2,1);
+}
+
+/* Keep hover / focus effects but use themed border color */
+.inventory-item:hover,
+.emoji-item:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow:
+    0 10px 20px rgba(0,0,0,0.18),
+    inset 0 4px 8px rgba(255,255,255,0.55);
+}
+
+/* Profile info panel uses theme (info boxes inside the card retain layout) */
+.profile-info-section {
+  background: transparent; /* keep it visually part of the profile-card */
+  color: var(--card-text);
+}
+
+/* Ensure modals that should match card theme can reference variables too */
+.modal,
+.bg-picker-modal {
+  /* do not overwrite background for picker modal, but allow card-themed popups if needed */
+}
+
+/* Pastel backgrounds specifically for the six border inventory items.
+   These sit behind the image and will show through any transparent parts. */
+.inventory-item[data-item-id="border-1"] { background-color: #FFE8E1; } /* soft peach */
+.inventory-item[data-item-id="border-2"] { background-color: #FFF2D9; } /* light cream */
+.inventory-item[data-item-id="border-3"] { background-color: #E6F7FF; } /* pale sky */
+.inventory-item[data-item-id="border-4"] { background-color: #F0E8FF; } /* light lavender */
+.inventory-item[data-item-id="border-5"] { background-color: #E8FFF2; } /* minty */
+.inventory-item[data-item-id="border-6"] { background-color: #FFF0F6; } /* soft rose */
+
+/* Visual indicator for the currently applied profile-border tile */
+.inventory-item.selected-border {
+  position: relative;
+  z-index: 3;
+  transform-origin: center;
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms cubic-bezier(.2,.9,.2,1);
+  transform: translateY(-6px) scale(1.03);
+  box-shadow:
+    0 12px 26px rgba(0,0,0,0.22),
+    inset 0 2px 6px rgba(255,255,255,0.06);
+  border-color: rgba(255, 255, 255, 0.95);
+}
+
+/* Decorative fantasy-style ring around selected tile */
+.inventory-item.selected-border::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 22px;
+  pointer-events: none;
+  border: 3px solid rgba(144,119,76,0.88); /* warm brown ring */
+  box-shadow:
+    0 10px 24px rgba(71,57,37,0.28),
+    0 0 0 4px rgba(255,255,255,0.03) inset;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.16));
+  transform: translateZ(0);
+}
+
+/* keyboard / aria feedback: same visual when focused/pressed */
+.inventory-item[aria-pressed="true"],
+.inventory-item:focus-visible.selected-border {
+  outline: none;
+}
+
+/* reduce vibrance on small screens while keeping the indicator */
+@media (max-width: 480px) {
+  .inventory-item.selected-border::after { inset: -6px; border-radius: 18px; }
+}
+
+/* Locked overlay over inventory tiles before purchase */
+.inventory-item.locked {
+  position: relative;
+  cursor: pointer; /* still clickable to open purchase modal */
+}
+
+/* grey dim overlay and centered lock */
+.inventory-item.locked::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(96, 96, 96, 0.56);
+  mix-blend-mode: normal;
+  z-index: 6;
+  border-radius: 18px;
+  pointer-events: none;
+}
+
+/* Centered lock emoji block (above the dim) */
+.locked-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 7;
+  pointer-events: none;
+}
+
+.locked-emoji {
+  font-size: 28px;
+  display: inline-block;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.22);
+  color: #222; /* fallback color for monochrome fallback fonts */
+  text-shadow: none;
+
+  /* Desaturate / tone down coloured emoji to grey/monochrome */
+  -webkit-filter: grayscale(1) contrast(0.95) brightness(1.5);
+  filter: grayscale(1) contrast(0.95) brightness(1.2);
+
+  /* prefer system emoji fonts but allow grayscale filter to take effect */
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+/* Reduce overlay intensity on hover so user sees the tile when interacting */
+.inventory-item.locked:hover::before {
+  background: rgba(96, 96, 96, 0.48);
+}
+
+/* When unlocked, ensure the lock overlay is gone (class removed by JS) */
+.inventory-item:not(.locked) .locked-overlay { display: none; }
