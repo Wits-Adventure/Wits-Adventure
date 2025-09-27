@@ -176,7 +176,7 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
   if (loading) {
     return (
       <main className="profile-container">
-        <div className="loading-message">Loading profile...</div>
+        <div className="loading-message"><img src={process.env.PUBLIC_URL + '/loading.gif'} alt="Loading..." style={{ width: 60, height: 60 }} /></div>
       </main>
     );
   }

@@ -29,7 +29,7 @@ function Unauthorized() {
     return (
       <div style={styles.container}>
         <div style={styles.content}>
-          <p>Loading user data...</p>
+          <img src={process.env.PUBLIC_URL + '/loading.gif'} alt="Loading..." style={{ width: 60, height: 60 }} />
         </div>
       </div>
     );

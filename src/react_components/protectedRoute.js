@@ -27,7 +27,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }, [currentUser]);
 
   if (loading) {
-    return <div>Loading...</div>; // You can use a more sophisticated loading spinner
+  return <div style={{ textAlign: 'center' }}><img src={process.env.PUBLIC_URL + '/loading.gif'} alt="Loading..." style={{ width: 60, height: 60 }} /></div>; // Loading spinner
   }
 
   if (!currentUser) {

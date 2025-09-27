@@ -37,7 +37,7 @@ function Success() {
   }, [navigate]);
 
   if (loading) {
-    return <div style={styles.container}>Loading...</div>;
+  return <div style={styles.container}><img src={process.env.PUBLIC_URL + '/loading.gif'} alt="Loading..." style={{ width: 60, height: 60 }} /></div>;
   }
 
   return (

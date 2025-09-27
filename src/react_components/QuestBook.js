@@ -87,6 +87,7 @@ const QuestBook = () => {
   };
 
   if (loading) return <p style={{ textAlign: 'center' }}>Loading quests...</p>;
+  if (loading) return <div style={{ textAlign: 'center' }}><img src={process.env.PUBLIC_URL + '/loading.gif'} alt="Loading..." style={{ width: 60, height: 60 }} /></div>;
   if (quests.length === 0) return <p style={{ textAlign: 'center' }}>No quests available.</p>;
 
   return (
