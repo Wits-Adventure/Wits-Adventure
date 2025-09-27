@@ -14,7 +14,6 @@ const Leaderboard = () => {
         id: doc.id,
         Name: doc.data().Name || '',
         LeaderBoardPoints: doc.data().LeaderBoardPoints || 0,
-        Level: doc.data().Level || 0,
         Email: doc.data().Email || '',
       }));
       setUsers(userList);
@@ -34,7 +33,6 @@ const Leaderboard = () => {
             <th>Rank</th>
             <th>Name</th>
             <th>Points</th>
-            <th>Level</th>
           </tr>
         </thead>
         <tbody>
@@ -43,7 +41,6 @@ const Leaderboard = () => {
               <td>{idx + 1}</td>
               <td>{user.Name}</td>
               <td>{user.LeaderBoardPoints}</td>
-              <td>{user.Level}</td>
             </tr>
           ))}
         </tbody>
