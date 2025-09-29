@@ -23,39 +23,70 @@ export const getAllQuests = async () => {
     }
 };
 
-export async function saveQuestToFirestore(questData) {
+
+/**
+ * Creates a new quest by first uploading the image (if present) and then saving 
+ * the quest data to the backend API.
+ * * @param {object} questData - The quest details including an optional 'imageFile'.
+ * @returns {Promise<string>} The ID of the newly created quest.
+ */
+export async function createQuestOnBackend(questData) {
     try {
         let imageUrl = '';
+
         // Check if an image file was provided to upload
         if (questData.imageFile) {
-            // 1. Upload image to Firebase Storage
-            const storageRef = ref(storage, `quest_images/${questData.creatorId}_${Date.now()}`);
-            await uploadBytes(storageRef, questData.imageFile);
-            // 2. Get the download URL
-            imageUrl = await getDownloadURL(storageRef);
+            // 1. UPLOAD IMAGE TO BACKEND
+            console.log("Uploading image...");
+            
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append('image', questData.imageFile);
+
+            // Use apiRequest with isFormData = true
+            const uploadResponse = await apiRequest(
+                '/api/upload/image', 
+                'POST', 
+                formData, 
+                true // Set isFormData to true for file uploads
+            );
+            
+            imageUrl = uploadResponse.imageUrl;
+            console.log("Image uploaded. URL:", imageUrl);
         }
 
-        // 3. Save the quest with the URL to Firestore
-        const questRef = await addDoc(collection(db, "Quests"), {
+        // Prepare quest data for Firestore
+        const finalQuestData = {
             name: questData.name,
             radius: questData.radius,
             reward: questData.reward,
-            location: new GeoPoint(questData.lat, questData.lng),
-            imageUrl: imageUrl, // <-- Save the short URL, not the Base64 data
-            creatorId: questData.creatorId,
+            type: questData.type,
+            lat: questData.lat, // Pass lat/lng as numbers to the backend
+            lng: questData.lng,
+            imageUrl: imageUrl, // Use the uploaded URL (or empty string)
             creatorName: questData.creatorName,
-            createdAt: serverTimestamp(),
-            active: true,
-            acceptedBy: [],
             emoji: questData.emoji,
             color: questData.color
-        });
+            // creatorId is derived from the auth token on the backend
+        };
+
+        // 2. SAVE QUEST DATA TO BACKEND
+        console.log("Saving quest data...");
+        // Use apiRequest for JSON data
+        const questResponse = await apiRequest(
+            '/api/quests', 
+            'POST', 
+            finalQuestData
+        );
+        
         alert(`Quest "${questData.name}" added successfully!`);
-        console.log("Quest ID:", questRef.id);
-        return questRef.id;
+        console.log("Quest ID:", questResponse.questId);
+        return questResponse.questId;
+
     } catch (error) {
-        console.error("Error adding quest to Firestore:", error);
-        alert("Failed to add quest. Please try again.");
+        console.error("Error creating quest:", error.message);
+        alert(`Failed to create quest. Details: ${error.message}`);
+        throw error; // Re-throw the error for component-level handling
     }
 }
 
@@ -120,159 +151,171 @@ export const abandonQuest = async (questId) => {
     }
 };
 
-// Submit an attempt (image) for a quest
-export async function submitQuestAttempt(questId, userId, file, userName) {
-    // 1. Upload image to Firebase Storage
-    const storageRef = ref(storage, `quest_submissions/${questId}/${userId}_${Date.now()}`);
-    await uploadBytes(storageRef, file);
-    const imageUrl = await getDownloadURL(storageRef);
 
-    // 2. Get current submissions
-    const questRef = doc(db, "Quests", questId);
-    const questSnap = await getDoc(questRef);
-    let submissions = questSnap.exists() ? questSnap.data().submissions || [] : [];
+/**
+ * Submits an attempt for a quest by first uploading the image to the backend 
+ * and then sending the resulting URL to the quest submission endpoint.
+ * @param {string} questId - The ID of the quest being attempted.
+ * @param {string} userId - The ID of the user submitting the attempt. (Handled by token on backend)
+ * @param {File} file - The image file to upload.
+ * @param {string} userName - The display name of the user.
+ * @returns {Promise<void>}
+ */
+export async function submitQuestAttemptToBackend(questId, userId, file, userName) {
+    try {
+        let imageUrl = '';
 
-    // 3. Remove previous submission by this user
-    submissions = submissions.filter(sub => sub.userId !== userId);
+        // --- 1. UPLOAD IMAGE TO BACKEND ---
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('image', file, file.name); // 'image' must match multer field in upload.js
 
-    // 4. Add new submission
-    submissions.push({
-        userId,
-        Name: userName,
-        imageUrl,
-        submittedAt: Date.now()
-    });
+        console.log("Uploading submission image...");
+        
+        // Use apiRequest with isFormData = true to upload the file
+        const uploadResponse = await apiRequest(
+            '/api/upload/image', 
+            'POST', 
+            formData, 
+            true // isFormData: true for file upload
+        );
+        
+        imageUrl = uploadResponse.imageUrl;
+        console.log("Image uploaded. URL:", imageUrl);
 
-    // 5. Update quest document
-    await updateDoc(questRef, { submissions });
+        // --- 2. SUBMIT ATTEMPT DETAILS TO BACKEND ---
+        const submissionData = {
+            imageUrl: imageUrl,
+            userName: userName,
+            // userId is retrieved on the backend from the authentication token
+        };
+
+        console.log("Submitting quest attempt details...");
+        
+        // Use apiRequest for JSON data (isFormData: false)
+        await apiRequest(
+            `/api/quests/${questId}/submit`, 
+            'PATCH', 
+            submissionData
+        );
+        
+        alert(`Quest attempt submitted successfully!`);
+
+    } catch (error) {
+        console.error("Error submitting quest attempt:", error.message);
+        alert(`Failed to submit quest attempt. Details: ${error.message}`);
+        throw error; // Propagate error for component handling
+    }
 }
 
-// Fetch submissions for a quest by ID
+
+/**
+ * Fetches the submissions array for a specific quest from the backend API.
+ * @param {string} questId - The ID of the quest.
+ * @returns {Promise<Array<object>>} An array of quest submission objects.
+ */
 export async function fetchQuestSubmissions(questId) {
-    const questRef = doc(db, "Quests", questId);
-    const questSnap = await getDoc(questRef);
-    if (questSnap.exists()) {
-        const data = questSnap.data();
-        return data.submissions || [];
+    try {
+        // apiRequest defaults to 'GET' and handles the Bearer token
+        const submissions = await apiRequest(`/api/quests/${questId}/submissions`);
+        
+        console.log(`Submissions fetched for quest ${questId}`);
+        return submissions;
+        
+    } catch (error) {
+        console.error("Error fetching quest submissions:", error.message);
+        return []; 
     }
-    return [];
 }
 
-// Remove a submission from a quest by index
+/**
+ * Sends a request to the backend to remove a submission from a quest by index.
+ * @param {string} questId - The ID of the quest.
+ * @param {number} submissionIndex - The index of the submission to remove in the array.
+ * @returns {Promise<void>}
+ */
 export async function removeQuestSubmission(questId, submissionIndex) {
-    const questRef = doc(db, "Quests", questId);
-    const questSnap = await getDoc(questRef);
-    if (!questSnap.exists()) return;
+    try {
+        console.log(`Requesting removal of submission at index ${submissionIndex} for quest ${questId}`);
+        
+        const body = {
+            submissionIndex: submissionIndex // Send index in the request body
+        };
 
-    const data = questSnap.data();
-    const submissions = data.submissions || [];
-    console.log("Before removal:", submissions, "Index:", submissionIndex);
+        // Use apiRequest with 'PATCH' to send the removal request
+        await apiRequest(
+            `/api/quests/${questId}/submissions/remove`, 
+            'PATCH', 
+            body
+        );
+        
+        alert(`Submission removed successfully from quest ${questId}!`);
 
-    if (submissionIndex < 0 || submissionIndex >= submissions.length) return;
-
-    submissions.splice(submissionIndex, 1);
-    console.log("After removal:", submissions);
-
-    await updateDoc(questRef, { submissions });
+    } catch (error) {
+        console.error("Error removing quest submission:", error.message);
+        alert(`Failed to remove submission. Details: ${error.message}`);
+        throw error; // Re-throw the error for component-level handling
+    }
 }
 
-// Approve a submission, award points, and clean up quest
+/**
+ * Sends a request to the backend to approve a submission, award points, and close the quest.
+ * Only the quest creator is authorized to call this endpoint.
+ * @param {string} questId - The ID of the quest to close.
+ * @param {string} approvedUserId - The ID of the user whose submission is being approved.
+ * @returns {Promise<void>}
+ */
 export async function approveSubmissionAndCloseQuest(questId, approvedUserId) {
-    // 1. Get quest data
-    const questRef = doc(db, "Quests", questId);
-    const questSnap = await getDoc(questRef);
-    if (!questSnap.exists()) return;
-    const questData = questSnap.data();
+    try {
+        console.log(`Approving submission for user ${approvedUserId} and closing quest ${questId}`);
+        
+        const body = {
+            approvedUserId: approvedUserId 
+        };
 
-    const creatorId = questData.creatorId;
-    const reward = questData.reward ?? 0;
+        // Use apiRequest with 'POST' (or PATCH) to trigger the complex server-side logic
+        await apiRequest(
+            `/api/quests/${questId}/approve`, 
+            'POST', 
+            body
+        );
+        
+        alert(`Submission approved and quest closed! Points awarded to both ${approvedUserId} and the creator.`);
 
-    // Only keep the specified fields for CompletedQuests
-    const completedQuestEntry = {
-        color: questData.color,
-        createdAt: questData.createdAt,
-        creatorId: questData.creatorId,
-        creatorName: questData.creatorName,
-        emoji: questData.emoji,
-        imageUrl: questData.imageUrl,
-        location: questData.location,
-        name: questData.name,
-        questId: questId,
-        radius: questData.radius,
-        reward: questData.reward,
-        completedAt: Date.now()
-    };
-
-    // 2. Award points and experience to approved user
-    const approvedUserRef = doc(db, "Users", approvedUserId);
-    const approvedUserSnap = await getDoc(approvedUserRef);
-    if (approvedUserSnap.exists()) {
-        const prevPoints = approvedUserSnap.data().SpendablePoints ?? 0;
-        const prevExp = approvedUserSnap.data().Experience ?? 0;
-        const prevleaderboardpts = approvedUserSnap.data().LeaderBoardPoints ?? 0;
-        await updateDoc(approvedUserRef, {
-            SpendablePoints: prevPoints + reward,
-            Experience: prevExp + reward,
-            LeaderBoardPoints: prevleaderboardpts+reward,
-            CompletedQuests: [
-                ...(approvedUserSnap.data().CompletedQuests ?? []),
-                {
-                    questId,
-                    ...questData
-                }
-            ]
-        });
+    } catch (error) {
+        console.error("Error approving and closing quest:", error.message);
+        alert(`Failed to approve and close quest. Details: ${error.message}`);
+        throw error; // Propagate error for component-level handling
     }
-
-    // 3. Award points and experience to quest creator
-    if (creatorId) {
-        const creatorRef = doc(db, "Users", creatorId);
-        const creatorSnap = await getDoc(creatorRef);
-        if (creatorSnap.exists()) {
-            const prevPoints = creatorSnap.data().SpendablePoints ?? 0;
-            const prevExp = creatorSnap.data().Experience ?? 0;
-        const prevleaderboardpts = approvedUserSnap.data().LeaderBoardPoints ?? 0;
-            await updateDoc(creatorRef, {
-                SpendablePoints: prevPoints + reward,
-                Experience: prevExp + reward,
-                LeaderBoardPoints: prevleaderboardpts+reward,
-                CompletedQuests: [
-                    ...(creatorSnap.data().CompletedQuests ?? []),
-                    {
-                        questId,
-                        ...questData
-                    }
-                ]
-            });
-        }
-    }
-
-    // 4. Remove questId from all users' acceptedQuests arrays
-    const usersSnapshot = await getDocs(collection(db, "Users"));
-    const batch = [];
-    usersSnapshot.forEach(userDoc => {
-        const userData = userDoc.data();
-        if (userData.acceptedQuests && userData.acceptedQuests.includes(questId)) {
-            batch.push(
-                updateDoc(doc(db, "Users", userDoc.id), {
-                    acceptedQuests: userData.acceptedQuests.filter(qid => qid !== questId)
-                })
-            );
-        }
-    });
-    await Promise.all(batch);
-
-    // 5. Delete the quest document
-    await deleteDoc(questRef);
 }
 
+
+/**
+ * Sends a request to the backend to remove all submissions for a specific user from a quest.
+ * @param {string} questId - The ID of the quest.
+ * @param {string} userId - The ID of the user whose submissions are to be removed.
+ * @returns {Promise<void>}
+ */
 export async function removeSubmissionByUserId(questId, userId) {
-    const questRef = doc(db, "Quests", questId);
-    const questSnap = await getDoc(questRef);
-    if (!questSnap.exists()) return;
+    try {
+        console.log(`Requesting removal of submissions for user ${userId} from quest ${questId}`);
+        
+        const body = {
+            userIdToRemove: userId // Mapped to the backend parameter
+        };
 
-    const data = questSnap.data();
-    const submissions = (data.submissions || []).filter(sub => sub.userId !== userId);
+        // Use apiRequest with 'PATCH' to send the removal request
+        await apiRequest(
+            `/api/quests/${questId}/submissions/remove-by-user`, 
+            'PATCH', 
+            body
+        );
+        
+        alert(`All submissions for user ${userId} successfully removed from quest ${questId}!`);
 
-    await updateDoc(questRef, { submissions });
+    } catch (error) {
+        console.error("Error removing submission by user ID:", error.message);
+        alert(`Failed to remove submissions. Details: ${error.message}`);
+        throw error; // Re-throw the error for component-level handling
+    }
 }

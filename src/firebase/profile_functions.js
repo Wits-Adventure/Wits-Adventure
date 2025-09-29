@@ -3,74 +3,70 @@ import { collection, getDocs, getDoc, updateDoc, doc } from "firebase/firestore"
 
 
 
-
+/**
+ * Fetches the authenticated user's profile data from the backend API.
+ * The authentication token is automatically handled by apiRequest.
+ * @returns {Promise<object>} The structured user profile data.
+ */
 export async function getProfileData() {
-  const user = auth.currentUser;
-  if (!user) throw new Error("User is not authenticated");
+    try {
+        // apiRequest defaults to 'GET' and sends the Authorization token,
+        // which the backend uses to identify the user and retrieve their data.
+        const profileData = await apiRequest('/api/users/profile');
+        
+        console.log("Profile data successfully fetched.");
+        return profileData;
 
-  const userDocRef = doc(db, "Users", user.uid);
-  const userDoc = await getDoc(userDocRef);
-
-  if (!userDoc.exists()) throw new Error("User document does not exist in Firestore");
-
-  const userData = userDoc.data();
-  return {
-    uid: user.uid,
-    Name: userData.Name,
-    LeaderBoardPoints: userData.LeaderBoardPoints,
-    CompletedQuests: userData.CompletedQuests || [],
-    acceptedQuests: userData.acceptedQuests || [],
-    Level: userData.Level,
-    Bio: userData.Bio,
-    profilePicture: userData.ProfilePictureUrl,
-    Experience: userData.Experience ?? 0,
-    SpendablePoints: userData.SpendablePoints ?? 0,
-  };
-}
-
-export async function addProfileFields() {
-  const usersCollectionRef = collection(db, "Users");
-
-  try {
-    const querySnapshot = await getDocs(usersCollectionRef);
-
-    if (querySnapshot.empty) {
-      console.log("No documents found in the users collection.");
-      return;
+    } catch (error) {
+        console.error("Error fetching profile data:", error.message);
+        // Throw the error so the component can handle it (e.g., redirect to login)
+        throw new Error(`Failed to load profile: ${error.message}`);
     }
-
-    querySnapshot.forEach(async (document) => {
-      const userDocRef = doc(db, "Users", document.id);
-      await updateDoc(userDocRef, {
-        Level: 0,
-        CompletedQuests: [],
-        Bio: "",
-        SpendablePoints: 0,
-        Experience: 0,
-        Quests: [],
-
-
-
-      });
-      //console.log(`Document with ID: ${document.id} successfully updated.`);
-    });
-
-    //console.log("All documents processed.");
-
-  } catch (error) {
-    console.error("Error updating documents:", error);
-  }
-
-
 }
 
-export async function updateProfileData({ uid, Name, Bio, ProfilePictureUrl }) {
-  if (!uid) throw new Error("No user ID provided");
-  const userDocRef = doc(db, "Users", uid);
-  const updateObj = {};
-  if (Name !== undefined) updateObj.Name = Name;
-  if (Bio !== undefined) updateObj.Bio = Bio;
-  if (ProfilePictureUrl !== undefined) updateObj.ProfilePictureUrl = ProfilePictureUrl;
-  await updateDoc(userDocRef, updateObj);
+
+/**
+ * Triggers an administrative backend job to initialize or update default profile 
+ * fields for all users in the database.
+ * @returns {Promise<void>}
+ */
+export async function addProfileFields() {
+    try {
+        console.log("Requesting backend to initialize default profile fields for all users...");
+        
+        // Use apiRequest with 'POST' to trigger the secure, server-side batch job
+        const response = await apiRequest(
+            '/api/users/init-fields', 
+            'POST', 
+            {} // Empty body, as all data is derived server-side
+        );
+        
+        alert(`Profile field initialization finished: ${response.message}`);
+
+    } catch (error) {
+        console.error("Error triggering profile field initialization:", error.message);
+        alert(`Failed to run profile field initialization. Details: ${error.message}`);
+        throw error; // Propagate error for component-level handling
+    }
+}
+
+
+/**
+ * Updates the authenticated user's profile data via the backend API.
+ * @param {object} profileData - Object containing the fields to update: { uid, Name, Bio, ProfilePictureUrl }.
+ * @returns {Promise<void>}
+ */
+export async function updateProfileData(profileData) {
+    // Note: The original function's logic to dynamically build the updateObj
+    // is now best done by the calling component, but we pass the full object here.
+    
+    // apiRequest handles throwing an error if the request fails
+    const response = await apiRequest(
+        '/api/users/profile', 
+        'PATCH', 
+        profileData // Pass the data directly; backend handles filtering and validation
+    );
+    
+    console.log(`Profile update successful: ${response.message}`);
 }
 
