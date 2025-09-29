@@ -491,4 +491,57 @@ describe('Home Component', () => {
       expect(getAllQuests).toHaveBeenCalled();
     });
   });
+
+  test('handles map initialization error', () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    global.L.map.mockImplementation(() => { throw new Error('Map error'); });
+    renderHome();
+    consoleSpy.mockRestore();
+  });
+
+  test('handles quest with image and description', async () => {
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      location: { _latitude: -26.1935, _longitude: 28.0298 },
+      imageUrl: 'test.jpg',
+      description: 'Test description'
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    renderHome();
+    await waitFor(() => expect(getAllQuests).toHaveBeenCalled());
+  });
+
+  test('handles own quest display', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    const mockQuests = [{ id: 'quest1', name: 'Test Quest', location: { _latitude: -26.1935, _longitude: 28.0298 }, creatorId: mockUser.uid }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    renderHome();
+    await waitFor(() => expect(getAllQuests).toHaveBeenCalled());
+  });
+
+  test('handles journey quest completion', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({ coords: { latitude: -26.1895187018387, longitude: 28.029333555477365, accuracy: 10 } });
+    });
+    renderHome();
+    await waitFor(() => {
+      if (window.handleAcceptJourneyQuest) {
+        window.handleAcceptJourneyQuest('journey-knowledge-quest');
+      }
+    });
+    fireEvent.click(screen.getByAltText('Bell'));
+  });
+
+  test('handles bell pulse animation', async () => {
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({ coords: { latitude: -26.1929, longitude: 28.0305, accuracy: 10 } });
+    });
+    const mockCircle = { setRadius: jest.fn(), setStyle: jest.fn() };
+    global.L.circle.mockReturnValue(mockCircle);
+    global.requestAnimationFrame = jest.fn(cb => cb());
+    renderHome();
+    fireEvent.click(screen.getByAltText('Bell'));
+  });
 });
