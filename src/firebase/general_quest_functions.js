@@ -38,6 +38,7 @@ export async function saveQuestToFirestore(questData) {
         // 3. Save the quest with the URL to Firestore
         const questRef = await addDoc(collection(db, "Quests"), {
             name: questData.name,
+            description: questData.description, // <-- Add this line
             radius: questData.radius,
             reward: questData.reward,
             location: new GeoPoint(questData.lat, questData.lng),
@@ -213,7 +214,7 @@ export async function approveSubmissionAndCloseQuest(questId, approvedUserId) {
         await updateDoc(approvedUserRef, {
             SpendablePoints: prevPoints + reward,
             Experience: prevExp + reward,
-            LeaderBoardPoints: prevleaderboardpts+reward,
+            LeaderBoardPoints: prevleaderboardpts + reward,
             CompletedQuests: [
                 ...(approvedUserSnap.data().CompletedQuests ?? []),
                 {
@@ -231,11 +232,11 @@ export async function approveSubmissionAndCloseQuest(questId, approvedUserId) {
         if (creatorSnap.exists()) {
             const prevPoints = creatorSnap.data().SpendablePoints ?? 0;
             const prevExp = creatorSnap.data().Experience ?? 0;
-        const prevleaderboardpts = approvedUserSnap.data().LeaderBoardPoints ?? 0;
+            const prevleaderboardpts = approvedUserSnap.data().LeaderBoardPoints ?? 0;
             await updateDoc(creatorRef, {
                 SpendablePoints: prevPoints + reward,
                 Experience: prevExp + reward,
-                LeaderBoardPoints: prevleaderboardpts+reward,
+                LeaderBoardPoints: prevleaderboardpts + reward,
                 CompletedQuests: [
                     ...(creatorSnap.data().CompletedQuests ?? []),
                     {

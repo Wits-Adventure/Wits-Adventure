@@ -302,7 +302,7 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
           </label>
 
           <label className="cq-label">
-            Description
+            Description/Riddle
             <textarea
               className="cq-input cq-textarea" // match title input styles
               draggable={false}

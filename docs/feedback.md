@@ -30,3 +30,12 @@ Made visuals and input fields scale better on mobile.
 
 ![Mobile site](assets/feedback/mobile.jpg)
 
+## 4. Added descriptions to quests
+
+**Feedback/Problem:** Users wanted quests to be more interesting by being able to add descriptions/riddles
+
+**Improvement:**
+Added a description/riddle field for quests
+
+![Mobile site](assets/feedback/descriptions.png)
+

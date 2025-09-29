@@ -276,8 +276,10 @@ const Home = () => {
 `
           : `<button id="quest-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
 
-      // NEW: description (always render; fallback to placeholder if missing)
-      const descHtml = `<p class="quest-desc">${escapeHtml(quest.description || 'Placeholder Description')}</p>`;
+      // NEW: description (only render if present)
+      const descHtml = quest.description
+        ? `<p class="quest-desc">${escapeHtml(quest.description)}</p>`
+        : '';
 
       questCircle.bindPopup(`
         <div class="quest-popup">
@@ -346,7 +348,6 @@ const Home = () => {
         <div class="quest-popup">
           ${badgeHTML}
           <h3>${titleEmoji} ${jq.name}</h3>
-          <p class="quest-desc">Placeholder Description</p>
           <p>${first.riddle}</p>
           <p><strong>Reward:</strong> ${jq.reward} points</p>
           ${buttonHtml}
