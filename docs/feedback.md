@@ -39,3 +39,12 @@ Added a description/riddle field for quests
 
 ![Mobile site](assets/feedback/descriptions.png)
 
+## 5. Added a way to spend points
+
+**Feedback/Problem:** Quests felt pointless because the points couldnt be used for anything
+
+**Improvement:**
+Added purchasable borders and colour customisation
+
+![Mobile site](assets/feedback/customisation.png)
+
