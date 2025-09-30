@@ -473,4 +473,54 @@ describe('QuestManager', () => {
       expect(screen.getByText('No submissions yet')).toBeInTheDocument();
     });
   });
+
+  test('handles submissions state cleanup on close', async () => {
+    const { rerender } = render(<QuestManager quest={mockQuest} isOpen={true} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Adventure Seeker')).toBeInTheDocument();
+    });
+    
+    rerender(<QuestManager quest={mockQuest} isOpen={false} />);
+    
+    expect(screen.queryByText('Adventure Seeker')).not.toBeInTheDocument();
+  });
+
+  test('handles image load state tracking', async () => {
+    render(<QuestManager quest={mockQuest} isOpen={true} />);
+    
+    await waitFor(() => {
+      const image = screen.getByAltText('Submission by Adventure Seeker');
+      fireEvent.load(image);
+      expect(image.style.opacity).toBe('1');
+    });
+  });
+
+  test('handles submission index bounds checking', async () => {
+    render(<QuestManager quest={mockQuest} isOpen={true} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('1 / 2')).toBeInTheDocument();
+    });
+    
+    const nextButton = screen.getByLabelText('Next submission');
+    fireEvent.click(nextButton);
+    expect(screen.getByText('2 / 2')).toBeInTheDocument();
+    
+    fireEvent.click(nextButton);
+    expect(screen.getByText('1 / 2')).toBeInTheDocument();
+  });
+
+  test('handles previous navigation at first index', async () => {
+    render(<QuestManager quest={mockQuest} isOpen={true} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('1 / 2')).toBeInTheDocument();
+    });
+    
+    const prevButton = screen.getByLabelText('Previous submission');
+    fireEvent.click(prevButton);
+    expect(screen.getByText('2 / 2')).toBeInTheDocument();
+  });
+
 });
