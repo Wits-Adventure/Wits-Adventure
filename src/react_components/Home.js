@@ -848,6 +848,8 @@ const Home = () => {
         }
 
         let anyMatched = false;
+        let closestDistance = Infinity; // track nearest stop
+
 
 
         for (const jq of journeyQuests) {
@@ -860,6 +862,10 @@ const Home = () => {
 
           const d = distanceMeters([userLat, userLng], [target.lat, target.lng]);
           console.log(`Journey Quest ${jq.name}: Distance to target = ${Math.round(d)}m, Required = ${target.radius}m`);
+
+          if (d < closestDistance) {
+          closestDistance = d;
+           }
 
           if (d <= (target.radius || 40)) {
             anyMatched = true;
@@ -903,8 +909,9 @@ const Home = () => {
         }
 
         if (!anyMatched) {
-          showToast('The bell rings, but theres no response...', 5000);
-        }
+          showToast(`You are ${Math.round(closestDistance)}m away from the nearest stop. Please move closer and ring the bell again.`, 5000);
+  
+          }
       },
       (err) => {
         console.error(err);
