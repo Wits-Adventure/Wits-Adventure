@@ -65,6 +65,12 @@ const Home = () => {
   const [userSubmissions, setUserSubmissions] = useState({}); // questId: true
   const [bellCooldown, setBellCooldown] = useState(false); // NEW: bell cooldown state
 
+  // NEW: transient tutorial bubble on load
+  const [showTutorialHint, setShowTutorialHint] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setShowTutorialHint(false), 4200);
+    return () => clearTimeout(t);
+  }, []);
 
   // ======== NEW: Journey Quests (hard-coded, scalable) ========
   /**
@@ -1010,6 +1016,11 @@ const Home = () => {
               <section className="corner bottom-right"></section>
             </div>
             <div ref={mapRef} id="map" style={{ width: '100%', height: '100%' }}>
+              {/* Floating bubble pointing to the scroll */}
+              {showTutorialHint && (
+                <div className="tutorial-bubble" aria-hidden="true">Tutorial</div>
+              )}
+
               <button className="questbook-icon" onClick={handleQuestbookClick}>
                 <img src={questbookImage} alt="Questbook" />
               </button>
@@ -1019,15 +1030,11 @@ const Home = () => {
                 onClick={() => {
                   if (mapInstanceRef.current) {
                     mapInstanceRef.current.setView([-26.1929, 28.0305], 17, { animate: true });
-
-                    // Find and open the Wits University popup
                     mapInstanceRef.current.eachLayer((layer) => {
                       if (layer.getPopup && layer.getPopup()) {
                         const popupContent = layer.getPopup().getContent();
                         if (popupContent && popupContent.includes('🏰 Wits University')) {
-                          setTimeout(() => {
-                            layer.openPopup();
-                          }, 500);
+                          setTimeout(() => { layer.openPopup(); }, 500);
                         }
                       }
                     });
@@ -1059,7 +1066,6 @@ const Home = () => {
               {/* NEW: Tutorial button in top left */}
               <button className="tutorial-icon" onClick={() => navigate('/tutorial')} aria-label="Tutorial">
                 <img src={tutorialImage} alt="Tutorial" />
-                {/* Fallback: If no image, replace with: <span>❓</span> */}
               </button>
             </div>
           </div>

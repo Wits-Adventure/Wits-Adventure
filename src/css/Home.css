@@ -1603,35 +1603,80 @@
   filter: none;
 }
 
-/* Mobile adjustments */
-@media (max-width: 800px) {
-  .tutorial-icon {
-    width: 70px;
-    height: 70px;
-    top: 0px;
-    left: 40px;
-  }
-
-  .tutorial-icon img {
-    width: 70%;
-    height: 70%;
-  }
+/* Floating Tutorial Bubble (appears near the scroll on load) */
+.tutorial-bubble {
+  position: absolute;
+  top: 25px;
+  left: 130px; /* to the right of the scroll (which is left: 40px; width ~75px) */
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+  border: 2px solid #90774c;
+  border-radius: 16px;
+  color: #2F1B14;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  box-shadow:
+    0 8px 25px rgba(144, 119, 76, 0.35),
+    0 4px 12px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  z-index: 1400; /* above map icons */
+  pointer-events: none; /* does not block clicks */
+  white-space: nowrap;
+  animation: tutorial-bubble-life 4s ease-in-out forwards;
 }
 
+/* Arrow pointing back to the scroll (left side) */
+.tutorial-bubble::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -12px;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-right: 12px solid #90774c; /* outline */
+}
+.tutorial-bubble::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -10px;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 10px solid #e9cfa3; /* inner fill approximating gradient */
+}
+
+/* Fade-in then fade-out over 4s */
+@keyframes tutorial-bubble-life {
+  0%   { opacity: 0; transform: translateY(-6px); }
+  12%  { opacity: 1; transform: translateY(0); }
+  78%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-6px); }
+}
+
+/* Mobile adjustments to keep bubble aligned with the scroll */
+@media (max-width: 800px) {
+  .tutorial-bubble {
+    top: 25px;
+    left: 122px;  /* scroll is left: 40px; width ~70px on mobile */
+    font-size: 0.85rem;
+    padding: 7px 12px;
+  }
+}
 @media (max-width: 480px) {
-  .tutorial-icon {
-    width: 64px;
-    height: 64px;
-    top: 0px;
-    left: 42px;
+  .tutorial-bubble {
+    top: 25px;
+    left: 116px;
+    font-size: 0.8rem;
+    padding: 6px 10px;
   }
-
-  .tutorial-icon img {
-    width: 70%;
-    height: 70%;
-  }
-
-
 }
 
 /* Override castle button to use transparent background and image only */
