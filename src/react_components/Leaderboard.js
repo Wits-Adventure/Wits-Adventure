@@ -37,7 +37,10 @@ const Leaderboard = () => {
         </thead>
         <tbody>
           {sortedUsers.map((user, idx) => (
-            <tr key={user.id} style={{ animationDelay: `${(sortedUsers.length - idx) * 0.12}s` }}>
+            <tr
+              key={user.id}
+              style={{ animationDelay: `${idx * 0.12}s` }}  // was: (sortedUsers.length - idx) * 0.12
+            >
               <td>{idx + 1}</td>
               <td>{user.Name}</td>
               <td className="points-cell">{user.LeaderBoardPoints}</td>

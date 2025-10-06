@@ -26,6 +26,26 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
   const [editedProfilePic, setEditedProfilePic] = useState(profilePic);
   const [createdQuests, setCreatedQuests] = useState([]);
 
+  // Image upload rules
+  const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  const ALLOWED_LABEL = 'JPG, PNG, WEBP';
+  const MAX_IMAGE_MB = Math.round(MAX_IMAGE_BYTES / (1024 * 1024));
+
+  // Error popup state
+  const [imageError, setImageError] = useState(null);
+  const imageErrorTimerRef = useRef(null);
+  useEffect(() => {
+    return () => {
+      if (imageErrorTimerRef.current) clearTimeout(imageErrorTimerRef.current);
+    };
+  }, []);
+  const showImageError = (msg) => {
+    if (imageErrorTimerRef.current) clearTimeout(imageErrorTimerRef.current);
+    setImageError(msg);
+    imageErrorTimerRef.current = setTimeout(() => setImageError(null), 4000);
+  };
+
   // NEW: static inventory items visible to all users
   const [inventoryItems] = useState([
     { id: 'card-customization', name: 'Card Customization', image: cardCustomizationImg, color: 'hsl(30 60% 70%)' },
@@ -135,21 +155,28 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
 
   const handleEditClick = () => {
     setIsEditing(true);
+    // Do not preload the current image in the drop zone
+    setEditedProfilePic(null);
   };
 
   const handleSave = async () => {
     try {
-      await updateProfileData({
+      const payload = {
         uid: user.uid,
         Name: editedUsername,
-        Bio: editedBio,
-        ProfilePictureUrl: editedProfilePic
-      });
+        Bio: editedBio
+      };
+      // Only update the picture if a new file was chosen
+      if (editedProfilePic && editedProfilePic !== user.profilePicture) {
+        payload.ProfilePictureUrl = editedProfilePic;
+      }
+      await updateProfileData(payload);
+
       setUser({
         ...user,
         username: editedUsername,
         bio: editedBio,
-        profilePicture: editedProfilePic,
+        profilePicture: payload.ProfilePictureUrl ? editedProfilePic : user.profilePicture,
       });
       setIsEditing(false);
     } catch (err) {
@@ -168,6 +195,19 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
   // Replaces previous handleProfilePicChange - supports both click-select and drag/drop
   const processFile = (file) => {
     if (!file) return;
+
+    // Validation: type
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      showImageError(`Invalid file type. Please upload one of: ${ALLOWED_LABEL}.`);
+      return;
+    }
+    // Validation: size
+    if (file.size > MAX_IMAGE_BYTES) {
+      const mb = (file.size / (1024 * 1024)).toFixed(2);
+      showImageError(`Image is too large (${mb} MB). Max size is 2 MB.`);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = () => {
       setEditedProfilePic(reader.result);
@@ -457,6 +497,9 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
 
   return (
     <main className="profile-container" style={pageBgColor ? { background: pageBgColor } : undefined}>
+      {/* Image upload error popup */
+      imageError && <div className="image-error-popup" role="alert">{imageError}</div>}
+
       <div className="profile-layout">
         {/* Left Panel - Profile Card */}
         <section className="profile-card">
@@ -704,9 +747,9 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
               <div className="input-group">
                 <label className="input-label">Profile Picture:</label>
 
-                {/* Image drop / select area (replaces plain file input) */}
+                {/* Drop/select area: show preview after upload, otherwise show holder text */}
                 <div
-                  className={`image-drop-area ${isDragging ? "drag_over" : ""}`}
+                  className={`image-drop-area ${isDragging ? "drag_over" : ""} ${editedProfilePic ? "has-image" : ""}`}
                   onClick={() => fileInputRef.current && fileInputRef.current.click()}
                   onDragOver={handleDragOver}
                   onDragEnter={handleDragOver}
@@ -719,18 +762,20 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
                   {editedProfilePic ? (
                     <img
                       src={editedProfilePic}
-                      alt="Profile preview"
+                      alt="Selected profile preview"
                       className="image-preview"
                     />
                   ) : (
-                    <div className="drop-placeholder">
-                      Click or drop an image here to upload
+                    <div className="drop-instructions" aria-hidden="true">
+                      <div className="title">Drop image here or click to upload</div>
+                      <div className="req">Accepted: JPG, PNG, WEBP</div>
+                      <div className="req">Max size: 1 MB</div>
                     </div>
                   )}
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,.webp"
                     onChange={handleProfilePicChange}
                     style={{ display: "none" }}
                   />

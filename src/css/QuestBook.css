@@ -196,44 +196,84 @@
   background: #e0d3c0;
 }
 
+/* Grid layout for quest entries */
+.quest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 16px;
+}
+
 /* Quest Card */
 .quest-card {
   background: linear-gradient(135deg, #fff8dc 90%, #ffeac8 100%);
-  padding: 1.2rem;
+  padding: 14px 14px 12px 14px;
   border-left: 6px solid #162f83;
-  margin-bottom: 1.2rem;
   border-radius: 12px;
-  box-shadow: 0 0 8px rgba(101, 67, 33, 0.08);
+  box-shadow: 0 2px 10px rgba(101, 67, 33, 0.08);
   font-family: 'Cinzel', serif;
   border-top: 2px solid #d8ba8a;
   border-bottom: 2px solid #d8ba8a;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quest-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(101, 67, 33, 0.18);
+}
+
+.quest-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .quest-card h2 {
-  margin: 0 0 0.5rem;
-  font-size: 1.2rem;
+  margin: 0;
+  font-size: 1.15rem;
   color: #3e2723;
   font-family: 'Cinzel Decorative', serif;
-}
-
-.quest-card p {
-  margin: 0;
-  color: #5d4037;
 }
 
 /* Reward Tag Styling */
 .reward-tag {
   display: inline-block;
-  margin-top: 8px;
   padding: 4px 10px;
   background: linear-gradient(135deg, #fff2c9, #ffd27a);
   color: #4e342e;
-  border-radius: 8px;
+  border-radius: 999px;
   font-size: 13px;
   font-family: 'Cinzel', serif;
   border: 1.5px solid #162f83;
-  font-weight: 600;
+  font-weight: 700;
   box-shadow: 0 2px 6px rgba(101, 67, 33, 0.09);
+  white-space: nowrap;
+}
+
+.quest-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.meta-chip {
+  padding: 4px 8px;
+  border: 1px solid #c8b08a;
+  background: #fff6e0;
+  color: #5d4037;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.quest-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
 }
 
 /* Pagination Section now inside the flex container */
@@ -312,22 +352,97 @@
 .complete-btn {
   margin-top: 10px;
   padding: 8px 16px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #4caf50, #81c784);
-  color: #fff;
-  font-weight: bold;
+  border: 2px solid #90774c;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+  color: #2F1B14;
+  font-weight: 700;
   font-family: 'Cinzel', serif;
   cursor: pointer;
-  transition: background 0.2s;
-  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.13);
+  box-shadow:
+    0 6px 16px rgba(144, 119, 76, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.3s ease, border-color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .complete-btn:hover {
-  background: linear-gradient(135deg, #388e3c, #66bb6a);
+  background: linear-gradient(135deg, #e6b96a 0%, #fff2c9 100%);
+  border-color: #a97a4c;
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 20px rgba(144, 119, 76, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
-/* Responsive adjustments */
+.complete-btn:active {
+  transform: translateY(0);
+  box-shadow:
+    0 3px 10px rgba(144, 119, 76, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.complete-btn:focus-visible {
+  outline: 3px solid #162f83;
+  outline-offset: 2px;
+}
+
+/* Fixed Back button (bottom-left of viewport) */
+.back-home-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 2000;
+  background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+  border: 2px solid #90774c;
+  border-radius: 18px;
+  padding: 8px 18px;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(144, 119, 76, 0.13);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.3s ease, border-color 0.3s ease;
+}
+
+.back-home-btn:hover {
+  background: linear-gradient(135deg, #e6b96a 0%, #fff2c9 100%);
+  transform: translateY(-1px);
+}
+
+.back-home-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(144, 119, 76, 0.18);
+}
+
+.back-home-btn:focus-visible {
+  outline: 3px solid #162f83;
+  outline-offset: 2px;
+}
+
+.back-home-btn img {
+  width: 24px;
+  height: 24px;
+}
+
+/* Mobile safe insets and tighter spacing */
+@media (max-width: 800px) {
+  .back-home-btn {
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: max(12px, env(safe-area-inset-left));
+    padding: 8px 14px;
+  }
+  .back-home-btn img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
 @media (max-width: 800px) {
   .quest-list {
     padding: 1rem;
