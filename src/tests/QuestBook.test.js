@@ -198,7 +198,7 @@ jest.mock('../firebase/general_quest_functions', () => ({
 }));
 
 // Mock image imports
-jest.mock('../media/logo.jpg', () => 'logo.jpg');
+jest.mock('../media/LOGO_Final.jpg', () => 'LOGO_Final.jpg');
 jest.mock('../media/trophy.png', () => 'trophy.png');
 
 // Mock CSS import
@@ -303,13 +303,13 @@ describe('QuestBook', () => {
     getAllQuests.mockResolvedValue(mockQuests);
   });
 
-  test('renders loading state initially', () => {
+  test('renders loading gif initially', () => {
     render(
       <RouterWrapper>
         <QuestBook />
       </RouterWrapper>
     );
-    expect(screen.getByText('Loading quests...')).toBeInTheDocument();
+    expect(screen.getByAltText('Loading...')).toBeInTheDocument();
   });
 
   test('renders quest book header and tabs correctly', async () => {
@@ -361,8 +361,8 @@ describe('QuestBook', () => {
     
     await waitFor(() => {
       expect(screen.getByText('Test Quest 1')).toBeInTheDocument();
-      expect(screen.getByText('Latitude: -26.123400')).toBeInTheDocument();
-      expect(screen.getByText('Longitude: 28.123400')).toBeInTheDocument();
+      expect(screen.getByText('Lat: -26.123400')).toBeInTheDocument();
+      expect(screen.getByText('Lng: 28.123400')).toBeInTheDocument();
       expect(screen.getByText('100 points')).toBeInTheDocument();
     });
   });
@@ -622,8 +622,8 @@ describe('QuestBook', () => {
     
     await waitFor(() => {
       expect(screen.getByText('Test Quest Without Location')).toBeInTheDocument();
-      expect(screen.getByText('Latitude: N/A')).toBeInTheDocument();
-      expect(screen.getByText('Longitude: N/A')).toBeInTheDocument();
+      expect(screen.getByText('Lat: N/A')).toBeInTheDocument();
+      expect(screen.getByText('Lng: N/A')).toBeInTheDocument();
     });
   });
 
@@ -714,3 +714,51 @@ describe('QuestBook', () => {
     });
   });
 });
+  test('handles quest with invalid location coordinates', async () => {
+    const questsWithInvalidLocation = [
+      {
+        id: '1',
+        name: 'Test Quest',
+        location: { latitude: 'invalid', longitude: 'invalid' },
+        reward: 100,
+        submissions: []
+      }
+    ];
+    
+    getUserData.mockResolvedValue({
+      uid: 'testUser123',
+      acceptedQuests: ['1']
+    });
+    
+    getAllQuests.mockResolvedValue(questsWithInvalidLocation);
+    
+    render(
+      <RouterWrapper>
+        <QuestBook />
+      </RouterWrapper>
+    );
+    
+    await waitFor(() => {
+      expect(screen.getByText('Lat: N/A')).toBeInTheDocument();
+      expect(screen.getByText('Lng: N/A')).toBeInTheDocument();
+    });
+  });
+
+  test('filters quests correctly based on accepted quests', async () => {
+    getUserData.mockResolvedValue({
+      uid: 'testUser123',
+      acceptedQuests: ['1', '3'] // Only accept quests 1 and 3
+    });
+    
+    render(
+      <RouterWrapper>
+        <QuestBook />
+      </RouterWrapper>
+    );
+    
+    await waitFor(() => {
+      expect(screen.getByText('Test Quest 1')).toBeInTheDocument();
+      expect(screen.getByText('Test Quest 3')).toBeInTheDocument();
+      expect(screen.queryByText('Test Quest 2')).not.toBeInTheDocument();
+    });
+  });
