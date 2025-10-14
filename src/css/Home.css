@@ -397,7 +397,7 @@
     height: 100%;
   }
 
-   .leaflet-control-zoom {
+  .leaflet-control-zoom {
     margin-left: 18px !important;
     margin-top: 0px !important;
   }
@@ -471,7 +471,8 @@
   margin: 0 30px;
   flex: 1;
   height: 100%;
-  position: relative; /* ensure positioned context for children */
+  position: relative;
+  /* ensure positioned context for children */
   min-height: 0;
   box-sizing: border-box;
 }
@@ -481,9 +482,11 @@
   width: 100%;
   height: 100%;
   position: relative;
-  background: linear-gradient(145deg, #d6b98c, #e7cda1); /* lighter parchment */
+  background: linear-gradient(145deg, #d6b98c, #e7cda1);
+  /* lighter parchment */
   border-radius: 20px;
-  padding: 0; /* overlay-only */
+  padding: 0;
+  /* overlay-only */
   box-shadow:
     /* outer rings */
     0 0 0 3px #c7a073,
@@ -504,11 +507,14 @@
   inset: 6px;
   border-radius: inherit;
   pointer-events: none;
-  z-index: 5; /* under .map-corners (z:10), above #map (z:1) */
-  border: 2px solid rgba(255, 245, 220, 0.7);           /* soft light ring */
+  z-index: 5;
+  /* under .map-corners (z:10), above #map (z:1) */
+  border: 2px solid rgba(255, 245, 220, 0.7);
+  /* soft light ring */
   box-shadow:
     inset 0 0 12px rgba(160, 120, 70, 0.15),
-    0 0 0 4px rgba(223, 197, 149, 0.25);                /* faint outer glow */
+    0 0 0 4px rgba(223, 197, 149, 0.25);
+  /* faint outer glow */
 }
 
 .map-frame::before {
@@ -517,11 +523,14 @@
   inset: 12px;
   border-radius: inherit;
   pointer-events: none;
-  z-index: 6; /* slightly above ::after */
+  z-index: 6;
+  /* slightly above ::after */
   background: linear-gradient(145deg, rgba(255, 242, 201, 0.14), rgba(200, 157, 92, 0.08));
   box-shadow:
-    inset 0 0 0 2px rgba(139, 115, 85, 0.18),           /* inner outline */
-    inset 0 10px 24px rgba(0, 0, 0, 0.10);              /* soft vignette */
+    inset 0 0 0 2px rgba(139, 115, 85, 0.18),
+    /* inner outline */
+    inset 0 10px 24px rgba(0, 0, 0, 0.10);
+  /* soft vignette */
 }
 
 /* Remove old pseudo-elements logic for the frame (animated borders, etc.) */
@@ -535,7 +544,8 @@
   right: 0;
   bottom: 0;
   pointer-events: none;
-  z-index: 10; /* above the map (#map has z-index:1) */
+  z-index: 10;
+  /* above the map (#map has z-index:1) */
 }
 
 .corner {
@@ -589,9 +599,11 @@
   height: 100%;
   /* Ensure a consistent single min-height; mobile overrides below still apply */
   min-height: 400px;
-  border-radius: inherit; /* match the frame’s radius so edges align perfectly */
+  border-radius: inherit;
+  /* match the frame’s radius so edges align perfectly */
   overflow: hidden;
-  position: relative; /* keep as relative for in-map buttons */
+  position: relative;
+  /* keep as relative for in-map buttons */
   z-index: 1;
   filter: sepia(0.55) saturate(1) contrast(1) brightness(1);
   max-height: 100%;
@@ -840,7 +852,8 @@
   font-size: 0.85rem;
   margin: 6px 0 8px;
   text-align: center;
-  white-space: pre-wrap; /* keep line breaks from textarea */
+  white-space: pre-wrap;
+  /* keep line breaks from textarea */
 }
 
 /* Fantasy Popup (for Wits University marker) */
@@ -1018,7 +1031,8 @@
   font-size: 0.85rem;
   margin: 6px 0 8px;
   text-align: center;
-  white-space: pre-wrap; /* keep line breaks from textarea */
+  white-space: pre-wrap;
+  /* keep line breaks from textarea */
 }
 
 .quest-image-container {
@@ -1607,7 +1621,8 @@
 .tutorial-bubble {
   position: absolute;
   top: 25px;
-  left: 130px; /* to the right of the scroll (which is left: 40px; width ~75px) */
+  left: 130px;
+  /* to the right of the scroll (which is left: 40px; width ~75px) */
   padding: 8px 14px;
   background: linear-gradient(135deg, #ffeac8, #d8ba8a);
   border: 2px solid #90774c;
@@ -1621,63 +1636,48 @@
     0 8px 25px rgba(144, 119, 76, 0.35),
     0 4px 12px rgba(0, 0, 0, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  z-index: 1400; /* above map icons */
-  pointer-events: none; /* does not block clicks */
+  z-index: 1400;
+  /* above map icons */
+  pointer-events: auto;
+  /* allow clicks for close button */
   white-space: nowrap;
-  animation: tutorial-bubble-life 4s ease-in-out forwards;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* Remove the animation since we're not auto-hiding anymore */
 }
 
-/* Arrow pointing back to the scroll (left side) */
-.tutorial-bubble::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: -12px;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-top: 9px solid transparent;
-  border-bottom: 9px solid transparent;
-  border-right: 12px solid #90774c; /* outline */
-}
-.tutorial-bubble::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: -10px;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-right: 10px solid #e9cfa3; /* inner fill approximating gradient */
+/* Close button for tutorial bubble */
+.tutorial-close-btn {
+  background: rgba(47, 27, 20, 0.1);
+  border: 1px solid #90774c;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  color: #2F1B14;
+  line-height: 1;
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-/* Fade-in then fade-out over 4s */
-@keyframes tutorial-bubble-life {
-  0%   { opacity: 0; transform: translateY(-6px); }
-  12%  { opacity: 1; transform: translateY(0); }
-  78%  { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-6px); }
+.tutorial-close-btn:hover {
+  background: rgba(47, 27, 20, 0.2);
+  transform: scale(1.1);
 }
 
-/* Mobile adjustments to keep bubble aligned with the scroll */
-@media (max-width: 800px) {
-  .tutorial-bubble {
-    top: 25px;
-    left: 122px;  /* scroll is left: 40px; width ~70px on mobile */
-    font-size: 0.85rem;
-    padding: 7px 12px;
-  }
+.tutorial-close-btn:active {
+  transform: scale(0.95);
 }
-@media (max-width: 480px) {
-  .tutorial-bubble {
-    top: 25px;
-    left: 116px;
-    font-size: 0.8rem;
-    padding: 6px 10px;
-  }
-}
+
+/* Remove the old animation keyframes since we don't need them */
+/* @keyframes tutorial-bubble-life { ... } */
 
 /* Override castle button to use transparent background and image only */
 .castle-icon {
@@ -1714,8 +1714,10 @@
     width: 50px;
     height: 50px;
   }
+
   .castle-icon {
-    bottom: 105px; /* keep your existing offset */
+    bottom: 105px;
+    /* keep your existing offset */
   }
 }
 
@@ -1724,7 +1726,9 @@
     width: 45px;
     height: 45px;
   }
+
   .castle-icon {
-    bottom: 95px; /* keep your existing offset */
+    bottom: 95px;
+    /* keep your existing offset */
   }
 }

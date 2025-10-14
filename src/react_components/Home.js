@@ -65,12 +65,21 @@ const Home = () => {
   const [userSubmissions, setUserSubmissions] = useState({}); // questId: true
   const [bellCooldown, setBellCooldown] = useState(false); // NEW: bell cooldown state
 
-  // NEW: transient tutorial bubble on load
-  const [showTutorialHint, setShowTutorialHint] = useState(true);
+  // NEW: transient tutorial bubble on load - only show if not seen in this session
+  const [showTutorialHint, setShowTutorialHint] = useState(() => {
+    // Check if tutorial hint was already shown in this session
+    return !sessionStorage.getItem('tutorialHintShown');
+  });
+
   useEffect(() => {
-    const t = setTimeout(() => setShowTutorialHint(false), 4200);
-    return () => clearTimeout(t);
-  }, []);
+    // Remove the timeout - we'll handle closing with the X button instead
+  }, [showTutorialHint]);
+
+  // NEW: Handle tutorial bubble close
+  const handleTutorialClose = () => {
+    sessionStorage.setItem('tutorialHintShown', 'true');
+    setShowTutorialHint(false);
+  };
 
   // ======== NEW: Journey Quests (hard-coded, scalable) ========
   /**
@@ -135,6 +144,36 @@ const Home = () => {
             radius: 45,
             riddle:
               "Seek a court where echoes bound,\nAnd sneakers sing upon the ground.",
+          },
+        ],
+      },
+      // ADD YOUR NEW JOURNEY QUEST HERE:
+      {
+        id: 'journey-mystic-quest',
+        name: 'Mystic Trail',
+        emoji: '🔮',
+        reward: 200,
+        stops: [
+          {
+            lat: -26.1920,  // Replace with actual coordinates
+            lng: 28.0310,   // Replace with actual coordinates
+            radius: 45,
+            riddle:
+              "Your starting riddle here.\n(You are here. Accept to start!)",
+          },
+          {
+            lat: -26.1915,  // Replace with actual coordinates
+            lng: 28.0305,   // Replace with actual coordinates
+            radius: 45,
+            riddle:
+              "Your second stop riddle here.",
+          },
+          {
+            lat: -26.1910,  // Replace with actual coordinates
+            lng: 28.0300,   // Replace with actual coordinates
+            radius: 45,
+            riddle:
+              "Your final stop riddle here.",
           },
         ],
       },
@@ -870,8 +909,8 @@ const Home = () => {
           console.log(`Journey Quest ${jq.name}: Distance to target = ${Math.round(d)}m, Required = ${target.radius}m`);
 
           if (d < closestDistance) {
-          closestDistance = d;
-           }
+            closestDistance = d;
+          }
 
           if (d <= (target.radius || 40)) {
             anyMatched = true;
@@ -916,8 +955,8 @@ const Home = () => {
 
         if (!anyMatched) {
           showToast(`You are ${Math.round(closestDistance)}m away from the nearest stop. Please move closer and ring the bell again.`, 5000);
-  
-          }
+
+        }
       },
       (err) => {
         console.error(err);
@@ -1018,7 +1057,16 @@ const Home = () => {
             <div ref={mapRef} id="map" style={{ width: '100%', height: '100%' }}>
               {/* Floating bubble pointing to the scroll */}
               {showTutorialHint && (
-                <div className="tutorial-bubble" aria-hidden="true">Tutorial</div>
+                <div className="tutorial-bubble" aria-hidden="true">
+                  Tutorial
+                  <button
+                    className="tutorial-close-btn"
+                    onClick={handleTutorialClose}
+                    aria-label="Close tutorial hint"
+                  >
+                    ×
+                  </button>
+                </div>
               )}
 
               <button className="questbook-icon" onClick={handleQuestbookClick}>
@@ -1064,7 +1112,16 @@ const Home = () => {
               </button>
 
               {/* NEW: Tutorial button in top left */}
-              <button className="tutorial-icon" onClick={() => navigate('/tutorial')} aria-label="Tutorial">
+              <button
+                className="tutorial-icon"
+                onClick={() => {
+                  // Mark tutorial hint as shown when clicking the tutorial button
+                  sessionStorage.setItem('tutorialHintShown', 'true');
+                  setShowTutorialHint(false);
+                  navigate('/tutorial');
+                }}
+                aria-label="Tutorial"
+              >
                 <img src={tutorialImage} alt="Tutorial" />
               </button>
             </div>
