@@ -3,6 +3,7 @@ import '../css/JourneyQuestRiddle.css';
 
 const JourneyQuestRiddle = ({ journeyProgress, journeyQuests }) => {
     const [isMinimized, setIsMinimized] = useState(false);
+    const [showShimmer, setShowShimmer] = useState(false);
 
     // Move useEffect before early returns to follow hooks rules
     const currentJourneyQuest = journeyQuests.find(
@@ -12,13 +13,23 @@ const JourneyQuestRiddle = ({ journeyProgress, journeyQuests }) => {
     const currentStop = journeyProgress.currentJourneyStop;
     const riddle = currentJourneyQuest?.stops?.[currentStop]?.riddle || 'Continue your journey...';
 
-    // Effect to automatically expand when quest is accepted or riddle changes
+    // Effect to automatically expand and trigger shimmer when quest is accepted or riddle changes
     useEffect(() => {
         if (journeyProgress.currentJourneyQuest && currentStop !== undefined) {
             // Automatically expand the riddle when:
             // 1. A new journey quest is accepted
             // 2. The riddle changes (new stop reached)
             setIsMinimized(false);
+
+            // Trigger shimmer effect
+            setShowShimmer(true);
+
+            // Remove shimmer after 0.5s to match button hover duration
+            const timer = setTimeout(() => {
+                setShowShimmer(false);
+            }, 500);
+
+            return () => clearTimeout(timer);
         }
     }, [journeyProgress.currentJourneyQuest, currentStop, riddle]);
 
@@ -43,7 +54,7 @@ const JourneyQuestRiddle = ({ journeyProgress, journeyQuests }) => {
     }
 
     return (
-        <div className="journey-quest-riddle">
+        <div className={`journey-quest-riddle ${showShimmer ? 'shimmer' : ''}`}>
             <button
                 className="riddle-minimize-btn"
                 onClick={toggleMinimize}

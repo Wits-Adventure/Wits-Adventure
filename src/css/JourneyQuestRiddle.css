@@ -107,96 +107,49 @@
     }
 }
 
-/* Add this after the existing .journey-quest-riddle class */
-
-/* Shimmer effect for new riddles */
-@keyframes shimmer {
-    0% {
-        background-position: -200px 0;
-    }
-
-    100% {
-        background-position: calc(200px + 100%) 0;
-    }
-}
-
-@keyframes shimmer-glow {
-
-    0%,
-    100% {
-        box-shadow:
-            0 8px 25px rgba(144, 119, 76, 0.35),
-            0 4px 12px rgba(0, 0, 0, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.28);
-    }
-
-    50% {
-        box-shadow:
-            0 8px 25px rgba(255, 215, 0, 0.6),
-            0 4px 12px rgba(255, 215, 0, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.4),
-            0 0 20px rgba(255, 215, 0, 0.3);
-    }
-}
-
 /* Shimmer effect for expanded riddle */
-.journey-quest-riddle.shimmer {
-    position: relative;
-    background: linear-gradient(135deg, #ffeac8, #d8ba8a);
-    animation: shimmer-glow 2s ease-in-out;
-}
-
 .journey-quest-riddle.shimmer::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg,
-            transparent,
-            rgba(255, 215, 0, 0.4),
-            transparent);
-    background-size: 200px 100%;
-    animation: shimmer 2s ease-in-out;
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
     border-radius: 16px;
     pointer-events: none;
-    z-index: 1;
+    z-index: 1102;
+    /* Higher than the minimize button */
+    animation: shimmer-sweep-fixed 0.5s ease-out;
 }
 
-/* Shimmer effect for minimized button */
-.journey-quest-riddle-minimized.shimmer {
-    position: relative;
-    animation: shimmer-glow 2s ease-in-out;
-}
+/* Updated shimmer animation that doesn't require overflow: hidden */
+@keyframes shimmer-sweep-fixed {
+    0% {
+        left: 0;
+        width: 0;
+        opacity: 0;
+    }
 
-.journey-quest-riddle-minimized.shimmer::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg,
-            transparent,
-            rgba(255, 215, 0, 0.4),
-            transparent);
-    background-size: 200px 100%;
-    animation: shimmer 2s ease-in-out;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 1;
-}
+    10% {
+        opacity: 1;
+    }
 
-/* Ensure content stays above shimmer overlay */
-.journey-quest-riddle.shimmer>* {
-    position: relative;
-    z-index: 2;
-}
+    50% {
+        left: 0;
+        width: 100%;
+        opacity: 1;
+    }
 
-.journey-quest-riddle-minimized.shimmer>* {
-    position: relative;
-    z-index: 2;
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        left: 100%;
+        width: 0;
+        opacity: 0;
+    }
 }
 
 .riddle-header {
