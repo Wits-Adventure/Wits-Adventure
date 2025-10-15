@@ -4,12 +4,12 @@ import profilePic from "../assets/profile.jpg";
 import editIcon from "../assets/edit_icon.png";
 import cardCustomizationImg from "../media/cardcustomization.png";
 import backgroundCustomizationImg from "../media/backgroundcustomization.png";
-import border1 from "../media/Borders1.png";
+import border1 from "../media/Borders0.png";
 import border2 from "../media/Borders2.png";
 import border3 from "../media/Borders3.png";
 import border4 from "../media/Borders4.png";
 import border5 from "../media/Borders5.png";
-import border6 from "../media/Borders6.png";
+import border6 from "../media/Borders1.png";
 import { getProfileData, updateProfileData, getUserInventoryItems, unlockInventoryItem, setCustomisation, getCustomisation } from "../firebase/profile_functions";
 import { useNavigate } from "react-router-dom";
 import { getAllQuests } from "../firebase/general_quest_functions";
@@ -325,12 +325,12 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
   const ITEM_DISPLAY_NAMES = {
     'card-customization': 'Card Customization Pack',
     'background-customization': 'Background Customization Pack',
-    'border-1': 'Candy Border',
-    'border-2': 'Golden Filigree Border',
-    'border-3': 'Mineral Flora Border',
-    'border-4': 'The Wits Adventure Border',
-    'border-5': 'Seaside Shores Border',
-    'border-6': 'Aquamarine Border'
+    'border-1': 'Border 1',
+    'border-2': 'Border 2',
+    'border-3': 'Border 3',
+    'border-4': 'Border 4',
+    'border-5': 'Border 5',
+    'border-6': 'Border 6'
   };
 
   // helper to check locked state
