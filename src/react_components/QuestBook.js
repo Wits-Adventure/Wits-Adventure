@@ -5,7 +5,7 @@ import { FaChevronLeft } from 'react-icons/fa'; // Add this for a matching icon
 import logo from '../media/LOGO_Final.jpg';
 import trophy from '../media/trophy.png';
 import { getUserData } from '../firebase/firebase';
-import { getAllQuests } from '../firebase/general_quest_functions';
+import { getAllQuests, abandonQuest } from '../firebase/general_quest_functions'; // Add abandonQuest import
 import CompleteQuestForm from './CompleteQuestForm';
 import { useNavigate } from "react-router-dom";
 import Leaderboard from './Leaderboard.js';
@@ -81,6 +81,20 @@ const QuestBook = () => {
     setShowCompleteForm(true);
   };
 
+  // Add abandon quest handler
+  const handleAbandonQuest = async (questId) => {
+    try {
+      await abandonQuest(questId);
+      // Remove from accepted quests list
+      setAcceptedQuests(prev => prev.filter(id => id !== questId));
+      // Optionally show a success message
+      console.log('Quest abandoned successfully');
+    } catch (error) {
+      console.error('Error abandoning quest:', error);
+      alert('Failed to abandon quest. Please try again.');
+    }
+  };
+
   // Handler for back button (same as ProfilePage)
   const handleBackHome = () => {
     navigate("/");
@@ -142,8 +156,6 @@ const QuestBook = () => {
             <div className="quest-grid">
               {currentQuests.map((quest) => {
                 const hasUserSubmission = quest.submissions?.some(sub => sub.userId === userId);
-                const lat = typeof quest.location?.latitude === 'number' ? quest.location.latitude.toFixed(6) : "N/A";
-                const lng = typeof quest.location?.longitude === 'number' ? quest.location.longitude.toFixed(6) : "N/A";
                 return (
                   <div key={quest.id} className="quest-card">
                     <div className="quest-card-header">
@@ -151,10 +163,26 @@ const QuestBook = () => {
                       <span className="reward-tag">{quest.reward ?? 0} points</span>
                     </div>
 
-                    <div className="quest-card-meta">
-                      <span className="meta-chip">Lat: {lat}</span>
-                      <span className="meta-chip">Lng: {lng}</span>
-                    </div>
+                    {/* Only show description section if description exists */}
+                    {quest.description && (
+                      <div className="quest-card-meta">
+                        <span className="meta-chip">{quest.description}</span>
+                      </div>
+                    )}
+
+                    {/* Quest Image Display */}
+                    {quest.imageUrl && (
+                      <div className="questbook-quest-image-container">
+                        <img
+                          src={quest.imageUrl}
+                          alt={`${quest.name || "Quest"} image`}
+                          className="questbook-quest-image"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
 
                     <div className="quest-card-actions">
                       <button
@@ -162,6 +190,12 @@ const QuestBook = () => {
                         onClick={() => handleTurnInQuest(quest)}
                       >
                         {hasUserSubmission ? "Replace Submission" : "Turn in Quest"}
+                      </button>
+                      <button
+                        className="questbook-abandon-btn"
+                        onClick={() => handleAbandonQuest(quest.id)}
+                      >
+                        Abandon Quest
                       </button>
                     </div>
                   </div>
