@@ -13,8 +13,13 @@ import { getProfileData } from '../firebase/profile_functions';
 import bellImage from '../media/bell.png';
 import musicImage from '../media/music.png'; import { useMusic } from '../context/MusicContext';
 import tutorialImage from '../media/tutorial.png'; // Replace with your actual image path or use an emoji if no image
-import { doc, updateDoc, increment } from "firebase/firestore";
-import { db } from "../firebase/firebase"; // adjust path if your firebase.js file lives elsewhere
+import {
+  getJourneyQuestProgress,
+  acceptJourneyQuest,
+  abandonJourneyQuest,
+  advanceJourneyQuestStop,
+  completeJourneyQuest
+} from '../firebase/journey_quest_functions';
 import castleImage from '../media/castle.png'; // NEW: castle icon image
 
 function distanceMeters(a, b) {
@@ -152,25 +157,25 @@ const Home = () => {
         id: 'journey-mystic-quest',
         name: 'Mystic Trail',
         emoji: '🔮',
-        reward: 200,
+        reward: 200, // -26.1400485, 27.9737308
         stops: [
           {
-            lat: -26.1920,  // Replace with actual coordinates
-            lng: 28.0310,   // Replace with actual coordinates
+            lat: -26.1400485,  // Replace with actual coordinates
+            lng: 27.9737308,   // Replace with actual coordinates
             radius: 45,
             riddle:
               "Your starting riddle here.\n(You are here. Accept to start!)",
           },
           {
-            lat: -26.1915,  // Replace with actual coordinates
-            lng: 28.0305,   // Replace with actual coordinates
+            lat: -26.1400485,  // Replace with actual coordinates
+            lng: 27.9737308,   // Replace with actual coordinates
             radius: 45,
             riddle:
               "Your second stop riddle here.",
           },
           {
-            lat: -26.1910,  // Replace with actual coordinates
-            lng: 28.0300,   // Replace with actual coordinates
+            lat: -26.1400485,  // Replace with actual coordinates
+            lng: 27.9737308,   // Replace with actual coordinates
             radius: 45,
             riddle:
               "Your final stop riddle here.",
@@ -187,7 +192,35 @@ const Home = () => {
    * { [questId]: { accepted: boolean, currentStep: 1|2 (next target index), completed: boolean } }
    * After accept: currentStep = 1 (target stop index 1). When currentStep advances past 2 => completed.
    */
-  const [journeyProgress, setJourneyProgress] = useState({});
+  const [journeyProgress, setJourneyProgress] = useState({
+    currentJourneyQuest: null,
+    currentJourneyStop: 1,
+    completedJourneyQuests: []
+  });
+
+  // Load journey quest progress from Firestore when user logs in
+  useEffect(() => {
+    const fetchJourneyProgress = async () => {
+      if (currentUser) {
+        try {
+          const progress = await getJourneyQuestProgress();
+          setJourneyProgress(progress);
+        } catch (error) {
+          console.error("Failed to fetch journey quest progress:", error);
+          // Keep default state on error
+        }
+      } else {
+        // Reset to default when user logs out
+        setJourneyProgress({
+          currentJourneyQuest: null,
+          currentJourneyStop: 1,
+          completedJourneyQuests: []
+        });
+      }
+    };
+
+    fetchJourneyProgress();
+  }, [currentUser]); // Dependency array: run this effect when currentUser changes
 
   const showToast = (msg, duration = 2200, iconType = 'bell') => {
     setToastMsg(msg);
@@ -380,14 +413,20 @@ const Home = () => {
         journeyId: jq.id
       }).addTo(mapInstanceRef.current);
 
-      // Check if this journey quest is accepted
-      const isAccepted = journeyProgress[jq.id]?.accepted && !journeyProgress[jq.id]?.completed;
+      // Check if this journey quest is accepted and not completed
+      const isAccepted = journeyProgress.currentJourneyQuest === jq.id;
+      const isCompleted = journeyProgress.completedJourneyQuests.includes(jq.id);
 
-      // Add badge markup for journey quests like hardcoded special quests
-      const badgeHTML = `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
-      const buttonHtml = isAccepted
-        ? `<button id="journey-btn-${jq.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonJourneyQuest('${jq.id}')">Abandon Quest</button>`
-        : `<button id="journey-btn-${jq.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptJourneyQuest('${jq.id}')">Accept Quest</button>`;
+      // Show different badge for completed quests
+      const badgeHTML = isCompleted
+        ? `<div class="quest-badge">✅ <span class="badge-text">Completed</span></div>`
+        : `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
+
+      const buttonHtml = isCompleted
+        ? `<button class="quest-popup-btn your-quest-btn" disabled>Completed</button>`
+        : isAccepted
+          ? `<button id="journey-btn-${jq.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonJourneyQuest('${jq.id}')">Abandon Quest</button>`
+          : `<button id="journey-btn-${jq.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptJourneyQuest('${jq.id}')">Accept Quest</button>`;
 
       circle.bindPopup(`
         <div class="quest-popup">
@@ -426,8 +465,9 @@ const Home = () => {
     questCirclesRef,
     currentUser,
     acceptedQuests,
-    userSubmissions,   // added
-    journeyQuests      // added
+    userSubmissions,
+    journeyQuests,
+    journeyProgress      // ← Add this dependency
   ]);
 
   // Map and header effects remain the same
@@ -677,39 +717,94 @@ const Home = () => {
     };
   }, [currentUser, navigate, allQuests, acceptedQuests]);
 
-  // ======== NEW: Accept/Abandon Journey Quest handlers (global for popup buttons) ========
+  // ======== UPDATED: Accept/Abandon Journey Quest handlers using Firestore ========
   useEffect(() => {
-    window.handleAcceptJourneyQuest = (journeyId) => {
+    window.handleAcceptJourneyQuest = async (journeyId) => {
       if (!currentUser) return navigate('/login');
       const jq = journeyQuests.find(j => j.id === journeyId);
       if (!jq) return;
 
-      // Abandon any other active journey quests (only one allowed at a time)
-      setJourneyProgress(prev => {
-        const newProgress = {};
-        // Reset all other journey quests to not accepted
-        Object.keys(prev).forEach(id => {
-          if (id !== journeyId) {
-            newProgress[id] = { accepted: false, currentStep: 1, completed: false };
-          }
-        });
-        // Set the selected journey quest as accepted
-        newProgress[journeyId] = { accepted: true, currentStep: 1, completed: false };
-        return newProgress;
-      });
+      // Update local state (this will trigger addQuestAreas via useEffect)
+      setJourneyProgress(prev => ({
+        currentJourneyQuest: journeyId,
+        currentJourneyStop: 1,
+        completedJourneyQuests: prev.completedJourneyQuests
+      }));
 
-      // Riddle for stop 2
+      // Show riddle notification
       const nextRiddle = jq.stops[1]?.riddle || 'Find the next landmark!';
-      alert(`${jq.emoji} ${jq.name}\n\nRiddle for Stop 2:\n${nextRiddle}`);
+      setTimeout(() => {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(139, 69, 19, 0.95);
+          color: white;
+          padding: 15px 25px;
+          border-radius: 8px;
+          z-index: 10000;
+          font-family: 'Cinzel', serif;
+          font-size: 14px;
+          text-align: center;
+          max-width: 300px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          border: 2px solid #8B4513;
+        `;
+        notification.innerHTML = `
+          <strong>${jq.emoji} ${jq.name}</strong><br>
+          <small>Riddle for Stop 2:</small><br>
+          ${nextRiddle}
+        `;
+        document.body.appendChild(notification);
+
+        // Remove notification after 4 seconds
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 4000);
+      }, 100);
+
+      // Background Firestore update (like normal quests)
+      try {
+        await acceptJourneyQuest(journeyId);
+      } catch (error) {
+        // Revert state on error (this will also trigger addQuestAreas)
+        setJourneyProgress(prev => ({
+          ...prev,
+          currentJourneyQuest: null,
+          currentJourneyStop: 1
+        }));
+        console.error("Failed to accept journey quest:", error);
+        alert('Failed to accept journey quest. Please try again.');
+      }
     };
 
-    window.handleAbandonJourneyQuest = (journeyId) => {
+    window.handleAbandonJourneyQuest = async (journeyId) => {
       if (!currentUser) return navigate('/login');
 
+      // Update local state (this will trigger addQuestAreas via useEffect)
       setJourneyProgress(prev => ({
         ...prev,
-        [journeyId]: { accepted: false, currentStep: 1, completed: false }
+        currentJourneyQuest: null,
+        currentJourneyStop: 1
       }));
+
+      // Background Firestore update
+      try {
+        await abandonJourneyQuest();
+      } catch (error) {
+        // Revert state on error (this will also trigger addQuestAreas)
+        setJourneyProgress(prev => ({
+          ...prev,
+          currentJourneyQuest: journeyId,
+          currentJourneyStop: 1
+        }));
+        console.error("Failed to abandon journey quest:", error);
+        alert('Failed to abandon journey quest. Please try again.');
+      }
     };
 
     return () => {
@@ -811,7 +906,7 @@ const Home = () => {
 
 
 
-  // ======== NEW: Bell press -> check Journey Quest progress via geolocation ========
+  // ======== UPDATED: Bell press using Firestore data ========
   const handleBellPing = () => {
     // Check if bell is on cooldown
     if (bellCooldown) {
@@ -893,69 +988,63 @@ const Home = () => {
         }
 
         let anyMatched = false;
-        let closestDistance = Infinity; // track nearest stop
+        let closestDistance = Infinity;
 
+        // Check current journey quest only (updated to use new state structure)
+        if (journeyProgress.currentJourneyQuest) {
+          const jq = journeyQuests.find(q => q.id === journeyProgress.currentJourneyQuest);
+          if (jq && journeyProgress.currentJourneyStop <= 2) {
+            const targetIdx = journeyProgress.currentJourneyStop;
+            const target = jq.stops[targetIdx];
 
+            if (target) {
+              const d = distanceMeters([userLat, userLng], [target.lat, target.lng]);
+              console.log(`Journey Quest ${jq.name}: Distance to target = ${Math.round(d)}m, Required = ${target.radius}m`);
 
-        for (const jq of journeyQuests) {
-          const prog = journeyProgress[jq.id];
-          if (!prog || !prog.accepted || prog.completed) continue;
+              closestDistance = d;
 
-          const targetIdx = prog.currentStep; // 1 or 2
-          const target = jq.stops[targetIdx];
-          if (!target) continue;
+              if (d <= (target.radius || 40)) {
+                anyMatched = true;
 
-          const d = distanceMeters([userLat, userLng], [target.lat, target.lng]);
-          console.log(`Journey Quest ${jq.name}: Distance to target = ${Math.round(d)}m, Required = ${target.radius}m`);
+                try {
+                  if (targetIdx === 1) {
+                    // Advance to final stop
+                    await advanceJourneyQuestStop(2);
+                    setJourneyProgress(prev => ({
+                      ...prev,
+                      currentJourneyStop: 2
+                    }));
 
-          if (d < closestDistance) {
-            closestDistance = d;
-          }
+                    const nextRiddle = jq.stops[2]?.riddle || 'One last stop awaits...';
+                    alert(`${jq.emoji} ${jq.name}\n\nGreat! You found Stop 2.\n\nRiddle for Final Stop:\n${nextRiddle}`);
 
-          if (d <= (target.radius || 40)) {
-            anyMatched = true;
+                  } else if (targetIdx === 2) {
+                    // Complete the quest
+                    await completeJourneyQuest(jq.id, jq.reward);
+                    setJourneyProgress(prev => ({
+                      currentJourneyQuest: null,
+                      currentJourneyStop: 1,
+                      completedJourneyQuests: [...prev.completedJourneyQuests, jq.id]
+                    }));
 
-
-            setJourneyProgress((prev) => {
-              const nextStep = targetIdx + 1;
-              const completed = nextStep > 2;
-              return {
-                ...prev,
-                [jq.id]: {
-                  accepted: true,
-                  currentStep: completed ? 2 : nextStep,
-                  completed
+                    alert(`${jq.emoji} ${jq.name}\n\nCongratulations! You completed the journey and earned ${jq.reward} points.`);
+                    showToast('Journey quest completed!');
+                  }
+                } catch (error) {
+                  console.error("Failed to update journey quest progress:", error);
+                  showToast("Error updating quest progress. Please try again.");
                 }
-              };
-            });
-
-            if (targetIdx === 1) {
-              // Final riddle 
-              const nextRiddle = jq.stops[2]?.riddle || 'One last stop awaits...';
-              alert(`${jq.emoji} ${jq.name}\n\nGreat! You found Stop 2.\n\nRiddle for Final Stop:\n${nextRiddle}`);
-            } else if (targetIdx === 2) {
-              // Completed
-              alert(`${jq.emoji} ${jq.name}\n\nCongratulations! You completed the journey and earned ${jq.reward} points.`);
-              showToast('Journey quest completed!');
-
-              // Update Firestore LeaderBoardPoints
-              try {
-                const userRef = doc(db, "Users", currentUser.uid); // assumes doc ID = uid
-                await updateDoc(userRef, {
-                  LeaderBoardPoints: increment(jq.reward)
-                });
-                console.log(`Awarded ${jq.reward} points to ${currentUser.uid}`);
-              } catch (error) {
-                console.error("Failed to update LeaderBoardPoints:", error);
-                showToast("Error awarding points. Try again later.");
               }
             }
           }
         }
 
         if (!anyMatched) {
-          showToast(`You are ${Math.round(closestDistance)}m away from the nearest stop. Please move closer and ring the bell again.`, 5000);
-
+          if (journeyProgress.currentJourneyQuest) {
+            showToast(`You are ${Math.round(closestDistance)}m away from the target stop. Please move closer and ring the bell again.`, 5000);
+          } else {
+            showToast('No active journey quest. Accept a journey quest first!', 3000);
+          }
         }
       },
       (err) => {
