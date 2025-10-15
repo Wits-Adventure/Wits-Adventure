@@ -21,6 +21,7 @@ import {
   completeJourneyQuest
 } from '../firebase/journey_quest_functions';
 import castleImage from '../media/castle.png'; // NEW: castle icon image
+import JourneyQuestRiddle from './JourneyQuestRiddle';
 
 function distanceMeters(a, b) {
   try {
@@ -731,42 +732,6 @@ const Home = () => {
         completedJourneyQuests: prev.completedJourneyQuests
       }));
 
-      // Show riddle notification
-      const nextRiddle = jq.stops[1]?.riddle || 'Find the next landmark!';
-      setTimeout(() => {
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-          position: fixed;
-          top: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(139, 69, 19, 0.95);
-          color: white;
-          padding: 15px 25px;
-          border-radius: 8px;
-          z-index: 10000;
-          font-family: 'Cinzel', serif;
-          font-size: 14px;
-          text-align: center;
-          max-width: 300px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-          border: 2px solid #8B4513;
-        `;
-        notification.innerHTML = `
-          <strong>${jq.emoji} ${jq.name}</strong><br>
-          <small>Riddle for Stop 2:</small><br>
-          ${nextRiddle}
-        `;
-        document.body.appendChild(notification);
-
-        // Remove notification after 4 seconds
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-          }
-        }, 4000);
-      }, 100);
-
       // Background Firestore update (like normal quests)
       try {
         await acceptJourneyQuest(journeyId);
@@ -1157,6 +1122,12 @@ const Home = () => {
                   </button>
                 </div>
               )}
+
+              {/* Journey Quest Riddle Component */}
+              <JourneyQuestRiddle
+                journeyProgress={journeyProgress}
+                journeyQuests={journeyQuests}
+              />
 
               <button className="questbook-icon" onClick={handleQuestbookClick}>
                 <img src={questbookImage} alt="Questbook" />

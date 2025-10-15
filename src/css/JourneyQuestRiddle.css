@@ -1,0 +1,300 @@
+/* Journey Quest Riddle Display */
+.journey-quest-riddle {
+    position: absolute;
+    top: 15px;
+    right: 100px;
+    /* Left of the music button */
+    background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+    border: 2px solid #90774c;
+    border-radius: 16px;
+    padding: 12px 16px;
+    max-width: 280px;
+    min-width: 200px;
+    width: 280px;
+    /* Add fixed width to prevent stretching */
+    box-shadow:
+        0 8px 25px rgba(144, 119, 76, 0.35),
+        0 4px 12px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    z-index: 1100;
+    font-family: 'Cinzel', serif;
+    color: #2F1B14;
+    backdrop-filter: blur(4px);
+    animation: riddle-fade-in 0.3s ease-out;
+}
+
+/* Minimize button */
+.riddle-minimize-btn {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: rgba(144, 119, 76, 0.8);
+    border: 1px solid #90774c;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 1101;
+}
+
+.riddle-minimize-btn:hover {
+    background: rgba(144, 119, 76, 1);
+    transform: scale(1.1);
+}
+
+.riddle-minimize-btn:active {
+    transform: scale(0.95);
+}
+
+/* Minimized state - circular button */
+.journey-quest-riddle-minimized {
+    position: absolute;
+    top: 15px;
+    right: 100px;
+    background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+    border: 2px solid #90774c;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 6px 20px rgba(144, 119, 76, 0.4),
+        0 3px 8px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    z-index: 1100;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: riddle-fade-in 0.3s ease-out;
+}
+
+.journey-quest-riddle-minimized:hover {
+    transform: scale(1.1);
+    box-shadow:
+        0 8px 25px rgba(144, 119, 76, 0.5),
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.journey-quest-riddle-minimized:active {
+    transform: scale(0.95);
+}
+
+.minimized-emoji {
+    font-size: 24px;
+    line-height: 1;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+@keyframes riddle-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Add this after the existing .journey-quest-riddle class */
+
+/* Shimmer effect for new riddles */
+@keyframes shimmer {
+    0% {
+        background-position: -200px 0;
+    }
+
+    100% {
+        background-position: calc(200px + 100%) 0;
+    }
+}
+
+@keyframes shimmer-glow {
+
+    0%,
+    100% {
+        box-shadow:
+            0 8px 25px rgba(144, 119, 76, 0.35),
+            0 4px 12px rgba(0, 0, 0, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    }
+
+    50% {
+        box-shadow:
+            0 8px 25px rgba(255, 215, 0, 0.6),
+            0 4px 12px rgba(255, 215, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+            0 0 20px rgba(255, 215, 0, 0.3);
+    }
+}
+
+/* Shimmer effect for expanded riddle */
+.journey-quest-riddle.shimmer {
+    position: relative;
+    background: linear-gradient(135deg, #ffeac8, #d8ba8a);
+    animation: shimmer-glow 2s ease-in-out;
+}
+
+.journey-quest-riddle.shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 215, 0, 0.4),
+            transparent);
+    background-size: 200px 100%;
+    animation: shimmer 2s ease-in-out;
+    border-radius: 16px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Shimmer effect for minimized button */
+.journey-quest-riddle-minimized.shimmer {
+    position: relative;
+    animation: shimmer-glow 2s ease-in-out;
+}
+
+.journey-quest-riddle-minimized.shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 215, 0, 0.4),
+            transparent);
+    background-size: 200px 100%;
+    animation: shimmer 2s ease-in-out;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Ensure content stays above shimmer overlay */
+.journey-quest-riddle.shimmer>* {
+    position: relative;
+    z-index: 2;
+}
+
+.journey-quest-riddle-minimized.shimmer>* {
+    position: relative;
+    z-index: 2;
+}
+
+.riddle-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #90774c;
+    padding-right: 30px;
+    /* Add space for minimize button */
+}
+
+.journey-quest-riddle .quest-emoji {
+    font-size: 18px;
+    line-height: 1;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+.quest-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #2F1B14;
+}
+
+.riddle-text {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    color: #4b2e1a;
+    white-space: pre-wrap;
+    text-align: center;
+    font-style: italic;
+}
+
+.riddle-progress {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+    color: #90774c;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 800px) {
+    .journey-quest-riddle {
+        top: 12px;
+        right: 80px;
+        max-width: 220px;
+        min-width: 160px;
+        width: 220px;
+        /* Add fixed width for mobile */
+        padding: 10px 12px;
+    }
+
+    .journey-quest-riddle-minimized {
+        top: 12px;
+        right: 80px;
+        width: 45px;
+        height: 45px;
+    }
+}
+
+@media (max-width: 600px) {
+    .journey-quest-riddle {
+        top: 10px;
+        right: 70px;
+        max-width: 180px;
+        min-width: 140px;
+        width: 180px;
+        /* Add fixed width for small mobile */
+        padding: 8px 10px;
+    }
+
+    .journey-quest-riddle-minimized {
+        top: 10px;
+        right: 70px;
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 450px) {
+    .journey-quest-riddle {
+        right: 65px;
+        max-width: 150px;
+        min-width: 120px;
+        width: 150px;
+        /* Add fixed width for very small screens */
+        padding: 6px 8px;
+    }
+
+    .journey-quest-riddle-minimized {
+        right: 65px;
+        width: 35px;
+        height: 35px;
+    }
+}
