@@ -4,13 +4,13 @@ import profilePic from "../assets/profile.jpg";
 import editIcon from "../assets/edit_icon.png";
 import cardCustomizationImg from "../media/cardcustomization.png";
 import backgroundCustomizationImg from "../media/backgroundcustomization.png";
-import border1 from "../media/Borders1.png";
+import border1 from "../media/Borders0.png";
 import border2 from "../media/Borders2.png";
 import border3 from "../media/Borders3.png";
 import border4 from "../media/Borders4.png";
 import border5 from "../media/Borders5.png";
-import border6 from "../media/Borders6.png";
-import { getProfileData, updateProfileData } from "../firebase/profile_functions";
+import border6 from "../media/Borders1.png";
+import { getProfileData, updateProfileData, getUserInventoryItems, unlockInventoryItem, setCustomisation, getCustomisation } from "../firebase/profile_functions";
 import { useNavigate } from "react-router-dom";
 import { getAllQuests } from "../firebase/general_quest_functions";
 import QuestManager from "./QuestManager";
@@ -26,8 +26,28 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
   const [editedProfilePic, setEditedProfilePic] = useState(profilePic);
   const [createdQuests, setCreatedQuests] = useState([]);
 
+  // Image upload rules
+  const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  const ALLOWED_LABEL = 'JPG, PNG, WEBP';
+  const MAX_IMAGE_MB = Math.round(MAX_IMAGE_BYTES / (1024 * 1024));
+
+  // Error popup state
+  const [imageError, setImageError] = useState(null);
+  const imageErrorTimerRef = useRef(null);
+  useEffect(() => {
+    return () => {
+      if (imageErrorTimerRef.current) clearTimeout(imageErrorTimerRef.current);
+    };
+  }, []);
+  const showImageError = (msg) => {
+    if (imageErrorTimerRef.current) clearTimeout(imageErrorTimerRef.current);
+    setImageError(msg);
+    imageErrorTimerRef.current = setTimeout(() => setImageError(null), 4000);
+  };
+
   // NEW: static inventory items visible to all users
-   const [inventoryItems] = useState([
+  const [inventoryItems] = useState([
     { id: 'card-customization', name: 'Card Customization', image: cardCustomizationImg, color: 'hsl(30 60% 70%)' },
     { id: 'background-customization', name: 'Background Customization', image: backgroundCustomizationImg, color: 'hsl(42 55% 72%)' },
 
@@ -76,7 +96,7 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
           ...profileData,
           username: profileData.Name,
           points: profileData.LeaderBoardPoints,
-          questsCompleted: profileData.CompletedQuests.filter((quest) => quest.creatorID !== profileData.uid ).length,
+          questsCompleted: profileData.CompletedQuests.filter((quest) => quest.creatorID !== profileData.uid).length,
           questsInProgress: profileData.acceptedQuests.filter((quest) => quest.creatorID !== profileData.uid).length,
           level: profileData.Level,
           bio: profileData.Bio,
@@ -87,6 +107,26 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
         });
         setEditedUsername(profileData.Name);
         setEditedBio(profileData.Bio);
+
+        const inventory = await getUserInventoryItems();
+        setUnlockedItems(inventory);
+
+        // Fetch customisation object
+        const custom = await getCustomisation();
+        if (custom.borderId) {
+          const borderItem = inventoryItems.find(i => i.id === custom.borderId);
+          setSelectedBorderImage(borderItem ? borderItem.image : null);
+        }
+        if (custom.cardColor) {
+          setCardColor(custom.cardColor);
+          document.documentElement.style.setProperty('--card-bg', gradientFromHex(custom.cardColor));
+          document.documentElement.style.setProperty('--card-border', darkenHex(custom.cardColor, 22));
+        }
+        if (custom.backgroundColor) {
+          setBgColor(custom.backgroundColor);
+          setPageBgColor(custom.backgroundColor);
+          document.body.style.background = custom.backgroundColor;
+        }
 
         // Fetch all quests and filter by creatorId
         const allQuests = await getAllQuests();
@@ -115,21 +155,28 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
 
   const handleEditClick = () => {
     setIsEditing(true);
+    // Do not preload the current image in the drop zone
+    setEditedProfilePic(null);
   };
 
   const handleSave = async () => {
     try {
-      await updateProfileData({
+      const payload = {
         uid: user.uid,
         Name: editedUsername,
-        Bio: editedBio,
-        ProfilePictureUrl: editedProfilePic
-      });
+        Bio: editedBio
+      };
+      // Only update the picture if a new file was chosen
+      if (editedProfilePic && editedProfilePic !== user.profilePicture) {
+        payload.ProfilePictureUrl = editedProfilePic;
+      }
+      await updateProfileData(payload);
+
       setUser({
         ...user,
         username: editedUsername,
         bio: editedBio,
-        profilePicture: editedProfilePic,
+        profilePicture: payload.ProfilePictureUrl ? editedProfilePic : user.profilePicture,
       });
       setIsEditing(false);
     } catch (err) {
@@ -148,6 +195,19 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
   // Replaces previous handleProfilePicChange - supports both click-select and drag/drop
   const processFile = (file) => {
     if (!file) return;
+
+    // Validation: type
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      showImageError(`Invalid file type. Please upload one of: ${ALLOWED_LABEL}.`);
+      return;
+    }
+    // Validation: size
+    if (file.size > MAX_IMAGE_BYTES) {
+      const mb = (file.size / (1024 * 1024)).toFixed(2);
+      showImageError(`Image is too large (${mb} MB). Max size is 2 MB.`);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = () => {
       setEditedProfilePic(reader.result);
@@ -228,7 +288,7 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
     const stop2 = darkenHex(hex, 18);
     return `linear-gradient(135deg, ${stop1} 0%, ${stop2} 100%)`;
   };
-  
+
   // Initialize CSS card variables on first load so page uses the current cardColor
   useEffect(() => {
     try {
@@ -240,13 +300,10 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
         document.documentElement.style.setProperty('--card-text', '#2F1B14');
       }
     } catch (e) { /* ignore in non-browser tests */ }
-  }, []); 
+  }, []);
 
   // unlocked items (by id). persisted only in memory for now.
-  const [unlockedItems, setUnlockedItems] = useState(() => {
-    // Optionally allow some free items by default, e.g. ['background-customization']
-    return {};
-  });
+  const [unlockedItems, setUnlockedItems] = useState({});
 
   // Purchase modal state
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -268,14 +325,14 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
   const ITEM_DISPLAY_NAMES = {
     'card-customization': 'Card Customization Pack',
     'background-customization': 'Background Customization Pack',
-    'border-1': 'Candy Border',
-    'border-2': 'Golden Filigree Border',
-    'border-3': 'Mineral Flora Border',
-    'border-4': 'The Wits Adventure Border',
-    'border-5': 'Seaside Shores Border',
-    'border-6': 'Aquamarine Border'
+    'border-1': 'Border 1',
+    'border-2': 'Border 2',
+    'border-3': 'Border 3',
+    'border-4': 'Border 4',
+    'border-5': 'Border 5',
+    'border-6': 'Border 6'
   };
-  
+
   // helper to check locked state
   const isItemLocked = (itemId) => {
     return !unlockedItems[itemId];
@@ -292,19 +349,28 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
     setPurchaseItem(null);
   };
 
-  const confirmPurchase = () => {
+  const confirmPurchase = async () => {
     if (!purchaseItem) return closePurchasePrompt();
 
     const cost = ITEM_COSTS[purchaseItem.id] || 0;
-    // For now allow purchases regardless of current balance (may go negative)
-    setUser(prev => prev ? { ...prev, spendablePoints: (Number(prev.spendablePoints) || 0) - cost } : prev);
+    if ((user?.spendablePoints ?? 0) < cost) {
+      alert("You do not have enough points to purchase this item.");
+      closePurchasePrompt();
+      return;
+    }
 
-    // unlock item
-    setUnlockedItems(prev => ({ ...prev, [purchaseItem.id]: true }));
+    try {
+      // Persist unlock and deduct points in Firestore
+      const updatedInventory = await unlockInventoryItem(purchaseItem.id, cost);
+      setUnlockedItems(updatedInventory);
+      setUser(prev => prev ? { ...prev, spendablePoints: (prev.spendablePoints - cost) } : prev);
 
-    // auto-equip borders if desired (keep existing behaviour: equip after unlock)
-    if (purchaseItem.id.startsWith('border-')) {
-      setSelectedBorderImage(purchaseItem.image);
+      // auto-equip borders if desired
+      if (purchaseItem.id.startsWith('border-')) {
+        setSelectedBorderImage(purchaseItem.image);
+      }
+    } catch (err) {
+      alert(err.message || "Failed to unlock item.");
     }
 
     closePurchasePrompt();
@@ -334,8 +400,10 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
       setCardColor(hexMatch ? `#${hexMatch[1]}` : defaultHex);
       setShowCardPicker(true);
     } else if (item.id && item.id.startsWith('border-')) {
-      // Toggle: if clicked border is already equipped -> unequip, otherwise equip it
-      setSelectedBorderImage(prev => (prev === item.image ? null : item.image));
+      const newBorder = (selectedBorderImage === item.image ? null : item.image);
+      setSelectedBorderImage(newBorder);
+      // Persist equipped border id in Firestore
+      setCustomisation({ borderId: newBorder ? item.id : null });
     }
   };
 
@@ -359,7 +427,10 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
   };
 
   // Apply / confirm
-  const confirmBgColor = () => { setShowBgPicker(false); };
+  const confirmBgColor = async () => {
+    setShowBgPicker(false);
+    await setCustomisation({ backgroundColor: bgColor });
+  };
   const cancelBgPicker = () => {
     const prev = prevBgColorRef.current;
     setPageBgColor(prev);
@@ -367,8 +438,9 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
     setShowBgPicker(false);
   };
 
-  const confirmCardColor = () => {
+  const confirmCardColor = async () => {
     setShowCardPicker(false);
+    await setCustomisation({ cardColor });
   };
   const cancelCardPicker = () => {
     const prev = prevCardColorRef.current;
@@ -376,7 +448,7 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
       try {
         if (prev.card) document.documentElement.style.setProperty('--card-bg', prev.card);
         if (prev.border) document.documentElement.style.setProperty('--card-border', prev.border);
-      } catch (e) {}
+      } catch (e) { }
     }
     setShowCardPicker(false);
   };
@@ -424,7 +496,10 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
   const profilePicture = user.profilePicture || "/profile.png";
 
   return (
-    <main className="profile-container" style={ pageBgColor ? { background: pageBgColor } : undefined }>
+    <main className="profile-container" style={pageBgColor ? { background: pageBgColor } : undefined}>
+      {/* Image upload error popup */
+      imageError && <div className="image-error-popup" role="alert">{imageError}</div>}
+
       <div className="profile-layout">
         {/* Left Panel - Profile Card */}
         <section className="profile-card">
@@ -434,14 +509,14 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
               alt={`${user.username}'s avatar`}
               className="profile-pic"
             />
-           {selectedBorderImage && (
-             <img
-               src={selectedBorderImage}
-               alt="Selected profile border"
-               className="profile-border-overlay"
-               aria-hidden="true"
-             />
-           )}
+            {selectedBorderImage && (
+              <img
+                src={selectedBorderImage}
+                alt="Selected profile border"
+                className="profile-border-overlay"
+                aria-hidden="true"
+              />
+            )}
           </div>
 
           <div className="profile-name-section">
@@ -457,10 +532,6 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
           <div className="profile-info-section">
             <h3 className="info-title">INFO</h3>
             <div className="profile-stats">
-              <div className="stat-item">
-                <span className="stat-label">Experience:</span>
-                <span className="stat-value">{user.experience}</span>
-              </div>
               <div className="stat-item">
                 <span className="stat-label">Spendable points:</span>
                 <span className="stat-value">{user.spendablePoints}</span>
@@ -491,30 +562,30 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
               <div className="inventory-grid" role="list" aria-label="Customization inventory">
                 {inventoryItems.map(item => {
                   const isSelected = item.id?.startsWith?.('border-') && selectedBorderImage === item.image;
-                 const locked = isItemLocked(item.id);
+                  const locked = isItemLocked(item.id);
                   return (
-                  <div
-                    key={item.id}
-                    role="listitem"
-                    aria-label={item.name}
-                    aria-pressed={isSelected}
-                    className={`inventory-item ${isSelected ? 'selected-border' : ''} ${locked ? 'locked' : ''}`}
-                    title={item.name}
-                    onClick={() => handleInventoryClick(item)}
-                    tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleInventoryClick(item); }}
-                    style={{
-                      backgroundImage: `url(${item.image})`,
-                    }}
-                    data-item-id={item.id}
-                  >
-                   {locked && (
-                     <div className="locked-overlay" aria-hidden="true">
-                       <span className="locked-emoji">🔒</span>
-                     </div>
-                   )}
-                  </div>
-                );
+                    <div
+                      key={item.id}
+                      role="listitem"
+                      aria-label={item.name}
+                      aria-pressed={isSelected}
+                      className={`inventory-item ${isSelected ? 'selected-border' : ''} ${locked ? 'locked' : ''}`}
+                      title={item.name}
+                      onClick={() => handleInventoryClick(item)}
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleInventoryClick(item); }}
+                      style={{
+                        backgroundImage: `url(${item.image})`,
+                      }}
+                      data-item-id={item.id}
+                    >
+                      {locked && (
+                        <div className="locked-overlay" aria-hidden="true">
+                          <span className="locked-emoji">🔒</span>
+                        </div>
+                      )}
+                    </div>
+                  );
                 })}
               </div>
             </div>
@@ -676,9 +747,9 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
               <div className="input-group">
                 <label className="input-label">Profile Picture:</label>
 
-                {/* Image drop / select area (replaces plain file input) */}
+                {/* Drop/select area: show preview after upload, otherwise show holder text */}
                 <div
-                  className={`image-drop-area ${isDragging ? "drag_over" : ""}`}
+                  className={`image-drop-area ${isDragging ? "drag_over" : ""} ${editedProfilePic ? "has-image" : ""}`}
                   onClick={() => fileInputRef.current && fileInputRef.current.click()}
                   onDragOver={handleDragOver}
                   onDragEnter={handleDragOver}
@@ -691,18 +762,20 @@ export default function ProfilePage({ mapInstanceRef, questCirclesRef }) {
                   {editedProfilePic ? (
                     <img
                       src={editedProfilePic}
-                      alt="Profile preview"
+                      alt="Selected profile preview"
                       className="image-preview"
                     />
                   ) : (
-                    <div className="drop-placeholder">
-                      Click or drop an image here to upload
+                    <div className="drop-instructions" aria-hidden="true">
+                      <div className="title">Drop image here or click to upload</div>
+                      <div className="req">Accepted: JPG, PNG, WEBP</div>
+                      <div className="req">Max size: 1 MB</div>
                     </div>
                   )}
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,.webp"
                     onChange={handleProfilePicChange}
                     style={{ display: "none" }}
                   />

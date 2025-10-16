@@ -491,4 +491,222 @@ describe('Home Component', () => {
       expect(getAllQuests).toHaveBeenCalled();
     });
   });
+
+  test('handles map initialization error', () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    global.L.map.mockImplementation(() => { throw new Error('Map error'); });
+    renderHome();
+    consoleSpy.mockRestore();
+  });
+
+  test('handles quest with image and description', async () => {
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      location: { _latitude: -26.1935, _longitude: 28.0298 },
+      imageUrl: 'test.jpg',
+      description: 'Test description'
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    renderHome();
+    await waitFor(() => expect(getAllQuests).toHaveBeenCalled());
+  });
+
+  test('handles own quest display', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    const mockQuests = [{ id: 'quest1', name: 'Test Quest', location: { _latitude: -26.1935, _longitude: 28.0298 }, creatorId: mockUser.uid }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    renderHome();
+    await waitFor(() => expect(getAllQuests).toHaveBeenCalled());
+  });
+
+  test('handles journey quest completion', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({ coords: { latitude: -26.1895187018387, longitude: 28.029333555477365, accuracy: 10 } });
+    });
+    renderHome();
+    await waitFor(() => {
+      if (window.handleAcceptJourneyQuest) {
+        window.handleAcceptJourneyQuest('journey-knowledge-quest');
+      }
+    });
+    fireEvent.click(screen.getByAltText('Bell'));
+  });
+
+  test('handles bell pulse animation', async () => {
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({ coords: { latitude: -26.1929, longitude: 28.0305, accuracy: 10 } });
+    });
+    const mockCircle = { setRadius: jest.fn(), setStyle: jest.fn() };
+    global.L.circle.mockReturnValue(mockCircle);
+    global.requestAnimationFrame = jest.fn(cb => cb());
+    renderHome();
+    fireEvent.click(screen.getByAltText('Bell'));
+  });
+
+  test('handles quest marker click events', async () => {
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      location: { _latitude: -26.1935, _longitude: 28.0298 },
+      creatorId: 'other-user'
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    const mockMarker = { on: jest.fn(), addTo: jest.fn().mockReturnThis(), bindPopup: jest.fn().mockReturnThis() };
+    global.L.marker.mockReturnValue(mockMarker);
+    renderHome();
+    await waitFor(() => expect(getAllQuests).toHaveBeenCalled());
+    expect(mockMarker.on).toHaveBeenCalledWith('click', expect.any(Function));
+  });
+
+  test('handles quest popup content generation', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      description: 'Test description',
+      location: { _latitude: -26.1935, _longitude: 28.0298 },
+      creatorId: 'other-user',
+      imageUrl: 'test.jpg'
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    renderHome();
+    await waitFor(() => expect(getAllQuests).toHaveBeenCalled());
+  });
+
+  test('handles quest without description or image', async () => {
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      location: { _latitude: -26.1935, _longitude: 28.0298 },
+      creatorId: 'other-user'
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    renderHome();
+    await waitFor(() => expect(getAllQuests).toHaveBeenCalled());
+  });
+
+  test('handles journey quest location matching', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({ coords: { latitude: -26.1905275569984, longitude: 28.02991870656233, accuracy: 5 } });
+    });
+    renderHome();
+    await waitFor(() => {
+      if (window.handleAcceptJourneyQuest) {
+        window.handleAcceptJourneyQuest('journey-knowledge-quest');
+      }
+    });
+    fireEvent.click(screen.getByAltText('Bell'));
+  });
+
+  test('handles journey quest different locations', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({ coords: { latitude: -26.1895187018387, longitude: 28.029333555477365, accuracy: 5 } });
+    });
+    renderHome();
+    await waitFor(() => {
+      if (window.handleAcceptJourneyQuest) {
+        window.handleAcceptJourneyQuest('journey-knowledge-quest');
+      }
+    });
+    fireEvent.click(screen.getByAltText('Bell'));
+  });
+
+  test('handles quest acceptance without authentication', async () => {
+    useAuth.mockReturnValue({ currentUser: null });
+    renderHome();
+    await waitFor(() => {
+      if (window.handleAcceptQuest) {
+        window.handleAcceptQuest('quest1');
+      }
+    });
+  });
+
+  test('handles quest abandonment without authentication', async () => {
+    useAuth.mockReturnValue({ currentUser: null });
+    renderHome();
+    await waitFor(() => {
+      if (window.handleAbandonQuest) {
+        window.handleAbandonQuest('quest1');
+      }
+    });
+  });
+
+  test('handles turn in quest without authentication', async () => {
+    useAuth.mockReturnValue({ currentUser: null });
+    renderHome();
+    await waitFor(() => {
+      if (window.handleTurnInQuest) {
+        window.handleTurnInQuest('quest1');
+      }
+    });
+  });
+
+  test('handles journey quest without authentication', async () => {
+    useAuth.mockReturnValue({ currentUser: null });
+    renderHome();
+    await waitFor(() => {
+      if (window.handleAcceptJourneyQuest) {
+        window.handleAcceptJourneyQuest('journey-knowledge-quest');
+      }
+    });
+  });
+
+  test('handles map cleanup on unmount', () => {
+    const { unmount } = renderHome();
+    unmount();
+    expect(mockMapInstance.remove).toHaveBeenCalled();
+  });
+
+  test('handles quest data fetch error', async () => {
+    getAllQuests.mockRejectedValue(new Error('Failed to fetch quests'));
+    console.error = jest.fn();
+    renderHome();
+    await waitFor(() => {
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
+  test('handles bell click with high accuracy GPS', async () => {
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({ coords: { latitude: -26.1929, longitude: 28.0305, accuracy: 5 } });
+    });
+    renderHome();
+    fireEvent.click(screen.getByAltText('Bell'));
+  });
+
+  test('handles quest marker popup with all content', async () => {
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      description: 'A detailed description',
+      location: { _latitude: -26.1935, _longitude: 28.0298 },
+      creatorId: 'other-user',
+      imageUrl: 'https://example.com/image.jpg'
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    renderHome();
+    await waitFor(() => expect(getAllQuests).toHaveBeenCalled());
+  });
+
+  test('handles profile picture display', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    getProfileData.mockResolvedValue({ Name: 'Test User', profilePicture: 'custom.jpg' });
+    renderHome();
+    await waitFor(() => {
+      expect(screen.getByText('Test User')).toBeInTheDocument();
+    });
+  });
+
+  test('handles default profile picture', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    getProfileData.mockResolvedValue({ Name: 'Test User', profilePicture: null });
+    renderHome();
+    await waitFor(() => {
+      expect(screen.getByText('Test User')).toBeInTheDocument();
+    });
+  });
 });

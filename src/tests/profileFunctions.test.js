@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { getProfileData, addProfileFields, updateProfileData } from "../firebase/profile_functions";
+import { getProfileData, addProfileFields, updateProfileData, getUserInventoryItems, unlockInventoryItem, setCustomisation, getCustomisation } from "../firebase/profile_functions";
 import { auth, db } from "../firebase/firebase";
 import { collection, getDocs, getDoc, updateDoc, doc } from "firebase/firestore";
 
@@ -112,6 +112,25 @@ describe("Profile Functions", () => {
       getDoc.mockRejectedValueOnce(firestoreError);
 
       await expect(getProfileData()).rejects.toThrow("User document does not exist in Firestore");
+    });
+
+    it("should return correct CompletedQuests count when array exists", async () => {
+      const mockUserData = {
+        Name: "Test User",
+        LeaderBoardPoints: 100,
+        CompletedQuests: [1, 2, 3, 4],
+        Level: 2,
+        Bio: "Test",
+        ProfilePictureUrl: "test.jpg",
+      };
+
+      getDoc.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => mockUserData,
+      });
+
+      const result = await getProfileData();
+      expect(result.CompletedQuests).toEqual([1, 2, 3, 4]);
     });
   });
 
@@ -323,6 +342,149 @@ describe("Profile Functions", () => {
         Name: "Updated Name",
         Bio: "Updated bio",
       });
+    });
+  });
+
+  describe("getUserInventoryItems", () => {
+    it("should throw error if user is not authenticated", async () => {
+      auth.currentUser = null;
+      await expect(getUserInventoryItems()).rejects.toThrow("User is not authenticated");
+    });
+
+    it("should throw error if user document does not exist", async () => {
+      getDoc.mockResolvedValueOnce({ exists: () => false });
+      await expect(getUserInventoryItems()).rejects.toThrow("User document does not exist in Firestore");
+    });
+
+    it("should return existing inventory items", async () => {
+      const mockInventory = { 'border-1': true, 'card-customization': false };
+      getDoc.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({ inventoryItems: mockInventory })
+      });
+
+      const result = await getUserInventoryItems();
+      expect(result).toEqual(mockInventory);
+    });
+
+    it("should initialize inventory if missing", async () => {
+      getDoc.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({})
+      });
+      doc.mockReturnValueOnce("mockDocRef");
+
+      const result = await getUserInventoryItems();
+      expect(updateDoc).toHaveBeenCalledWith("mockDocRef", {
+        inventoryItems: expect.objectContaining({
+          'card-customization': false,
+          'border-1': false
+        })
+      });
+    });
+  });
+
+  describe("unlockInventoryItem", () => {
+    it("should throw error if user is not authenticated", async () => {
+      auth.currentUser = null;
+      await expect(unlockInventoryItem('border-1', 100)).rejects.toThrow("User is not authenticated");
+    });
+
+    it("should throw error if user document does not exist", async () => {
+      getDoc.mockResolvedValueOnce({ exists: () => false });
+      await expect(unlockInventoryItem('border-1', 100)).rejects.toThrow("User document does not exist in Firestore");
+    });
+
+    it("should throw error if item already unlocked", async () => {
+      getDoc.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({ inventoryItems: { 'border-1': true }, SpendablePoints: 200 })
+      });
+
+      await expect(unlockInventoryItem('border-1', 100)).rejects.toThrow("Item already unlocked");
+    });
+
+    it("should throw error if not enough points", async () => {
+      getDoc.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({ inventoryItems: { 'border-1': false }, SpendablePoints: 50 })
+      });
+
+      await expect(unlockInventoryItem('border-1', 100)).rejects.toThrow("Not enough points");
+    });
+
+    it("should unlock item and deduct points", async () => {
+      getDoc.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({ inventoryItems: { 'border-1': false }, SpendablePoints: 200 })
+      });
+      doc.mockReturnValueOnce("mockDocRef");
+
+      const result = await unlockInventoryItem('border-1', 100);
+      expect(updateDoc).toHaveBeenCalledWith("mockDocRef", {
+        inventoryItems: { 'border-1': true },
+        SpendablePoints: 100
+      });
+      expect(result).toEqual({ 'border-1': true });
+    });
+  });
+
+  describe("setCustomisation", () => {
+    it("should throw error if user is not authenticated", async () => {
+      auth.currentUser = null;
+      await expect(setCustomisation({ borderId: 'border-1' })).rejects.toThrow("User is not authenticated");
+    });
+
+    it("should update only provided customization fields", async () => {
+      doc.mockReturnValueOnce("mockDocRef");
+
+      await setCustomisation({ borderId: 'border-1', cardColor: '#ff0000' });
+      expect(updateDoc).toHaveBeenCalledWith("mockDocRef", {
+        'customisation.borderId': 'border-1',
+        'customisation.cardColor': '#ff0000'
+      });
+    });
+
+    it("should handle undefined values", async () => {
+      doc.mockReturnValueOnce("mockDocRef");
+
+      await setCustomisation({ borderId: undefined, backgroundColor: '#00ff00' });
+      expect(updateDoc).toHaveBeenCalledWith("mockDocRef", {
+        'customisation.backgroundColor': '#00ff00'
+      });
+    });
+  });
+
+  describe("getCustomisation", () => {
+    it("should throw error if user is not authenticated", async () => {
+      auth.currentUser = null;
+      await expect(getCustomisation()).rejects.toThrow("User is not authenticated");
+    });
+
+    it("should throw error if user document does not exist", async () => {
+      getDoc.mockResolvedValueOnce({ exists: () => false });
+      await expect(getCustomisation()).rejects.toThrow("User document does not exist in Firestore");
+    });
+
+    it("should return customisation data", async () => {
+      const mockCustomisation = { borderId: 'border-1', cardColor: '#ff0000' };
+      getDoc.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({ customisation: mockCustomisation })
+      });
+
+      const result = await getCustomisation();
+      expect(result).toEqual(mockCustomisation);
+    });
+
+    it("should return empty object if no customisation", async () => {
+      getDoc.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({})
+      });
+
+      const result = await getCustomisation();
+      expect(result).toEqual({});
     });
   });
 });

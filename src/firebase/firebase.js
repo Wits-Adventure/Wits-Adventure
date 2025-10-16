@@ -1,11 +1,8 @@
-
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, } from "firebase/auth";
 import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-
 
 const firebaseConfig = {
   apiKey: "AIzaSyBjatUHRXn-vb8yZS_G2I9qRjr49G0Uqjg",
@@ -73,14 +70,16 @@ async function addUserToFirestore(userId, email, name, role) {
       Name: name,
       joinedAt: serverTimestamp(),
       Role: role,
-
-
       Level: 0,
       CompletedQuests: [],
       Bio: "",
       SpendablePoints: 0,
       Experience: 0,
       Quests: [],
+      // Journey quest fields
+      currentJourneyQuest: null,
+      currentJourneyStop: 1,
+      completedJourneyQuests: []
     };
     await setDoc(userDocRef, userData);
     console.log("User added to Firestore!");

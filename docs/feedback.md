@@ -30,3 +30,21 @@ Made visuals and input fields scale better on mobile.
 
 ![Mobile site](assets/feedback/mobile.jpg)
 
+## 4. Added descriptions to quests
+
+**Feedback/Problem:** Users wanted quests to be more interesting by being able to add descriptions/riddles
+
+**Improvement:**
+Added a description/riddle field for quests
+
+![Mobile site](assets/feedback/descriptions.png)
+
+## 5. Added a way to spend points
+
+**Feedback/Problem:** Quests felt pointless because the points couldnt be used for anything
+
+**Improvement:**
+Added purchasable borders and colour customisation
+
+![Mobile site](assets/feedback/customisation.png)
+

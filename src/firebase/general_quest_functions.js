@@ -58,6 +58,7 @@ export async function createQuestOnBackend(questData) {
         // Prepare quest data for Firestore
         const finalQuestData = {
             name: questData.name,
+            description: questData.description, // <-- Add this line
             radius: questData.radius,
             reward: questData.reward,
             type: questData.type,

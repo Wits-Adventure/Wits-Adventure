@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import '../css/QuestBook.css';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { FaChevronLeft } from 'react-icons/fa'; // Add this for a matching icon
-import logo from '../media/logo.jpg';
+import logo from '../media/LOGO_Final.jpg';
 import trophy from '../media/trophy.png';
 import { getUserData } from '../firebase/firebase';
-import { getAllQuests } from '../firebase/general_quest_functions';
+import { getAllQuests, abandonQuest } from '../firebase/general_quest_functions'; // Add abandonQuest import
 import CompleteQuestForm from './CompleteQuestForm';
 import { useNavigate } from "react-router-dom";
 import Leaderboard from './Leaderboard.js';
@@ -81,6 +81,20 @@ const QuestBook = () => {
     setShowCompleteForm(true);
   };
 
+  // Add abandon quest handler
+  const handleAbandonQuest = async (questId) => {
+    try {
+      await abandonQuest(questId);
+      // Remove from accepted quests list
+      setAcceptedQuests(prev => prev.filter(id => id !== questId));
+      // Optionally show a success message
+      console.log('Quest abandoned successfully');
+    } catch (error) {
+      console.error('Error abandoning quest:', error);
+      alert('Failed to abandon quest. Please try again.');
+    }
+  };
+
   // Handler for back button (same as ProfilePage)
   const handleBackHome = () => {
     navigate("/");
@@ -117,32 +131,14 @@ const QuestBook = () => {
 
       {/* BORDERED CONTENT */}
       <div className="quest-list" style={{ position: "relative" }}>
-        {/* Back to Home button - fixed at bottom-left inside border */}
+        {/* Back to Home button - fixed at bottom-left of viewport */}
         <button
           type="button"
           className="back-home-btn"
           onClick={handleBackHome}
           aria-label="Back to home"
-          style={{
-            position: "absolute",
-            bottom: 24,
-            left: 24,
-            zIndex: 10,
-            background: "linear-gradient(135deg, #ffeac8, #d8ba8a)",
-            border: "2px solid #90774c",
-            borderRadius: "18px",
-            padding: "8px 18px",
-            fontFamily: "'Cinzel', serif",
-            fontWeight: 600,
-            fontSize: "1rem",
-            cursor: "pointer",
-            boxShadow: "0 4px 12px rgba(144, 119, 76, 0.13)",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"
-          }}
         >
-          <img src="/return.svg" alt="Back" style={{ width: 24, height: 24 }} />
+          <img src="/return.svg" alt="Back" />
         </button>
 
         {activeTab === 'Quests' && (
@@ -156,25 +152,57 @@ const QuestBook = () => {
                 <FaArrowRight />
               </button>
             </div>
-            {currentQuests.map((quest) => {
-              const hasUserSubmission = quest.submissions?.some(sub => sub.userId === userId);
-              return (
-                <div key={quest.id} className="quest-card">
-                  <h2>{quest.name || "Untitled Quest"}</h2>
-                  <p>Latitude: {typeof quest.location?.latitude === 'number' ? quest.location.latitude.toFixed(6) : "N/A"}</p>
-                  <p>Longitude: {typeof quest.location?.longitude === 'number' ? quest.location.longitude.toFixed(6) : "N/A"}</p>
-                  <span className="reward-tag">
-                    {quest.reward ?? 0} points
-                  </span>
-                  <button
-                    className="complete-btn"
-                    onClick={() => handleTurnInQuest(quest)}
-                  >
-                    {hasUserSubmission ? "Replace Submission" : "Turn in Quest"}
-                  </button>
-                </div>
-              );
-            })}
+
+            <div className="quest-grid">
+              {currentQuests.map((quest) => {
+                const hasUserSubmission = quest.submissions?.some(sub => sub.userId === userId);
+                return (
+                  <div key={quest.id} className="quest-card">
+                    <div className="quest-card-header">
+                      <h2>{quest.name || "Untitled Quest"}</h2>
+                      <span className="reward-tag">{quest.reward ?? 0} points</span>
+                    </div>
+
+                    {/* Only show description section if description exists */}
+                    {quest.description && (
+                      <div className="quest-card-meta">
+                        <span className="meta-chip">{quest.description}</span>
+                      </div>
+                    )}
+
+                    {/* Quest Image Display */}
+                    {quest.imageUrl && (
+                      <div className="questbook-quest-image-container">
+                        <img
+                          src={quest.imageUrl}
+                          alt={`${quest.name || "Quest"} image`}
+                          className="questbook-quest-image"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    <div className="quest-card-actions">
+                      <button
+                        className="complete-btn"
+                        onClick={() => handleTurnInQuest(quest)}
+                      >
+                        {hasUserSubmission ? "Replace Submission" : "Turn in Quest"}
+                      </button>
+                      <button
+                        className="questbook-abandon-btn"
+                        onClick={() => handleAbandonQuest(quest.id)}
+                      >
+                        Abandon Quest
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
             <CompleteQuestForm
               isOpen={showCompleteForm}
               onClose={() => { setShowCompleteForm(false); setActiveQuest(null); }}

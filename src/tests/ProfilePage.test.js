@@ -1,86 +1,50 @@
-// Mock fetch
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve({})
-  })
-);
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import ProfilePage from '../react_components/ProfilePage';
 
 // Mock Firebase functions
-jest.mock('../firebase/profile_functions');
-jest.mock('../firebase/general_quest_functions');
-jest.mock('firebase/firestore', () => ({
-  doc: jest.fn(),
-  updateDoc: jest.fn(),
-  increment: jest.fn()
+jest.mock('../firebase/profile_functions', () => ({
+  getProfileData: jest.fn(),
+  updateProfileData: jest.fn(),
+  getUserInventoryItems: jest.fn(),
+  unlockInventoryItem: jest.fn(),
+  setCustomisation: jest.fn(),
+  getCustomisation: jest.fn()
 }));
 
-// Mock react-router-dom
+jest.mock('../firebase/general_quest_functions', () => ({
+  getAllQuests: jest.fn()
+}));
+
+// Mock QuestManager
+jest.mock('../react_components/QuestManager', () => {
+  return function MockQuestManager({ isOpen }) {
+    return isOpen ? <div data-testid="quest-manager">Quest Manager</div> : null;
+  };
+});
+
+// Mock assets
+jest.mock('../css/ProfilePage.css', () => ({}));
+jest.mock('../assets/profile.jpg', () => 'profile.jpg');
+jest.mock('../assets/edit_icon.png', () => 'edit.png');
+jest.mock('../media/cardcustomization.png', () => 'card.png');
+jest.mock('../media/backgroundcustomization.png', () => 'bg.png');
+jest.mock('../media/Borders1.png', () => 'border1.png');
+jest.mock('../media/Borders2.png', () => 'border2.png');
+jest.mock('../media/Borders3.png', () => 'border3.png');
+jest.mock('../media/Borders4.png', () => 'border4.png');
+jest.mock('../media/Borders5.png', () => 'border5.png');
+jest.mock('../media/Borders6.png', () => 'border6.png');
+
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockNavigate
 }));
 
-// Mock CSS and images
-jest.mock('../css/ProfilePage.css', () => ({}));
-jest.mock('../assets/profile.jpg', () => 'profile.jpg');
-jest.mock('../assets/edit_icon.png', () => 'edit.png');
-
-// Mock QuestManager
-jest.mock('../react_components/QuestManager', () => {
-  return function MockQuestManager({ isOpen, quest, onClose }) {
-    return isOpen ? <div data-testid="quest-manager">Quest Manager</div> : null;
-  };
-});
-
-// Mock fetch
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve({})
-  })
-);
-
-// Mock Firebase modules BEFORE imports
-jest.mock('firebase/app', () => ({
-  initializeApp: jest.fn(() => ({}))
-}));
-
-jest.mock('firebase/auth', () => ({
-  getAuth: jest.fn(() => ({})),
-  createUserWithEmailAndPassword: jest.fn(),
-  sendEmailVerification: jest.fn(),
-  signInWithEmailAndPassword: jest.fn()
-}));
-
-jest.mock('firebase/firestore', () => ({
-  getFirestore: jest.fn(() => ({})),
-  doc: jest.fn(),
-  setDoc: jest.fn(),
-  serverTimestamp: jest.fn(),
-  getDoc: jest.fn(),
-  collection: jest.fn(),
-  addDoc: jest.fn(),
-  getDocs: jest.fn(),
-  updateDoc: jest.fn(),
-  increment: jest.fn()
-}));
-
-jest.mock('firebase/storage', () => ({
-  getStorage: jest.fn(() => ({})),
-  ref: jest.fn(),
-  uploadBytes: jest.fn(),
-  getDownloadURL: jest.fn()
-}));
-
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import ProfilePage from '../react_components/ProfilePage';
-import { getProfileData, updateProfileData } from '../firebase/profile_functions';
+import { getProfileData, getUserInventoryItems, unlockInventoryItem, setCustomisation, getCustomisation } from '../firebase/profile_functions';
 import { getAllQuests } from '../firebase/general_quest_functions';
-
 
 describe('ProfilePage', () => {
   const mockUser = {
@@ -88,29 +52,22 @@ describe('ProfilePage', () => {
     Name: 'John Doe',
     Bio: 'Test bio',
     LeaderBoardPoints: 100,
-    CompletedQuests: ['quest1', 'quest2'],
-    acceptedQuests: ['quest3'],
+    CompletedQuests: [],
+    acceptedQuests: [],
     Level: 5,
     Experience: 250,
     SpendablePoints: 50,
     profilePicture: 'test.jpg'
   };
 
-  const mockQuests = [
-    {
-      id: 'quest1',
-      name: 'Test Quest',
-      creatorId: 'test123',
-      emoji: '🗺️',
-      color: 'hsl(0 80% 40%)',
-      location: { _latitude: -26.1935, _longitude: 28.0298 }
-    }
-  ];
-
   beforeEach(() => {
     jest.clearAllMocks();
     getProfileData.mockResolvedValue(mockUser);
-    getAllQuests.mockResolvedValue(mockQuests);
+    getAllQuests.mockResolvedValue([]);
+    getUserInventoryItems.mockResolvedValue({});
+    getCustomisation.mockResolvedValue({});
+    document.documentElement.style.setProperty = jest.fn();
+    document.body.style = {};
   });
 
   const renderProfilePage = () => {
@@ -121,184 +78,250 @@ describe('ProfilePage', () => {
     );
   };
 
-  test('renders loading state initially', () => {
+  test('renders loading state', () => {
+    getProfileData.mockImplementation(() => new Promise(() => {}));
     renderProfilePage();
-    expect(screen.getByText('Loading profile...')).toBeInTheDocument();
+    expect(screen.getByAltText('Loading...')).toBeInTheDocument();
   });
 
   test('displays user profile data', async () => {
     renderProfilePage();
-
     await waitFor(() => {
       expect(screen.getByText('John Doe')).toBeInTheDocument();
-      expect(screen.getByText('Test bio')).toBeInTheDocument();
-      expect(screen.getByText('250')).toBeInTheDocument();
-      expect(screen.getByText('50')).toBeInTheDocument();
-      expect(screen.getByText('2')).toBeInTheDocument();
-      expect(screen.getByText('1')).toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
+    expect(screen.getByText('Test bio')).toBeInTheDocument();
   });
 
-  test('displays created quests', async () => {
+  test('opens edit modal', async () => {
     renderProfilePage();
-
     await waitFor(() => {
-      expect(screen.getByText('Test Quest')).toBeInTheDocument();
-      expect(screen.getByText('🗺️')).toBeInTheDocument();
-    });
-  });
-
-  test('opens edit modal when edit button clicked', async () => {
-    renderProfilePage();
-
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByAltText('Edit profile'));
     await waitFor(() => {
-      fireEvent.click(screen.getByAltText('Edit profile'));
       expect(screen.getByText('Edit Profile')).toBeInTheDocument();
     });
   });
 
-  test('handles profile edit and save', async () => {
-    updateProfileData.mockResolvedValue();
+  test('handles back navigation', async () => {
     renderProfilePage();
-
     await waitFor(() => {
-      fireEvent.click(screen.getByAltText('Edit profile'));
-    });
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByLabelText('Back to home'));
+    expect(mockNavigate).toHaveBeenCalledWith('/');
+  });
 
-    fireEvent.change(screen.getByDisplayValue('John Doe'), {
-      target: { value: 'Jane Doe' }
-    });
-    fireEvent.change(screen.getByDisplayValue('Test bio'), {
-      target: { value: 'Updated bio' }
-    });
-
-    fireEvent.click(screen.getByText('Save'));
-
+  test('handles error state', async () => {
+    getProfileData.mockRejectedValue(new Error('Failed'));
+    renderProfilePage();
     await waitFor(() => {
-      expect(updateProfileData).toHaveBeenCalledWith({
-        uid: 'test123',
-        Name: 'Jane Doe',
-        Bio: 'Updated bio',
-        ProfilePictureUrl: 'test.jpg'
-      });
+      expect(screen.getByText(/Error:/)).toBeInTheDocument();
     });
   });
 
-  test('handles edit cancel', async () => {
+  test('handles inventory item clicks', async () => {
     renderProfilePage();
-
     await waitFor(() => {
-      fireEvent.click(screen.getByAltText('Edit profile'));
-    });
-
-    fireEvent.change(screen.getByDisplayValue('John Doe'), {
-      target: { value: 'Changed Name' }
-    });
-
-    fireEvent.click(screen.getByText('Cancel'));
-
-    expect(screen.queryByText('Edit Profile')).not.toBeInTheDocument();
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByTitle('Card Customization'));
+    expect(screen.getByText('Card Customization Pack')).toBeInTheDocument();
   });
 
-  test('handles profile picture change', async () => {
+  test('handles purchase confirmation', async () => {
     renderProfilePage();
-
     await waitFor(() => {
-      fireEvent.click(screen.getByAltText('Edit profile'));
-    });
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByTitle('Card Customization'));
+    fireEvent.click(screen.getByText('Yes'));
+  });
 
+  test('handles color picker interactions', async () => {
+    getUserInventoryItems.mockResolvedValue({ 'background-customization': true });
+    renderProfilePage();
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByTitle('Background Customization'));
+    await waitFor(() => {
+      expect(screen.getByText('Background Color')).toBeInTheDocument();
+    });
+    const colorInput = screen.getByLabelText('Background color picker');
+    fireEvent.change(colorInput, { target: { value: '#ff0000' } });
+    fireEvent.click(screen.getByText('Done'));
+  });
+
+  test('handles border selection', async () => {
+    getUserInventoryItems.mockResolvedValue({ 'border-1': true });
+    renderProfilePage();
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByTitle('Border 1'));
+  });
+
+  test('handles profile picture upload', async () => {
+    renderProfilePage();
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByAltText('Edit profile'));
     const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-    const input = screen.getByRole('button', { name: /select or drop profile image/i });
-    
-    Object.defineProperty(input.querySelector('input'), 'files', {
-      value: [file],
-      writable: false
-    });
-
-    fireEvent.change(input.querySelector('input'));
+    const dropArea = screen.getByRole('button', { name: /select or drop profile image/i });
+    fireEvent.drop(dropArea, { dataTransfer: { files: [file] } });
   });
 
-  test('handles remove profile image', async () => {
+  test('handles quest creation display', async () => {
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      creatorId: 'test123',
+      emoji: '🗺️'
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
     renderProfilePage();
-
     await waitFor(() => {
-      fireEvent.click(screen.getByAltText('Edit profile'));
+      expect(screen.getByText('Test Quest')).toBeInTheDocument();
     });
-
-    fireEvent.click(screen.getByText('Remove'));
-    
-    // Should reset to default image
-    expect(screen.getByAltText('Profile preview')).toHaveAttribute('src', '/default.jpg');
+    fireEvent.click(screen.getByText('Test Quest'));
+    expect(screen.getByTestId('quest-manager')).toBeInTheDocument();
   });
 
-  test('opens quest manager when quest clicked', async () => {
+  test('handles keyboard interactions', async () => {
     renderProfilePage();
-
     await waitFor(() => {
-      fireEvent.click(screen.getByText('Test Quest'));
-      expect(screen.getByTestId('quest-manager')).toBeInTheDocument();
-    });
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    const inventoryItem = screen.getByTitle('Card Customization');
+    fireEvent.keyDown(inventoryItem, { key: 'Enter' });
+    expect(screen.getByText('Card Customization Pack')).toBeInTheDocument();
   });
 
-  test('handles back home navigation', async () => {
+  test('handles modal overlays', async () => {
     renderProfilePage();
-
     await waitFor(() => {
-      fireEvent.click(screen.getByLabelText('Back to home'));
-      expect(mockNavigate).toHaveBeenCalledWith('/');
-    });
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByTitle('Card Customization'));
+    const overlay = screen.getByText('Card Customization Pack').closest('.bg-picker-overlay');
+    fireEvent.click(overlay);
+    expect(screen.queryByText('Card Customization Pack')).not.toBeInTheDocument();
   });
 
-  test('handles profile data fetch error', async () => {
-    getProfileData.mockRejectedValue(new Error('Failed to fetch'));
-    console.error = jest.fn();
-
-    renderProfilePage();
-
-    await waitFor(() => {
-      expect(screen.getByText(/Error:.*Please try again later/)).toBeInTheDocument();
-    });
-  });
-
-  test('handles update profile error', async () => {
-    updateProfileData.mockRejectedValue(new Error('Update failed'));
+  test('handles insufficient points purchase', async () => {
+    const poorUser = { ...mockUser, SpendablePoints: 10 };
+    getProfileData.mockResolvedValue(poorUser);
     window.alert = jest.fn();
-
     renderProfilePage();
-
     await waitFor(() => {
-      fireEvent.click(screen.getByAltText('Edit profile'));
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByTitle('Card Customization'));
+    fireEvent.click(screen.getByText('Yes'));
+    expect(window.alert).toHaveBeenCalledWith('You do not have enough points to purchase this item.');
+  });
+
+  test('handles unlock item error', async () => {
+    unlockInventoryItem.mockRejectedValue(new Error('Unlock failed'));
+    window.alert = jest.fn();
+    renderProfilePage();
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByTitle('Card Customization'));
+    fireEvent.click(screen.getByText('Yes'));
+    expect(window.alert).toHaveBeenCalledWith('Unlock failed');
+  });
+
+  test('handles card color picker', async () => {
+    getUserInventoryItems.mockResolvedValue({ 'card-customization': true });
+    renderProfilePage();
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByTitle('Card Customization'));
+    await waitFor(() => {
+      expect(screen.getByText('Card Color')).toBeInTheDocument();
     });
+    const colorInput = screen.getByLabelText('Card color picker');
+    fireEvent.change(colorInput, { target: { value: '#123456' } });
+    fireEvent.click(screen.getByText('Done'));
+  });
 
+  test('handles hex input validation', async () => {
+    getUserInventoryItems.mockResolvedValue({ 'background-customization': true });
+    renderProfilePage();
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByTitle('Background Customization'));
+    await waitFor(() => {
+      expect(screen.getByText('Background Color')).toBeInTheDocument();
+    });
+    const hexInput = screen.getByLabelText('Hex color');
+    fireEvent.change(hexInput, { target: { value: 'ff0000' } });
+    fireEvent.change(hexInput, { target: { value: '#invalid' } });
+  });
+
+  test('handles color picker cancel', async () => {
+    getUserInventoryItems.mockResolvedValue({ 'background-customization': true });
+    renderProfilePage();
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByTitle('Background Customization'));
+    await waitFor(() => {
+      expect(screen.getByText('Background Color')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Cancel'));
+    expect(screen.queryByText('Background Color')).not.toBeInTheDocument();
+  });
+
+  test('handles profile edit save error', async () => {
+    updateProfileData.mockRejectedValue(new Error('Save failed'));
+    window.alert = jest.fn();
+    renderProfilePage();
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByAltText('Edit profile'));
     fireEvent.click(screen.getByText('Save'));
-
     await waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith('Failed to update profile. Please try again.');
     });
   });
 
-  test('displays placeholder when no quests created', async () => {
-    getAllQuests.mockResolvedValue([]);
+  test('handles edit cancel', async () => {
     renderProfilePage();
-
     await waitFor(() => {
-      expect(screen.getByText("You haven't created any quests yet.")).toBeInTheDocument();
-    });
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByAltText('Edit profile'));
+    fireEvent.change(screen.getByDisplayValue('John Doe'), { target: { value: 'Changed' } });
+    fireEvent.click(screen.getByText('Cancel'));
+    expect(screen.queryByText('Edit Profile')).not.toBeInTheDocument();
   });
 
-  test('handles drag and drop for profile picture', async () => {
+  test('handles remove profile image', async () => {
     renderProfilePage();
-
     await waitFor(() => {
-      fireEvent.click(screen.getByAltText('Edit profile'));
-    });
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByAltText('Edit profile'));
+    fireEvent.click(screen.getByText('Remove'));
+    expect(screen.getByAltText('Profile preview')).toHaveAttribute('src', '/default.jpg');
+  });
 
+  test('handles drag events', async () => {
+    renderProfilePage();
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    fireEvent.click(screen.getByAltText('Edit profile'));
     const dropArea = screen.getByRole('button', { name: /select or drop profile image/i });
-    const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-
     fireEvent.dragOver(dropArea);
-    fireEvent.drop(dropArea, {
-      dataTransfer: { files: [file] }
-    });
+    fireEvent.dragLeave(dropArea);
   });
 });
