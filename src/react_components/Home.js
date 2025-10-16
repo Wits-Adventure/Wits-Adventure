@@ -453,23 +453,9 @@ const Home = () => {
             badgeHTML = `<div class="quest-badge">✅ <span class="badge-text">Completed</span></div>`;
             buttonHtml = `<button class="quest-popup-btn your-quest-btn" disabled>Completed</button>`;
           } else if (isAccepted) {
-            // Show the current location but with the NEXT riddle
-            if (journeyProgress.currentJourneyStop === 1) {
-              // Just accepted - show first stop location with second riddle
-              stopToShow = jq.stops[0]; // Stay at first location
-              riddleToShow = jq.stops[1].riddle; // But show second riddle
-              badgeHTML = `<div class="quest-badge">🎯 <span class="badge-text">Checkpoint 2</span></div>`;
-            } else if (journeyProgress.currentJourneyStop === 2) {
-              // First checkpoint cleared - show second stop location with final riddle
-              stopToShow = jq.stops[1]; // Move to second location
-              riddleToShow = jq.stops[2].riddle; // Show final riddle
-              badgeHTML = `<div class="quest-badge">🎯 <span class="badge-text">Final Stop</span></div>`;
-            } else {
-              // Fallback
-              stopToShow = jq.stops[0];
-              riddleToShow = jq.stops[0].riddle;
-              badgeHTML = `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
-            }
+            stopToShow = jq.stops[0];
+            riddleToShow = jq.stops[0].riddle;
+            badgeHTML = `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
             buttonHtml = `<button id="journey-btn-${jq.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonJourneyQuest('${jq.id}')">Abandon Quest</button>`;
           } else {
             // Show the first stop (starting point) for unaccepted quests
