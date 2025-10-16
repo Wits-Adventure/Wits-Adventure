@@ -124,10 +124,12 @@ export async function completeJourneyQuest(journeyQuestId, rewardPoints) {
                 completedQuests.push(journeyQuestId);
             }
 
+            // Award all three types of points like regular quests
             await updateDoc(userDocRef, {
                 currentJourneyQuest: null,
                 currentJourneyStop: 1,
                 completedJourneyQuests: completedQuests,
+                SpendablePoints: (userData.SpendablePoints || 0) + rewardPoints,
                 LeaderBoardPoints: (userData.LeaderBoardPoints || 0) + rewardPoints
             });
         }

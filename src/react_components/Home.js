@@ -50,6 +50,18 @@ function escapeHtml(str) {
   ));
 }
 
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
 const Home = () => {
   const { currentUser } = useAuth();
   const [username, setUsername] = useState('');
@@ -169,14 +181,14 @@ const Home = () => {
           },
           {
             lat: -26.1400485,  // Replace with actual coordinates
-            lng: 27.9737308,   // Replace with actual coordinates
+            lng: 27.9735308,   // Replace with actual coordinates
             radius: 45,
             riddle:
               "Your second stop riddle here.",
           },
           {
             lat: -26.1400485,  // Replace with actual coordinates
-            lng: 27.9737308,   // Replace with actual coordinates
+            lng: 27.9739308,   // Replace with actual coordinates
             radius: 45,
             riddle:
               "Your final stop riddle here.",
@@ -301,177 +313,224 @@ const Home = () => {
     setActiveQuest(null);
   };
 
-  // Function to add quest area highlights
-  const addQuestAreas = useCallback(() => {
-    console.log('addQuestAreas called, mapInstance:', !!mapInstanceRef.current, 'allQuests.length:', allQuests.length); // <-- new
-    if (!mapInstanceRef.current) return;
+  // Add a ref to track if we're already updating quest areas
+  const isUpdatingQuestAreas = useRef(false);
 
-    // Remove old quest circles/markers
-    if (questCirclesRef.current && questCirclesRef.current.length > 0) {
-      questCirclesRef.current.forEach(circle => {
-        mapInstanceRef.current.removeLayer(circle);
-        if (circle._emojiMarker) {
-          mapInstanceRef.current.removeLayer(circle._emojiMarker);
-        }
-      });
-      questCirclesRef.current = [];
-    }
+  // Memoize the core quest data to prevent unnecessary recalculations
+  const questAreaData = useMemo(() => {
+    return {
+      allQuests,
+      journeyProgress,
+      acceptedQuests,
+      userSubmissions,
+      currentUserId: currentUser?.uid
+    };
+  }, [allQuests, journeyProgress, acceptedQuests, userSubmissions, currentUser?.uid]);
 
-    // Add markers for all quests from Firestore
-    allQuests.forEach(quest => {
-      if (!quest.location) {
+  // Function to add quest area highlights - with debouncing
+  const addQuestAreas = useCallback(
+    debounce(() => {
+      // Prevent concurrent updates
+      if (isUpdatingQuestAreas.current) {
         return;
       }
-      const { latitude, longitude } = quest.location;
 
-      // Use saved emoji and color, fallback if missing
-      const titleEmoji = quest.emoji || (quest.name?.match(/^\p{Extended_Pictographic}/u)?.[0]) || '🌟';
-      const color = quest.color || '#8B4513';
+      console.log('addQuestAreas called, mapInstance:', !!mapInstanceRef.current, 'allQuests.length:', questAreaData.allQuests.length);
 
-      // Draw the quest radius as a circle
-      const questCircle = window.L.circle([latitude, longitude], {
-        color: color,
-        fillColor: color,
-        fillOpacity: 0.3,
-        radius: quest.radius || 50,
-        weight: 2,
-        questId: quest.id // <-- add this line
-      }).addTo(mapInstanceRef.current);
+      if (!mapInstanceRef.current) return;
 
-      // Custom popup
-      const hasAccepted = acceptedQuests[quest.id] !== undefined
-        ? acceptedQuests[quest.id]
-        : (quest.acceptedBy && quest.acceptedBy.includes(currentUser?.uid));
-      const isOwnQuest = currentUser && quest.creatorId === currentUser.uid;
-      const hasUserSubmission = userSubmissions[quest.id] ||
-        quest.submissions?.some(sub => sub.userId === currentUser?.uid);
+      isUpdatingQuestAreas.current = true;
 
-      const buttonHtml = isOwnQuest
-        ? `<button id="quest-btn-${quest.id}" class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>`
-        : hasAccepted
-          ? `
+      try {
+        // Remove old quest circles/markers
+        if (questCirclesRef.current && questCirclesRef.current.length > 0) {
+          questCirclesRef.current.forEach(circle => {
+            mapInstanceRef.current.removeLayer(circle);
+            if (circle._emojiMarker) {
+              mapInstanceRef.current.removeLayer(circle._emojiMarker);
+            }
+          });
+          questCirclesRef.current = [];
+        }
+
+        // Add markers for all quests from Firestore
+        questAreaData.allQuests.forEach(quest => {
+          if (!quest.location) {
+            return;
+          }
+          const { latitude, longitude } = quest.location;
+
+          // Use saved emoji and color, fallback if missing
+          const titleEmoji = quest.emoji || (quest.name?.match(/^\p{Extended_Pictographic}/u)?.[0]) || '🌟';
+          const color = quest.color || '#8B4513';
+
+          // Draw the quest radius as a circle
+          const questCircle = window.L.circle([latitude, longitude], {
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.3,
+            radius: quest.radius || 50,
+            weight: 2,
+            questId: quest.id // <-- add this line
+          }).addTo(mapInstanceRef.current);
+
+          // Custom popup
+          const hasAccepted = acceptedQuests[quest.id] !== undefined
+            ? acceptedQuests[quest.id]
+            : (quest.acceptedBy && quest.acceptedBy.includes(currentUser?.uid));
+          const isOwnQuest = currentUser && quest.creatorId === currentUser.uid;
+          const hasUserSubmission = userSubmissions[quest.id] ||
+            quest.submissions?.some(sub => sub.userId === currentUser?.uid);
+
+          const buttonHtml = isOwnQuest
+            ? `<button id="quest-btn-${quest.id}" class="quest-popup-btn your-quest-btn" disabled>Your Quest</button>`
+            : hasAccepted
+              ? `
 <button id="quest-btn-${quest.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonQuest('${quest.id}')">Abandon Quest</button>
 <button id="turnin-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleTurnInQuest('${quest.id}')">${hasUserSubmission ? "Update Submission" : "Turn in Quest"}</button>
 `
-          : `<button id="quest-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
+              : `<button id="quest-btn-${quest.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptQuest('${quest.id}')">Accept Quest</button>`;
 
-      // NEW: description (only render if present)
-      const descHtml = quest.description
-        ? `<p class="quest-desc">${escapeHtml(quest.description)}</p>`
-        : '';
+          // NEW: description (only render if present)
+          const descHtml = quest.description
+            ? `<p class="quest-desc">${escapeHtml(quest.description)}</p>`
+            : '';
 
-      questCircle.bindPopup(`
-        <div class="quest-popup">
-          <h3>${titleEmoji} ${quest.name}</h3>
-          ${descHtml}
-          ${quest.imageUrl ? `<div class="quest-image-container"><img src="${quest.imageUrl}" alt="Quest Image" class="quest-popup-image" /></div>` : ''}
-          <p><strong>Reward:</strong> ${quest.reward ?? quest.radius} points</p>
-          ${buttonHtml}
-        </div>
-      `);
+          questCircle.bindPopup(`
+            <div class="quest-popup">
+              <h3>${titleEmoji} ${quest.name}</h3>
+              ${descHtml}
+              ${quest.imageUrl ? `<div class="quest-image-container"><img src="${quest.imageUrl}" alt="Quest Image" class="quest-popup-image" /></div>` : ''}
+              <p><strong>Reward:</strong> ${quest.reward ?? quest.radius} points</p>
+              ${buttonHtml}
+            </div>
+          `);
 
-      questCircle.on('popupclose', () => {
-        handleQuestPopupClose();
-      });
+          questCircle.on('popupclose', () => {
+            handleQuestPopupClose();
+          });
 
-      // Emoji marker in the center
-      const emojiIcon = window.L.divIcon({
-        className: 'quest-emoji-icon',
-        html: `<div class="quest-emoji">${titleEmoji}</div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
-      const emojiMarker = window.L.marker([latitude, longitude], { icon: emojiIcon }).addTo(mapInstanceRef.current);
-      emojiMarker.bindPopup(questCircle.getPopup());
-      questCircle._emojiMarker = emojiMarker;
+          // Emoji marker in the center
+          const emojiIcon = window.L.divIcon({
+            className: 'quest-emoji-icon',
+            html: `<div class="quest-emoji">${titleEmoji}</div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          });
+          const emojiMarker = window.L.marker([latitude, longitude], { icon: emojiIcon }).addTo(mapInstanceRef.current);
+          emojiMarker.bindPopup(questCircle.getPopup());
+          questCircle._emojiMarker = emojiMarker;
 
-      // Click handling for emoji marker
-      emojiMarker.on('click', (e) => {
-        if (window.__questPlacing) return;
-        questCircle.openPopup();
-        if (e.originalEvent) {
-          e.originalEvent.stopPropagation();
-          e.originalEvent.preventDefault();
-        }
-      });
+          // Click handling for emoji marker
+          emojiMarker.on('click', (e) => {
+            if (window.__questPlacing) return;
+            questCircle.openPopup();
+            if (e.originalEvent) {
+              e.originalEvent.stopPropagation();
+              e.originalEvent.preventDefault();
+            }
+          });
 
-      // Store reference for cleanup
-      questCirclesRef.current.push(questCircle);
-    });
+          // Store reference for cleanup
+          questCirclesRef.current.push(questCircle);
+        });
 
-    // ======== NEW: render only the FIRST STOP for each Journey Quest ========
-    journeyQuests.forEach(jq => {
-      const first = jq.stops[0];
-      const titleEmoji = jq.emoji || (jq.name?.match(/^\p{Extended_Pictographic}/u)?.[0]) || '🧭';
-      const color = '#8B4513'; // Brown like hardcoded quests
+        // ======== UPDATED: render ALL Journey Quests (completed and active) ========
+        journeyQuests.forEach(jq => {
+          const isAccepted = journeyProgress.currentJourneyQuest === jq.id;
+          const isCompleted = journeyProgress.completedJourneyQuests.includes(jq.id);
 
-      const circle = window.L.circle([first.lat, first.lng], {
-        color,
-        fillColor: '#D2691E', // Brown fill like hardcoded quests
-        fillOpacity: 0.3,
-        radius: first.radius,
-        weight: 2,
-        journeyId: jq.id
-      }).addTo(mapInstanceRef.current);
+          // Determine which stop to show and what riddle/badge to display
+          let stopToShow;
+          let badgeHTML;
+          let buttonHtml;
+          let riddleToShow;
 
-      // Check if this journey quest is accepted and not completed
-      const isAccepted = journeyProgress.currentJourneyQuest === jq.id;
-      const isCompleted = journeyProgress.completedJourneyQuests.includes(jq.id);
+          if (isCompleted) {
+            // Show the final stop (stop 2) for completed quests
+            stopToShow = jq.stops[2];
+            riddleToShow = jq.stops[2].riddle;
+            badgeHTML = `<div class="quest-badge">✅ <span class="badge-text">Completed</span></div>`;
+            buttonHtml = `<button class="quest-popup-btn your-quest-btn" disabled>Completed</button>`;
+          } else if (isAccepted) {
+            // Show the current location but with the NEXT riddle
+            if (journeyProgress.currentJourneyStop === 1) {
+              // Just accepted - show first stop location with second riddle
+              stopToShow = jq.stops[0]; // Stay at first location
+              riddleToShow = jq.stops[1].riddle; // But show second riddle
+              badgeHTML = `<div class="quest-badge">🎯 <span class="badge-text">Checkpoint 2</span></div>`;
+            } else if (journeyProgress.currentJourneyStop === 2) {
+              // First checkpoint cleared - show second stop location with final riddle
+              stopToShow = jq.stops[1]; // Move to second location
+              riddleToShow = jq.stops[2].riddle; // Show final riddle
+              badgeHTML = `<div class="quest-badge">🎯 <span class="badge-text">Final Stop</span></div>`;
+            } else {
+              // Fallback
+              stopToShow = jq.stops[0];
+              riddleToShow = jq.stops[0].riddle;
+              badgeHTML = `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
+            }
+            buttonHtml = `<button id="journey-btn-${jq.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonJourneyQuest('${jq.id}')">Abandon Quest</button>`;
+          } else {
+            // Show the first stop (starting point) for unaccepted quests
+            stopToShow = jq.stops[0];
+            riddleToShow = jq.stops[0].riddle;
+            badgeHTML = `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
+            buttonHtml = `<button id="journey-btn-${jq.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptJourneyQuest('${jq.id}')">Accept Quest</button>`;
+          }
 
-      // Show different badge for completed quests
-      const badgeHTML = isCompleted
-        ? `<div class="quest-badge">✅ <span class="badge-text">Completed</span></div>`
-        : `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
+          const titleEmoji = jq.emoji || (jq.name?.match(/^\p{Extended_Pictographic}/u)?.[0]) || '🧭';
+          const color = isCompleted ? '#4CAF50' : '#8B4513'; // Green for completed, brown for others
+          const fillColor = isCompleted ? '#81C784' : '#D2691E'; // Light green for completed
 
-      const buttonHtml = isCompleted
-        ? `<button class="quest-popup-btn your-quest-btn" disabled>Completed</button>`
-        : isAccepted
-          ? `<button id="journey-btn-${jq.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonJourneyQuest('${jq.id}')">Abandon Quest</button>`
-          : `<button id="journey-btn-${jq.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptJourneyQuest('${jq.id}')">Accept Quest</button>`;
+          const circle = window.L.circle([stopToShow.lat, stopToShow.lng], {
+            color,
+            fillColor,
+            fillOpacity: 0.3,
+            radius: stopToShow.radius,
+            weight: 2,
+            journeyId: jq.id
+          }).addTo(mapInstanceRef.current);
 
-      circle.bindPopup(`
-        <div class="quest-popup">
-          ${badgeHTML}
-          <h3>${titleEmoji} ${jq.name}</h3>
-          <p>${first.riddle}</p>
-          <p><strong>Reward:</strong> ${jq.reward} points</p>
-          ${buttonHtml}
-        </div>
-      `);
+          circle.bindPopup(`
+            <div class="quest-popup">
+              ${badgeHTML}
+              <h3>${titleEmoji} ${jq.name}</h3>
+              <p>${riddleToShow}</p>
+              <p><strong>Reward:</strong> ${jq.reward} points</p>
+              ${buttonHtml}
+            </div>
+          `);
 
-      const emojiIcon = window.L.divIcon({
-        className: 'quest-emoji-icon',
-        html: `<div class="quest-emoji">${titleEmoji}</div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
-      const emojiMarker = window.L.marker([first.lat, first.lng], { icon: emojiIcon }).addTo(mapInstanceRef.current);
-      emojiMarker.bindPopup(circle.getPopup());
-      circle._emojiMarker = emojiMarker;
+          const emojiIcon = window.L.divIcon({
+            className: 'quest-emoji-icon',
+            html: `<div class="quest-emoji">${titleEmoji}</div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          });
+          const emojiMarker = window.L.marker([stopToShow.lat, stopToShow.lng], { icon: emojiIcon }).addTo(mapInstanceRef.current);
+          emojiMarker.bindPopup(circle.getPopup());
+          circle._emojiMarker = emojiMarker;
 
-      emojiMarker.on('click', (e) => {
-        if (window.__questPlacing) return;
-        circle.openPopup();
-        if (e.originalEvent) {
-          e.originalEvent.stopPropagation();
-          e.originalEvent.preventDefault();
-        }
-      });
+          emojiMarker.on('click', (e) => {
+            if (window.__questPlacing) return;
+            circle.openPopup();
+            if (e.originalEvent) {
+              e.originalEvent.stopPropagation();
+              e.originalEvent.preventDefault();
+            }
+          });
 
-      questCirclesRef.current.push(circle);
-    });
-  }, [
-    allQuests,
-    mapInstanceRef,
-    questCirclesRef,
-    currentUser,
-    acceptedQuests,
-    userSubmissions,
-    journeyQuests,
-    journeyProgress      // ← Add this dependency
-  ]);
+          questCirclesRef.current.push(circle);
+        });
+      } finally {
+        isUpdatingQuestAreas.current = false;
+      }
+    }, 200), // 200ms debounce
+    [questAreaData, journeyQuests, mapInstanceRef, questCirclesRef, journeyProgress]
+  );
 
-  // Map and header effects remain the same
+  // Simplified useEffect for map initialization
   useEffect(() => {
     const initializeMap = () => {
       if (mapRef.current && !mapInstanceRef.current && window.L) {
@@ -511,12 +570,10 @@ const Home = () => {
             })
             .openPopup();
 
-          // Add quest area highlights
-          addQuestAreas();
-
+          // Only call addQuestAreas after map is fully initialized
           setTimeout(() => {
-            if (mapInstanceRef.current) {
-              mapInstanceRef.current.invalidateSize();
+            if (mapInstanceRef.current && questAreaData.allQuests.length > 0) {
+              addQuestAreas();
             }
           }, 100);
         } catch (error) {
@@ -553,7 +610,24 @@ const Home = () => {
         mapInstanceRef.current = null;
       }
     };
+  }, []); // Remove addQuestAreas from dependency array
+
+  // Separate useEffect for quest area updates
+  useEffect(() => {
+    if (mapInstanceRef.current && questAreaData.allQuests.length > 0) {
+      addQuestAreas();
+    }
+  }, [questAreaData, addQuestAreas]); // Only depend on memoized questAreaData
+
+  // Remove the redundant useEffect that was calling addQuestAreas
+  // Delete this useEffect:
+  /*
+  useEffect(() => {
+    if (window.L && mapInstanceRef.current) {
+      addQuestAreas();
+    }
   }, [addQuestAreas]);
+  */
 
   useEffect(() => {
     const updateHeaderOffset = () => {
@@ -778,12 +852,6 @@ const Home = () => {
     };
   }, [currentUser, navigate, journeyQuests]);
 
-  useEffect(() => {
-    if (window.L && mapInstanceRef.current) {
-      addQuestAreas();
-    }
-  }, [addQuestAreas]);
-
   // Focus map on quest if navigated from "View On Map"
   useEffect(() => {
     if (
@@ -896,12 +964,6 @@ const Home = () => {
         const userLng = pos.coords.longitude;
         const accuracy = pos.coords.accuracy;
 
-        // Check if the GPS accuracy is good enough (within 20 meters)
-        if (accuracy > 20) {
-          showToast(`GPS accuracy is ${Math.round(accuracy)}m. For best results, go outside or near a window.`, 4000);
-          // Still continue with the location we have
-        }
-
         console.log(`User location: ${userLat}, ${userLng} (accuracy: ${Math.round(accuracy)}m)`);
 
         // Subtle pulse visualization from user's location
@@ -980,8 +1042,14 @@ const Home = () => {
                       currentJourneyStop: 2
                     }));
 
-                    const nextRiddle = jq.stops[2]?.riddle || 'One last stop awaits...';
-                    alert(`${jq.emoji} ${jq.name}\n\nGreat! You found Stop 2.\n\nRiddle for Final Stop:\n${nextRiddle}`);
+                    // Force map update to show new checkpoint
+                    setTimeout(() => {
+                      if (mapInstanceRef.current) {
+                        addQuestAreas();
+                      }
+                    }, 100);
+
+                    showToast('The bell responds! Check your riddle for the final location.', 6000);
 
                   } else if (targetIdx === 2) {
                     // Complete the quest
@@ -992,8 +1060,14 @@ const Home = () => {
                       completedJourneyQuests: [...prev.completedJourneyQuests, jq.id]
                     }));
 
-                    alert(`${jq.emoji} ${jq.name}\n\nCongratulations! You completed the journey and earned ${jq.reward} points.`);
-                    showToast('Journey quest completed!');
+                    // Force map update to show completed quest at final location
+                    setTimeout(() => {
+                      if (mapInstanceRef.current) {
+                        addQuestAreas();
+                      }
+                    }, 100);
+
+                    showToast(`Journey quest completed! You earned ${jq.reward} points.`, 8000);
                   }
                 } catch (error) {
                   console.error("Failed to update journey quest progress:", error);
@@ -1006,9 +1080,9 @@ const Home = () => {
 
         if (!anyMatched) {
           if (journeyProgress.currentJourneyQuest) {
-            showToast(`You are ${Math.round(closestDistance)}m away from the target stop. Please move closer and ring the bell again.`, 5000);
+            showToast(`The bell remains silent... No checkpoint found.`, 6000);
           } else {
-            showToast('No active journey quest. Accept a journey quest first!', 3000);
+            showToast('No active journey quest. Accept a journey quest first.', 3000);
           }
         }
       },
@@ -1021,11 +1095,9 @@ const Home = () => {
         }
       },
       {
-        enableHighAccuracy: true,
-        timeout: 25000,
-        maximumAge: 0,
-        // Force GPS to get the most accurate reading possible
-        desiredAccuracy: 10 // Request accuracy within 10 meters
+        enableHighAccuracy: true,  // Force GPS usage
+        timeout: 30000,            // Increased timeout for better GPS lock
+        maximumAge: 0              // Never use cached location
       }
     );
   };
