@@ -52,14 +52,31 @@ function escapeHtml(str) {
 
 function debounce(func, wait) {
   let timeout;
-  return function executedFunction(...args) {
+  function debounced(...args) {
     const later = () => {
       clearTimeout(timeout);
+      timeout = null;
       func(...args);
     };
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
+  }
+  // Allow immediate execution (no debounce delay)
+  debounced.flush = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+    func();
   };
+  // Allow cancelling a pending call
+  debounced.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+  };
+  return debounced;
 }
 
 const Home = () => {
@@ -164,37 +181,7 @@ const Home = () => {
               "Seek a court where echoes bound,\nAnd sneakers sing upon the ground.",
           },
         ],
-      },
-      // ADD YOUR NEW JOURNEY QUEST HERE:
-      {
-        id: 'journey-mystic-quest',
-        name: 'Mystic Trail',
-        emoji: '🔮',
-        reward: 200, // -26.1400485, 27.9737308
-        stops: [
-          {
-            lat: -26.1400485,  // Replace with actual coordinates
-            lng: 27.9737308,   // Replace with actual coordinates
-            radius: 45,
-            riddle:
-              "Your starting riddle here.\n(You are here. Accept to start!)",
-          },
-          {
-            lat: -26.1400485,  // Replace with actual coordinates
-            lng: 27.9735308,   // Replace with actual coordinates
-            radius: 45,
-            riddle:
-              "Your second stop riddle here.",
-          },
-          {
-            lat: -26.1400485,  // Replace with actual coordinates
-            lng: 27.9739308,   // Replace with actual coordinates
-            radius: 45,
-            riddle:
-              "Your final stop riddle here.",
-          },
-        ],
-      },
+      }
     ],
     []
   );
@@ -437,37 +424,42 @@ const Home = () => {
 
         // ======== UPDATED: render ALL Journey Quests (completed and active) ========
         journeyQuests.forEach(jq => {
-          const isAccepted = journeyProgress.currentJourneyQuest === jq.id;
+          const isActive = journeyProgress.currentJourneyQuest === jq.id;
           const isCompleted = journeyProgress.completedJourneyQuests.includes(jq.id);
+          const currentStopIdx = journeyProgress.currentJourneyStop ?? 1;
 
-          // Determine which stop to show and what riddle/badge to display
-          let stopToShow;
-          let badgeHTML;
-          let buttonHtml;
-          let riddleToShow;
+          // Always render at the first stop (fixed marker location)
+          const stopToShow = jq.stops[0];
 
+          // Riddle uses the exact same logic as JourneyQuestRiddle
+          // - If this quest is active: use riddle at currentJourneyStop
+          // - If not active: show the first stop riddle
+          // - If completed: no riddle (show completed UI)
+          let riddleToShow = '';
           if (isCompleted) {
-            // Show the final stop (stop 2) for completed quests
-            stopToShow = jq.stops[2];
-            riddleToShow = jq.stops[2].riddle;
-            badgeHTML = `<div class="quest-badge">✅ <span class="badge-text">Completed</span></div>`;
+            riddleToShow = ''; // Completed: no riddle in popup
+          } else if (isActive) {
+            riddleToShow = jq.stops?.[currentStopIdx]?.riddle || 'Continue your journey...';
+          } else {
+            riddleToShow = jq.stops?.[0]?.riddle || 'Continue your journey...';
+          }
+
+          // Keep Journey tag and CSS
+          const badgeHTML = `<span class="journey-tag">Journey</span>`;
+          const titleEmoji = jq.emoji || (jq.name?.match(/^\p{Extended_Pictographic}/u)?.[0]) || '🧭';
+          const completedMark = isCompleted ? '✅ ' : '';
+
+          let buttonHtml;
+          if (isCompleted) {
             buttonHtml = `<button class="quest-popup-btn your-quest-btn" disabled>Completed</button>`;
-          } else if (isAccepted) {
-            stopToShow = jq.stops[0];
-            riddleToShow = jq.stops[0].riddle;
-            badgeHTML = `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
+          } else if (isActive) {
             buttonHtml = `<button id="journey-btn-${jq.id}" class="quest-popup-btn abandon-quest-btn" onclick="window.handleAbandonJourneyQuest('${jq.id}')">Abandon Quest</button>`;
           } else {
-            // Show the first stop (starting point) for unaccepted quests
-            stopToShow = jq.stops[0];
-            riddleToShow = jq.stops[0].riddle;
-            badgeHTML = `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
             buttonHtml = `<button id="journey-btn-${jq.id}" class="quest-popup-btn quest-accept-btn" onclick="window.handleAcceptJourneyQuest('${jq.id}')">Accept Quest</button>`;
           }
 
-          const titleEmoji = jq.emoji || (jq.name?.match(/^\p{Extended_Pictographic}/u)?.[0]) || '🧭';
-          const color = isCompleted ? '#4CAF50' : '#8B4513'; // Green for completed, brown for others
-          const fillColor = isCompleted ? '#81C784' : '#D2691E'; // Light green for completed
+          const color = isCompleted ? '#4CAF50' : '#8B4513';    // green when completed, brown otherwise
+          const fillColor = isCompleted ? '#81C784' : '#D2691E';
 
           const circle = window.L.circle([stopToShow.lat, stopToShow.lng], {
             color,
@@ -481,8 +473,8 @@ const Home = () => {
           circle.bindPopup(`
             <div class="quest-popup">
               ${badgeHTML}
-              <h3>${titleEmoji} ${jq.name}</h3>
-              <p>${riddleToShow}</p>
+              <h3>${completedMark}${titleEmoji} ${jq.name}</h3>
+              ${riddleToShow ? `<p>${escapeHtml(riddleToShow)}</p>` : ``}
               <p><strong>Reward:</strong> ${jq.reward} points</p>
               ${buttonHtml}
             </div>
@@ -605,15 +597,15 @@ const Home = () => {
     }
   }, [questAreaData, addQuestAreas]); // Only depend on memoized questAreaData
 
-  // Remove the redundant useEffect that was calling addQuestAreas
-  // Delete this useEffect:
-  /*
+  // NEW: Force immediate rebuild when journey completion changes
   useEffect(() => {
-    if (window.L && mapInstanceRef.current) {
+    if (!mapInstanceRef.current || questAreaData.allQuests.length === 0) return;
+    if (typeof addQuestAreas.flush === 'function') {
+      addQuestAreas.flush();
+    } else {
       addQuestAreas();
     }
-  }, [addQuestAreas]);
-  */
+  }, [journeyProgress.completedJourneyQuests.length, addQuestAreas, questAreaData.allQuests.length]);
 
   useEffect(() => {
     const updateHeaderOffset = () => {
@@ -1021,22 +1013,17 @@ const Home = () => {
 
                 try {
                   if (targetIdx === 1) {
-                    // Advance to final stop
                     await advanceJourneyQuestStop(2);
-                    setJourneyProgress(prev => ({
-                      ...prev,
-                      currentJourneyStop: 2
-                    }));
+                    setJourneyProgress(prev => ({ ...prev, currentJourneyStop: 2 }));
 
-                    // Force map update to show new checkpoint
-                    setTimeout(() => {
-                      if (mapInstanceRef.current) {
-                        addQuestAreas();
-                      }
-                    }, 100);
+                    // Force immediate popup refresh for updated riddle
+                    if (typeof addQuestAreas.flush === 'function') {
+                      addQuestAreas.flush();
+                    } else {
+                      addQuestAreas();
+                    }
 
                     showToast('The bell responds! Check your riddle for the final location.', 6000);
-
                   } else if (targetIdx === 2) {
                     // Complete the quest
                     await completeJourneyQuest(jq.id, jq.reward);
@@ -1046,12 +1033,12 @@ const Home = () => {
                       completedJourneyQuests: [...prev.completedJourneyQuests, jq.id]
                     }));
 
-                    // Force map update to show completed quest at final location
-                    setTimeout(() => {
-                      if (mapInstanceRef.current) {
-                        addQuestAreas();
-                      }
-                    }, 100);
+                    // Immediate map update to show completed state (no debounce)
+                    if (typeof addQuestAreas.flush === 'function') {
+                      addQuestAreas.flush();
+                    } else {
+                      addQuestAreas();
+                    }
 
                     showToast(`Journey quest completed! You earned ${jq.reward} points.`, 8000);
                   }
