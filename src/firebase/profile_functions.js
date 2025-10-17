@@ -1,9 +1,6 @@
 import { db, auth } from "./firebase";
 import { collection, getDocs, getDoc, updateDoc, doc } from "firebase/firestore";
-
-// NOTE: 'apiRequest' is assumed to be defined/imported elsewhere in your project
-// (e.g., 'import { apiRequest } from "./api";') 
-
+import { apiRequest } from "./firebase";
 // -----------------------------------------------------------------
 // 1. PROFILE MANAGEMENT (Using Backend API)
 // -----------------------------------------------------------------
