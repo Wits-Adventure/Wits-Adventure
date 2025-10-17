@@ -20,8 +20,8 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-const apiURL = 'http://localhost:5000'
-//const apiURL = 'https://waapi-fwhbdfesd7hqdaef.southafricanorth-01.azurewebsites.net'
+//const apiURL = 'http://localhost:5000'
+const apiURL = 'https://waapi-fwhbdfesd7hqdaef.southafricanorth-01.azurewebsites.net'
 
 export const apiRequest = async (url, method = 'GET', body = null, isFormData = false) => {
   const headers = {};
