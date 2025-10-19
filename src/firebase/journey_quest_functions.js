@@ -1,57 +1,37 @@
-import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
-import { db, auth } from "./firebase";
+import { apiRequest } from "./firebase";
+// Removed: import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
+// Removed: import { db, auth } from "./firebase";
 
 /**
- * Get the current user's journey quest progress from Firestore
+ * Get the current user's journey quest progress from the backend API.
  * @returns {Promise<Object>} Journey quest progress object
  */
 export async function getJourneyQuestProgress() {
-    const user = auth.currentUser;
-    if (!user) {
-        throw new Error("User is not authenticated");
-    }
-
     try {
-        const userDocRef = doc(db, "Users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            return {
-                currentJourneyQuest: userData.currentJourneyQuest || null,
-                currentJourneyStop: userData.currentJourneyStop || 1,
-                completedJourneyQuests: userData.completedJourneyQuests || []
-            };
-        } else {
-            // Initialize default values if user document doesn't exist
-            return {
-                currentJourneyQuest: null,
-                currentJourneyStop: 1,
-                completedJourneyQuests: []
-            };
-        }
+        // GET /api/quests/journey/progress
+        return await apiRequest('/api/quests/journey/progress');
     } catch (error) {
         console.error("Error fetching journey quest progress:", error);
-        throw error;
+        // Return default state on error for UX stability
+        return {
+            currentJourneyQuest: null,
+            currentJourneyStop: 1,
+            completedJourneyQuests: []
+        };
     }
 }
 
 /**
- * Accept a journey quest (abandons any current one)
+ * Accept a journey quest (abandons any current one) via the backend API.
  * @param {string} journeyQuestId - The ID of the journey quest to accept
  */
 export async function acceptJourneyQuest(journeyQuestId) {
-    const user = auth.currentUser;
-    if (!user) {
-        throw new Error("User is not authenticated");
-    }
-
     try {
-        const userDocRef = doc(db, "Users", user.uid);
-        await updateDoc(userDocRef, {
-            currentJourneyQuest: journeyQuestId,
-            currentJourneyStop: 1
+        // PATCH /api/quests/journey/accept
+        await apiRequest('/api/quests/journey/accept', 'PATCH', {
+            journeyQuestId: journeyQuestId
         });
+        console.log(`Journey quest ${journeyQuestId} accepted successfully.`);
     } catch (error) {
         console.error("Error accepting journey quest:", error);
         throw error;
@@ -59,41 +39,18 @@ export async function acceptJourneyQuest(journeyQuestId) {
 }
 
 /**
- * Abandon the current journey quest
+ * Advance the current journey quest stop via the backend API.
+ * @param {string} journeyQuestId - The ID of the current journey quest
+ * @param {number} newStop - The new stop number to set
  */
-export async function abandonJourneyQuest() {
-    const user = auth.currentUser;
-    if (!user) {
-        throw new Error("User is not authenticated");
-    }
-
+export async function advanceJourneyQuestStop(journeyQuestId, newStop) {
     try {
-        const userDocRef = doc(db, "Users", user.uid);
-        await updateDoc(userDocRef, {
-            currentJourneyQuest: null,
-            currentJourneyStop: 1
+        // PATCH /api/quests/journey/advance
+        await apiRequest('/api/quests/journey/advance', 'PATCH', {
+            journeyQuestId: journeyQuestId,
+            newStop: newStop
         });
-    } catch (error) {
-        console.error("Error abandoning journey quest:", error);
-        throw error;
-    }
-}
-
-/**
- * Advance to the next stop in the current journey quest
- * @param {number} nextStop - The next stop number
- */
-export async function advanceJourneyQuestStop(nextStop) {
-    const user = auth.currentUser;
-    if (!user) {
-        throw new Error("User is not authenticated");
-    }
-
-    try {
-        const userDocRef = doc(db, "Users", user.uid);
-        await updateDoc(userDocRef, {
-            currentJourneyStop: nextStop
-        });
+        console.log(`Journey quest ${journeyQuestId} advanced to stop ${newStop}.`);
     } catch (error) {
         console.error("Error advancing journey quest stop:", error);
         throw error;
@@ -101,44 +58,36 @@ export async function advanceJourneyQuestStop(nextStop) {
 }
 
 /**
- * Complete the current journey quest
+ * Complete the current journey quest via the backend API.
  * @param {string} journeyQuestId - The ID of the completed journey quest
  * @param {number} rewardPoints - Points to award for completion
  */
 export async function completeJourneyQuest(journeyQuestId, rewardPoints) {
-    const user = auth.currentUser;
-    if (!user) {
-        throw new Error("User is not authenticated");
-    }
-
     try {
-        const userDocRef = doc(db, "Users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const completedQuests = userData.completedJourneyQuests || [];
-
-            // Add the quest to completed list if not already there
-            if (!completedQuests.includes(journeyQuestId)) {
-                completedQuests.push(journeyQuestId);
-            }
-
-            // Award all three types of points like regular quests
-            await updateDoc(userDocRef, {
-                currentJourneyQuest: null,
-                currentJourneyStop: 1,
-                completedJourneyQuests: completedQuests,
-                SpendablePoints: (userData.SpendablePoints || 0) + rewardPoints,
-                LeaderBoardPoints: (userData.LeaderBoardPoints || 0) + rewardPoints
-            });
-        }
+        // POST /api/quests/journey/complete
+        await apiRequest('/api/quests/journey/complete', 'POST', {
+            journeyQuestId: journeyQuestId,
+            rewardPoints: rewardPoints
+        });
+        console.log(`Journey quest ${journeyQuestId} completed successfully.`);
     } catch (error) {
         console.error("Error completing journey quest:", error);
         throw error;
     }
 }
 
-
-
-
+/**
+ * Resets the current journey quest fields, effectively abandoning it.
+ * Corresponds to: PATCH /api/quests/journey/abandon
+ */
+export async function abandonJourneyQuest() {
+    try {
+        // PATCH /api/quests/journey/abandon
+        // No body required, as the user ID and data to reset are inferred on the backend.
+        await apiRequest('/api/quests/journey/abandon', 'PATCH');
+        console.log('Current journey quest abandoned successfully.');
+    } catch (error) {
+        console.error("Error abandoning journey quest:", error);
+        throw error;
+    }
+}
