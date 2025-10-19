@@ -167,10 +167,13 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
       }).addTo(map);
       circle._emoji = chosenEmoji;
 
+      const descTrim = description?.trim();
+      const descHtml = descTrim ? `<p class="quest-desc">${escapeHtml(descTrim)}</p>` : '';
+
       const popupHtml = `
         <div class="quest-popup">
           <h3>${safeName}</h3>
-          <p class="quest-desc">${escapeHtml((description && description.trim()) ? description : 'Placeholder Description')}</p>
+          ${descHtml}
           <div class="quest-image-container">
             <img src="${imagePreview}" alt="Quest Image" class="quest-popup-image" />
           </div>
@@ -201,7 +204,7 @@ export default function CreateQuestForm({ isOpen, onClose, mapInstanceRef, quest
       // Save quest to Firestore
       const questData = {
         name: baseName || 'Unnamed Quest',
-        description, // NEW
+        ...(descTrim ? { description: descTrim } : {}), // only include when provided
         radius: radius,
         reward: radius,
         lat: circleCenterLatLng.lat,
