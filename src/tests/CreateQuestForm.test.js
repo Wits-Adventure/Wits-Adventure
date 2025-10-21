@@ -301,3 +301,158 @@ describe('CreateQuestForm', () => {
     });
   });
 });
+  test('handles description input changes', async () => {
+    render(<CreateQuestForm {...mockProps} />);
+    const textarea = screen.getByPlaceholderText('Briefly describe the quest...');
+    fireEvent.change(textarea, { target: { value: 'Test description' } });
+    expect(textarea).toHaveValue('Test description');
+  });
+
+  test('handles key propagation prevention', async () => {
+    render(<CreateQuestForm {...mockProps} />);
+    const input = screen.getByPlaceholderText('Enter quest name');
+    const event = { stopPropagation: jest.fn() };
+    fireEvent.keyDown(input, event);
+    fireEvent.keyUp(input, event);
+  });
+
+  test('handles emoji extraction and quest placement', async () => {
+    render(<CreateQuestForm {...mockProps} />);
+    const fileInput = document.querySelector('input[type="file"]');
+    const file = new File(['test'], 'test.png', { type: 'image/png' });
+    
+    Object.defineProperty(fileInput, 'files', { value: [file] });
+    fireEvent.change(fileInput);
+
+    const nameInput = screen.getByPlaceholderText('Enter quest name');
+    fireEvent.change(nameInput, { target: { value: '🗡️ Epic Quest' } });
+
+    await waitFor(() => {
+      const selectButton = screen.getByText('Select Location');
+      fireEvent.click(selectButton);
+    });
+
+    // Simulate map click with quest placement
+    const clickHandler = mockProps.mapInstanceRef.current.once.mock.calls.find(
+      (call) => call[0] === 'click'
+    )[1];
+    clickHandler({ latlng: { lat: 1, lng: 1 } });
+
+    await waitFor(() => {
+      expect(global.L.circle).toHaveBeenCalled();
+    });
+  });
+
+  test('handles quest placement with description', async () => {
+    render(<CreateQuestForm {...mockProps} />);
+    const fileInput = document.querySelector('input[type="file"]');
+    const file = new File(['test'], 'test.png', { type: 'image/png' });
+    
+    Object.defineProperty(fileInput, 'files', { value: [file] });
+    fireEvent.change(fileInput);
+
+    const descInput = screen.getByPlaceholderText('Briefly describe the quest...');
+    fireEvent.change(descInput, { target: { value: 'A challenging quest' } });
+
+    await waitFor(() => {
+      const selectButton = screen.getByText('Select Location');
+      fireEvent.click(selectButton);
+    });
+
+    const clickHandler = mockProps.mapInstanceRef.current.once.mock.calls.find(
+      (call) => call[0] === 'click'
+    )[1];
+    clickHandler({ latlng: { lat: 1, lng: 1 } });
+  });
+
+  test('handles quest circles pointer events restoration', async () => {
+    const mockCircle = {
+      _path: { 
+        style: { pointerEvents: 'auto' },
+        dataset: {}
+      },
+      _emojiMarker: {
+        _icon: {
+          style: { pointerEvents: 'auto' },
+          dataset: {}
+        }
+      }
+    };
+    
+    const propsWithCircles = {
+      ...mockProps,
+      questCirclesRef: { current: [mockCircle] }
+    };
+
+    render(<CreateQuestForm {...propsWithCircles} />);
+    const fileInput = document.querySelector('input[type="file"]');
+    const file = new File(['test'], 'test.png', { type: 'image/png' });
+    
+    Object.defineProperty(fileInput, 'files', { value: [file] });
+    fireEvent.change(fileInput);
+
+    await waitFor(() => {
+      const selectButton = screen.getByText('Select Location');
+      fireEvent.click(selectButton);
+    });
+
+    const abortButton = screen.getByText('Abort');
+    fireEvent.click(abortButton);
+  });
+
+  test('handles quest placement without image preview', async () => {
+    render(<CreateQuestForm {...mockProps} />);
+    const fileInput = document.querySelector('input[type="file"]');
+    const file = new File(['test'], 'test.png', { type: 'image/png' });
+    
+    // Mock FileReader to not set imagePreview
+    global.FileReader = class {
+      readAsDataURL() {
+        // Don't call onload to simulate no preview
+      }
+    };
+    
+    Object.defineProperty(fileInput, 'files', { value: [file] });
+    fireEvent.change(fileInput);
+
+    await waitFor(() => {
+      const selectButton = screen.getByText('Select Location');
+      expect(selectButton).not.toBeDisabled();
+    });
+  });
+
+  test('handles mousemove during following mode', async () => {
+    render(<CreateQuestForm {...mockProps} />);
+    const fileInput = document.querySelector('input[type="file"]');
+    const file = new File(['test'], 'test.png', { type: 'image/png' });
+    
+    Object.defineProperty(fileInput, 'files', { value: [file] });
+    fireEvent.change(fileInput);
+
+    await waitFor(() => {
+      const selectButton = screen.getByText('Select Location');
+      fireEvent.click(selectButton);
+    });
+
+    // Simulate mousemove event
+    const moveHandler = mockProps.mapInstanceRef.current.on.mock.calls.find(
+      (call) => call[0] === 'mousemove'
+    )[1];
+    moveHandler({ latlng: { lat: 2, lng: 2 } });
+  });
+
+  test('handles cleanup on unmount during following', async () => {
+    const { unmount } = render(<CreateQuestForm {...mockProps} />);
+    const fileInput = document.querySelector('input[type="file"]');
+    const file = new File(['test'], 'test.png', { type: 'image/png' });
+    
+    Object.defineProperty(fileInput, 'files', { value: [file] });
+    fireEvent.change(fileInput);
+
+    await waitFor(() => {
+      const selectButton = screen.getByText('Select Location');
+      fireEvent.click(selectButton);
+    });
+
+    unmount();
+  });

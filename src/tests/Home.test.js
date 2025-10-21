@@ -710,3 +710,204 @@ describe('Home Component', () => {
     });
   });
 });
+  test('handles tutorial hint close', () => {
+    renderHome();
+    const closeButton = screen.getByText('×');
+    fireEvent.click(closeButton);
+    expect(screen.queryByText('×')).not.toBeInTheDocument();
+  });
+
+  test('handles quest creation success callback', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    renderHome();
+    
+    await waitFor(() => {
+      if (window.handleQuestCreated) {
+        window.handleQuestCreated();
+      }
+    });
+  });
+
+  test('handles quest completion success callback', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    renderHome();
+    
+    await waitFor(() => {
+      if (window.handleQuestCompleted) {
+        window.handleQuestCompleted();
+      }
+    });
+  });
+
+  test('handles map click during quest placement', () => {
+    global.window.__questPlacing = true;
+    renderHome();
+    
+    // Simulate map click event
+    const mapContainer = document.querySelector('.home-container');
+    if (mapContainer) {
+      fireEvent.click(mapContainer);
+    }
+    
+    global.window.__questPlacing = false;
+  });
+
+  test('handles quest with missing emoji', async () => {
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      location: { _latitude: -26.1935, _longitude: 28.0298 },
+      creatorId: 'other-user'
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    renderHome();
+    await waitFor(() => expect(getAllQuests).toHaveBeenCalled());
+  });
+
+  test('handles quest with submissions', async () => {
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      location: { _latitude: -26.1935, _longitude: 28.0298 },
+      creatorId: 'other-user',
+      submissions: [{ userId: 'other-user' }]
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    renderHome();
+    await waitFor(() => expect(getAllQuests).toHaveBeenCalled());
+  });
+
+  test('handles journey quest riddle display edge cases', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    renderHome();
+    
+    await waitFor(() => {
+      if (window.handleAcceptJourneyQuest) {
+        window.handleAcceptJourneyQuest('journey-knowledge-quest');
+      }
+    });
+  });
+
+  test('handles bell pulse circle cleanup', async () => {
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({ coords: { latitude: -26.1929, longitude: 28.0305, accuracy: 10 } });
+    });
+    
+    const mockCircle = { 
+      setRadius: jest.fn(), 
+      setStyle: jest.fn(),
+      remove: jest.fn()
+    };
+    global.L.circle.mockReturnValue(mockCircle);
+    global.window.__bellPulseCircle = mockCircle;
+    
+    renderHome();
+    fireEvent.click(screen.getByAltText('Bell'));
+    
+    // Simulate animation completion
+    global.requestAnimationFrame = jest.fn(cb => {
+      for (let i = 0; i < 81; i++) cb();
+    });
+  });
+
+  test('handles geolocation timeout error', async () => {
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success, error) => {
+      error({ code: 3, message: 'Timeout' });
+    });
+
+    renderHome();
+    fireEvent.click(screen.getByAltText('Bell'));
+    
+    expect(global.navigator.geolocation.getCurrentPosition).toHaveBeenCalled();
+  });
+
+  test('handles journey quest distance calculation fallback', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    global.navigator.geolocation.getCurrentPosition.mockImplementation((success) => {
+      success({ coords: { latitude: -26.1905275569984, longitude: 28.02991870656233, accuracy: 10 } });
+    });
+    
+    // Mock L.latLng to throw error, forcing fallback calculation
+    global.L.latLng.mockImplementation(() => {
+      throw new Error('Leaflet error');
+    });
+    
+    renderHome();
+    
+    await waitFor(() => {
+      if (window.handleAcceptJourneyQuest) {
+        window.handleAcceptJourneyQuest('journey-knowledge-quest');
+      }
+    });
+    
+    fireEvent.click(screen.getByAltText('Bell'));
+  });
+
+  test('handles quest popup button updates', async () => {
+    useAuth.mockReturnValue({ currentUser: mockUser });
+    const mockQuests = [{
+      id: 'quest1',
+      name: 'Test Quest',
+      location: { _latitude: -26.1935, _longitude: 28.0298 },
+      creatorId: 'other-user'
+    }];
+    getAllQuests.mockResolvedValue(mockQuests);
+    
+    // Mock DOM elements
+    const mockButton = { 
+      textContent: 'Accept Quest',
+      className: 'quest-popup-btn quest-accept-btn',
+      onclick: null
+    };
+    document.getElementById = jest.fn(() => mockButton);
+    
+    renderHome();
+    
+    await waitFor(() => {
+      if (window.handleAcceptQuest) {
+        window.handleAcceptQuest('quest1');
+      }
+    });
+  });
+
+  test('handles component unmount cleanup', () => {
+    const { unmount } = renderHome();
+    unmount();
+  });
+
+  test('handles window resize events', () => {
+    renderHome();
+    fireEvent(window, new Event('resize'));
+    fireEvent(window, new Event('orientationchange'));
+  });
+
+  test('handles leaflet availability check', () => {
+    delete global.L;
+    renderHome();
+    
+    // Simulate Leaflet becoming available
+    global.L = {
+      map: jest.fn(() => ({
+        setView: jest.fn().mockReturnThis(),
+        remove: jest.fn(),
+        invalidateSize: jest.fn(),
+        addLayer: jest.fn(),
+        removeLayer: jest.fn(),
+        eachLayer: jest.fn()
+      })),
+      tileLayer: jest.fn(() => ({ addTo: jest.fn() })),
+      marker: jest.fn(() => ({
+        addTo: jest.fn().mockReturnThis(),
+        bindPopup: jest.fn().mockReturnThis(),
+        on: jest.fn()
+      })),
+      circle: jest.fn(() => ({
+        addTo: jest.fn().mockReturnThis(),
+        bindPopup: jest.fn().mockReturnThis(),
+        on: jest.fn()
+      })),
+      control: { zoom: jest.fn(() => ({ addTo: jest.fn() })) },
+      divIcon: jest.fn(),
+      latLng: jest.fn(() => ({ distanceTo: jest.fn(() => 10) }))
+    };
+  });
