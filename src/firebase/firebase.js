@@ -3,7 +3,7 @@ import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInW
 import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
+// test
 const firebaseConfig = {
   apiKey: "AIzaSyBjatUHRXn-vb8yZS_G2I9qRjr49G0Uqjg",
   authDomain: "bloobase2.firebaseapp.com",
