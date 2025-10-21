@@ -74,3 +74,78 @@ describe('EtherealStyles', () => {
     expect(document.getElementById('ethereal-fontawesome-css')).toBeNull();
   });
 });
+  test('handles script loading errors', async () => {
+    // Mock script loading to fail
+    const originalCreateElement = document.createElement;
+    document.createElement = jest.fn((tagName) => {
+      if (tagName === 'script') {
+        const script = originalCreateElement.call(document, tagName);
+        setTimeout(() => script.onerror(new Error('Script failed')), 10);
+        return script;
+      }
+      return originalCreateElement.call(document, tagName);
+    });
+
+    render(<EtherealStyles><div>Test</div></EtherealStyles>);
+    
+    await waitFor(() => {
+      expect(document.getElementById('ethereal-jquery')).toBeInTheDocument();
+    });
+
+    document.createElement = originalCreateElement;
+  });
+
+  test('handles async script loading with mounted check', async () => {
+    let scriptResolve;
+    const scriptPromise = new Promise((resolve) => {
+      scriptResolve = resolve;
+    });
+
+    const originalCreateElement = document.createElement;
+    document.createElement = jest.fn((tagName) => {
+      if (tagName === 'script') {
+        const script = originalCreateElement.call(document, tagName);
+        setTimeout(() => {
+          script.onload();
+          scriptResolve();
+        }, 10);
+        return script;
+      }
+      return originalCreateElement.call(document, tagName);
+    });
+
+    const { unmount } = render(<EtherealStyles><div>Test</div></EtherealStyles>);
+    
+    // Unmount before scripts finish loading to test mounted check
+    unmount();
+    
+    await scriptPromise;
+    document.createElement = originalCreateElement;
+  });
+
+  test('handles script loading sequence', async () => {
+    let loadOrder = [];
+    
+    const originalCreateElement = document.createElement;
+    document.createElement = jest.fn((tagName) => {
+      if (tagName === 'script') {
+        const script = originalCreateElement.call(document, tagName);
+        const originalOnload = script.onload;
+        script.onload = () => {
+          loadOrder.push(script.src);
+          if (originalOnload) originalOnload();
+        };
+        setTimeout(() => script.onload(), 10);
+        return script;
+      }
+      return originalCreateElement.call(document, tagName);
+    });
+
+    render(<EtherealStyles><div>Test</div></EtherealStyles>);
+    
+    await waitFor(() => {
+      expect(loadOrder.length).toBeGreaterThan(0);
+    });
+
+    document.createElement = originalCreateElement;
+  });
