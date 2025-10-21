@@ -210,11 +210,11 @@ export async function approveSubmissionAndCloseQuest(questId, approvedUserId) {
     if (approvedUserSnap.exists()) {
         const prevPoints = approvedUserSnap.data().SpendablePoints ?? 0;
         const prevExp = approvedUserSnap.data().Experience ?? 0;
-        const prevleaderboardpts = approvedUserSnap.data().LeaderBoardPoints ?? 0;
+        const prevLeaderBoardPts = approvedUserSnap.data().LeaderBoardPoints ?? 0;
         await updateDoc(approvedUserRef, {
             SpendablePoints: prevPoints + reward,
             Experience: prevExp + reward,
-            LeaderBoardPoints: prevleaderboardpts + reward,
+            LeaderBoardPoints: prevLeaderBoardPts + reward,
             CompletedQuests: [
                 ...(approvedUserSnap.data().CompletedQuests ?? []),
                 {
@@ -232,18 +232,11 @@ export async function approveSubmissionAndCloseQuest(questId, approvedUserId) {
         if (creatorSnap.exists()) {
             const prevPoints = creatorSnap.data().SpendablePoints ?? 0;
             const prevExp = creatorSnap.data().Experience ?? 0;
-            const prevleaderboardpts = approvedUserSnap.data().LeaderBoardPoints ?? 0;
+            const prevLeaderBoardPts = creatorSnap.data().LeaderBoardPoints ?? 0; // FIX
             await updateDoc(creatorRef, {
                 SpendablePoints: prevPoints + reward,
                 Experience: prevExp + reward,
-                LeaderBoardPoints: prevleaderboardpts + reward,
-                CompletedQuests: [
-                    ...(creatorSnap.data().CompletedQuests ?? []),
-                    {
-                        questId,
-                        ...questData
-                    }
-                ]
+                LeaderBoardPoints: prevLeaderBoardPts + reward
             });
         }
     }

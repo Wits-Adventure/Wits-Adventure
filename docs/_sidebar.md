@@ -9,4 +9,5 @@
 - [🪤 Schema and explanation](schema.md)
 - [🔮 Testing](testing.md)
 - [💫 Feedback integration](feedback.md)
+- [⚔️ Attack reports](attackReports.md)
 

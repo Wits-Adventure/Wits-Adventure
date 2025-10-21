@@ -181,6 +181,35 @@ const Home = () => {
               "Seek a court where echoes bound,\nAnd sneakers sing upon the ground.",
           },
         ],
+      },
+      {
+        id: 'journey-heritage-quest',
+        name: 'Heritage Trail',
+        emoji: '🏛️',
+        reward: 120,
+        stops: [
+          {
+            lat: -26.19045202488202,   // Demo start (central campus)
+            lng: 28.02688163616832,
+            radius: 45,
+            riddle:
+              "Begin where stone and story meet — the central square.\n(Accept to unlock the next clue.)",
+          },
+          {
+            lat: -26.19045202488202,   // Demo intermediate stop
+            lng: 28.02688163616832,
+            radius: 45,
+            riddle:
+              "Look for a plaque etched with names and years;\nlisten for the quiet that holds their stories.",
+          },
+          {
+            lat: -26.19045202488202,   // Demo final stop
+            lng: 28.02688163616832,
+            radius: 45,
+            riddle:
+              "Find the arch where sunlight frames the steps,\nthere a final marker waits beneath the shade.",
+          },
+        ],
       }
     ],
     []
@@ -444,8 +473,8 @@ const Home = () => {
             riddleToShow = jq.stops?.[0]?.riddle || 'Continue your journey...';
           }
 
-          // Keep Journey tag and CSS
-          const badgeHTML = `<span class="journey-tag">Journey</span>`;
+          // Use the styled badge with a star emoji to match existing CSS
+          const badgeHTML = `<div class="quest-badge">⭐ <span class="badge-text">Journey</span></div>`;
           const titleEmoji = jq.emoji || (jq.name?.match(/^\p{Extended_Pictographic}/u)?.[0]) || '🧭';
           const completedMark = isCompleted ? '✅ ' : '';
 
