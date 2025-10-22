@@ -189,23 +189,23 @@ const Home = () => {
         reward: 120,
         stops: [
           {
-            lat: -26.19045202488202,   // Demo start (central campus)
-            lng: 28.02688163616832,
-            radius: 45,
+            lat: -26.190421624393522,   // Heritage Trail start
+            lng: 28.026423144259773,
+            radius: 150,
             riddle:
               "Begin where stone and story meet — the central square.\n(Accept to unlock the next clue.)",
           },
           {
-            lat: -26.19045202488202,   // Demo intermediate stop
-            lng: 28.02688163616832,
-            radius: 45,
+            lat: -26.190421624393522,   // Heritage Trail intermediate stop
+            lng: 28.026423144259773,
+            radius: 150,
             riddle:
               "Look for a plaque etched with names and years;\nlisten for the quiet that holds their stories.",
           },
           {
-            lat: -26.19045202488202,   // Demo final stop
-            lng: 28.02688163616832,
-            radius: 45,
+            lat: -26.190421624393522,   // Heritage Trail final stop
+            lng: 28.026423144259773,
+            radius: 150,
             riddle:
               "Find the arch where sunlight frames the steps,\nthere a final marker waits beneath the shade.",
           },
